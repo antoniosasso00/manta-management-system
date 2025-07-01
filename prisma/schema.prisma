@@ -1,0 +1,392 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(OPERATOR)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  sessions      Session[]
+  accounts      Account[]
+  odlEvents     ProductionEvent[]
+  passwordResetTokens PasswordResetToken[]
+  
+  @@index([email, isActive])
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// Password Reset Tokens
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt, used])
+  @@index([createdAt])
+  @@map("password_reset_tokens")
+}
+
+enum UserRole {
+  ADMIN
+  SUPERVISOR
+  OPERATOR
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
+  @@map("sessions")
+}
+
+// Parts (Master Data - Aggregate Root)
+model Part {
+  id              String           @id @default(cuid())
+  partNumber      String           @unique
+  description     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Gamma MES sync tracking
+  gammaId         String?          // ID originale da Gamma MES
+  lastSyncAt      DateTime?        // Ultima sincronizzazione
+  syncStatus      SyncStatus       @default(SUCCESS)
+  
+  // Production specifications (configurabili localmente)
+  defaultCuringCycleId String?     // Reference to CuringCycle
+  standardLength       Float?
+  standardWidth        Float?
+  standardHeight       Float?
+  defaultVacuumLines   Int?
+  
+  // Relations
+  odls               ODL[]
+  defaultCuringCycle CuringCycle?  @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
+  partTools          PartTool[]
+  
+  @@index([partNumber])
+  @@index([gammaId])
+  @@index([defaultCuringCycleId])
+  @@map("parts")
+}
+
+// ODL (Work Orders)
+model ODL {
+  id              String           @id @default(cuid())
+  odlNumber       String           @unique
+  partId          String
+  quantity        Int
+  priority        Priority         @default(NORMAL)
+  status          ODLStatus        @default(CREATED)
+  qrCode          String           @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Gamma MES sync tracking
+  gammaId         String?          // ID originale da Gamma MES
+  lastSyncAt      DateTime?        // Ultima sincronizzazione
+  syncStatus      SyncStatus       @default(SUCCESS)
+  
+  // Override dimensions for autoclave optimization (if different from standard)
+  length          Float?
+  width           Float?
+  height          Float?
+  
+  // Override production data (if different from standard)
+  curingCycleId   String?
+  vacuumLines     Int?
+  
+  // Relations
+  part            Part             @relation(fields: [partId], references: [id])
+  curingCycle     CuringCycle?     @relation("ODLCuringCycle", fields: [curingCycleId], references: [id])
+  events          ProductionEvent[]
+  autoclaveLoadItems AutoclaveLoadItem[]
+  
+  @@index([status])
+  @@index([partId])
+  @@index([gammaId])
+  @@index([curingCycleId])
+  @@index([qrCode])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([priority, status])
+  @@map("odls")
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ODLStatus {
+  CREATED
+  IN_CLEANROOM
+  CLEANROOM_COMPLETED
+  IN_AUTOCLAVE
+  AUTOCLAVE_COMPLETED
+  IN_NDI
+  IN_RIFILATURA
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+// Production Events (tracking through departments)
+model ProductionEvent {
+  id            String          @id @default(cuid())
+  odlId         String
+  departmentId  String
+  eventType     EventType
+  timestamp     DateTime        @default(now())
+  userId        String
+  notes         String?
+  
+  // Relations
+  odl           ODL             @relation(fields: [odlId], references: [id])
+  department    Department      @relation(fields: [departmentId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
+  
+  @@index([odlId, timestamp])
+  @@index([departmentId, timestamp])
+  @@index([userId, timestamp])
+  @@index([eventType, timestamp])
+  @@map("production_events")
+}
+
+enum EventType {
+  ENTRY
+  EXIT
+  PAUSE
+  RESUME
+  NOTE
+}
+
+// Departments
+model Department {
+  id            String           @id @default(cuid())
+  code          String           @unique
+  name          String
+  type          DepartmentType
+  isActive      Boolean          @default(true)
+  
+  // Relations
+  events        ProductionEvent[]
+  autoclaves    Autoclave[]
+  
+  @@map("departments")
+}
+
+enum DepartmentType {
+  CLEANROOM
+  AUTOCLAVE
+  NDI
+  RIFILATURA
+  OTHER
+}
+
+// Autoclave specific models
+model Autoclave {
+  id            String           @id @default(cuid())
+  code          String           @unique
+  name          String
+  departmentId  String
+  maxLength     Float
+  maxWidth      Float
+  maxHeight     Float
+  vacuumLines   Int
+  isActive      Boolean          @default(true)
+  
+  // Relations
+  department    Department       @relation(fields: [departmentId], references: [id])
+  loads         AutoclaveLoad[]
+  
+  @@map("autoclaves")
+}
+
+model AutoclaveLoad {
+  id            String           @id @default(cuid())
+  loadNumber    String           @unique
+  autoclaveId   String
+  curingCycleId String
+  plannedStart  DateTime
+  actualStart   DateTime?
+  plannedEnd    DateTime
+  actualEnd     DateTime?
+  status        LoadStatus       @default(PLANNED)
+  layoutData    Json?            // 2D layout optimization result
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  
+  // Relations
+  autoclave     Autoclave        @relation(fields: [autoclaveId], references: [id])
+  curingCycle   CuringCycle      @relation(fields: [curingCycleId], references: [id])
+  loadItems     AutoclaveLoadItem[]
+  
+  @@index([status, plannedStart])
+  @@index([curingCycleId])
+  @@map("autoclave_loads")
+}
+
+// Junction table for many-to-many relationship between ODL and AutoclaveLoad
+model AutoclaveLoadItem {
+  id              String           @id @default(cuid())
+  odlId           String
+  autoclaveLoadId String
+  position        Json?            // 2D position data in autoclave layout
+  addedAt         DateTime         @default(now())
+  
+  // Relations
+  odl             ODL              @relation(fields: [odlId], references: [id], onDelete: Cascade)
+  autoclaveLoad   AutoclaveLoad    @relation(fields: [autoclaveLoadId], references: [id], onDelete: Cascade)
+  
+  @@unique([odlId, autoclaveLoadId])
+  @@index([autoclaveLoadId])
+  @@map("autoclave_load_items")
+}
+
+enum LoadStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// Gamma MES Sync tracking
+model GammaSyncLog {
+  id            String           @id @default(cuid())
+  fileName      String
+  fileType      String           // "PARTS", "ODL", "PRODUCTION_DATA"
+  entityType    String           // "Part", "ODL"
+  syncStatus    SyncStatus
+  recordsRead   Int              @default(0)
+  recordsSynced Int              @default(0)
+  recordsSkipped Int             @default(0)
+  errorMessage  String?
+  syncedAt      DateTime         @default(now())
+  
+  @@index([fileType, syncedAt])
+  @@map("gamma_sync_logs")
+}
+
+enum SyncStatus {
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+// Tool Management (Utensili di Laminazione)
+model Tool {
+  id              String    @id @default(cuid())
+  toolPartNumber  String    @unique
+  description     String
+  base            Float     // Dimensioni base
+  height          Float     // Altezza
+  weight          Float     // Peso
+  material        String    // Materiale
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  partTools       PartTool[]
+  
+  @@index([toolPartNumber])
+  @@map("tools")
+}
+
+// Junction table for many-to-many relationship between Part and Tool
+model PartTool {
+  id       String @id @default(cuid())
+  partId   String
+  toolId   String
+  
+  // Relations
+  part     Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  tool     Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  
+  @@unique([partId, toolId])
+  @@index([partId])
+  @@index([toolId])
+  @@map("part_tools")
+}
+
+// Curing Cycles (Cicli di Cura)
+model CuringCycle {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+  
+  // Prima stasi (obbligatoria)
+  phase1Temperature Float
+  phase1Pressure    Float
+  phase1Duration    Int   // in minuti
+  
+  // Seconda stasi (opzionale)
+  phase2Temperature Float?
+  phase2Pressure    Float?
+  phase2Duration    Int?   // in minuti
+  
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  defaultParts    Part[]        @relation("DefaultCuringCycle")
+  odls            ODL[]         @relation("ODLCuringCycle")
+  autoclaveLoads  AutoclaveLoad[]
+  
+  @@index([code])
+  @@map("curing_cycles")
+}

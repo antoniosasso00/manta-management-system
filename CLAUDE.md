@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MES Aerospazio is a Manufacturing Execution System for aerospace component production, specializing in carbon fiber composite manufacturing. The system tracks work orders (ODL) through production departments including Clean Room (lamination) and Autoclaves (curing cycles) using QR code scanning and automated batch optimization.
 
-Built as a Next.js 15.3.4 monolithic application following Domain-Driven Design principles with Atomic Design System UI components.
+Built as a Next.js 15.3.4 application following Domain-Driven Design principles with Atomic Design System UI components. Uses hybrid architecture: monolithic core with specialized Python microservices for computationally intensive algorithms.
 
 ## Commands
 
@@ -18,54 +18,118 @@ npm run start        # Start production server
 npm run lint         # Run ESLint checks
 ```
 
-### Database (when implemented)
-```bash
-npx prisma generate   # Generate Prisma client
-npx prisma db push    # Push schema changes to database
-npx prisma migrate    # Run database migrations
-npx prisma studio     # Open Prisma Studio GUI
-```
-
-### Docker Development
+### Database
 ```bash
 docker-compose up -d           # Start PostgreSQL and Redis for development
+npm run db:generate            # Generate Prisma client after schema changes
+npm run db:push                # Push schema changes to database (development)
+npm run db:migrate             # Create and run database migrations (production)
+npm run db:studio              # Open Prisma Studio GUI
 docker-compose down            # Stop services
 docker-compose logs postgres   # View database logs
 ```
 
+### Development Setup (First Time)
+```bash
+npm install                    # Install dependencies
+docker-compose up -d           # Start PostgreSQL, Redis, and Python microservices
+npm run db:push                # Setup database schema
+npm run dev                    # Start development server
+# Visit http://localhost:3000/register to create first user
+```
+
+### Microservices Development
+```bash
+docker-compose up optimization-service  # Start autoclave nesting service
+docker-compose up assignment-service    # Start ODL assignment service
+docker-compose logs optimization-service # Monitor service logs
+```
+
+## Current Development Status
+
+**Phase**: Core Business Logic Implemented - Part/ODL Foundation Complete
+- ✅ Next.js 15.3.4 with TypeScript and Turbopack
+- ✅ Material-UI v7 with custom theme and dark mode
+- ✅ NextAuth.js v5 authentication with JWT and role-based access
+- ✅ Prisma ORM with comprehensive database schema
+- ✅ Docker development environment (PostgreSQL + Redis)
+- ✅ Zod validation schemas for all domains
+- ✅ Atomic Design component structure with MUI integration
+- ✅ ESLint 9 with flat config - production build tested
+- ✅ **Part & ODL Core Implementation**: Complete CRUD API + Domain Logic
+- ✅ **Gamma MES Sync Architecture**: Database schema + sync tracking
+- 🚧 UI Components for Part/ODL management (forms, tables, selectors)
+- 🚧 QR scanning components and production event tracking
+- 🔄 Python microservices architecture for complex algorithms
+
+## Project Documentation
+
+Detailed documentation available in `/docs`:
+- `REQUIREMENTS.md`: Business requirements and user stories
+- `TECHNICAL_ARCHITECTURE.md`: System design and technology choices
+- `MVP_DEFINITION.md`: MVP scope and priorities  
+- `DEVELOPMENT_ROADMAP.md`: 8-week implementation timeline
+
 ## Architecture
 
 ### Tech Stack
-- **Frontend**: Next.js 15.x (App Router), TypeScript 5.x, Material-UI v6, Tailwind CSS v4
-- **Backend**: Next.js API Routes, PostgreSQL 15+, Prisma ORM, BullMQ
-- **State Management**: Zustand, React Query (TanStack)
-- **Authentication**: NextAuth.js with JWT
-- **Validation**: Zod schemas (frontend + backend)
-- **QR Code**: react-qr-reader, qrcode generation
-- **Charts/Reports**: Recharts, date-fns
+
+**Frontend & Core:**
+- Next.js 15.3.4 (App Router) with Turbopack
+- React 19.0.0 with TypeScript 5.x strict mode
+- Material-UI v7 with Emotion styling
+- Tailwind CSS v4 Alpha (PostCSS-based, coexists with MUI)
+
+**Authentication & Data:**
+- NextAuth.js v5 with Prisma adapter, JWT sessions, role-based access
+- Prisma ORM 6.x with PostgreSQL database
+- Zod validation schemas for runtime type safety
+- React Query (TanStack) for server state + Zustand for client state
+
+**Production Features:**
+- QR Code: @zxing/browser (React 19 compatible) + qrcode generation
+- Background Jobs: BullMQ with Redis (ioredis)
+- Data Visualization: Recharts + date-fns
+- Mobile-first responsive design with 44px touch targets
+
+**Microservices (Python):**
+- Autoclave Nesting Algorithm: 2D bin packing optimization service
+- ODL Assignment Engine: Automatic workforce allocation based on skills/availability
+- Performance Metrics: Real-time analytics and KPI calculation
 
 ### Architecture Patterns  
+- **Hybrid Architecture**: Next.js monolithic core + Python microservices for algorithms
 - **Domain-Driven Design**: Organized by business domains (production, planning, quality)
 - **Atomic Design**: UI components hierarchy (atoms → molecules → organisms → templates)
 - **Type Safety**: End-to-end TypeScript with runtime validation via Zod
+- **API Gateway**: Next.js API routes proxy requests to Python microservices
 
-### Project Structure (Planned)
+### Project Structure (Implemented)
 ```
 src/
-├── app/                    # Next.js App Router
-├── components/             # Atomic Design System
-│   ├── atoms/             # Basic UI elements
-│   ├── molecules/         # Component combinations  
-│   ├── organisms/         # Complex sections
-│   └── templates/         # Page layouts
-├── domains/               # DDD business domains
-│   ├── production/        # Core domain: ODL tracking
-│   ├── planning/          # Autoclave optimization
-│   └── user/              # Authentication
-├── hooks/                 # Custom React hooks
-├── services/              # API layer
-├── stores/                # Zustand state stores
-└── utils/                 # Shared utilities
+├── app/                    # Next.js App Router with route groups
+│   ├── (auth)/            # Auth pages: login, register  
+│   ├── api/auth/          # NextAuth API routes + user registration
+│   ├── page.tsx           # Protected dashboard home
+│   └── layout.tsx         # Root layout with providers
+├── components/            # Atomic Design System
+│   ├── atoms/             # Button, Input, Card (MUI wrappers)
+│   ├── molecules/         # (ready for QRScanner, ODLCard)
+│   ├── organisms/         # (ready for Navigation, ODLList)
+│   ├── templates/         # (ready for DashboardLayout)
+│   └── providers/         # MUI Theme + React Query providers
+├── domains/               # DDD business domains with schemas
+│   ├── production/schemas/# ODL validation (createODLSchema, odlEventSchema)
+│   ├── planning/schemas/  # Autoclave optimization validation
+│   └── user/schemas/      # Auth validation (loginSchema, registerSchema)
+├── lib/                   # Core infrastructure
+│   ├── auth.ts           # NextAuth config with Prisma adapter
+│   ├── prisma.ts         # Prisma client singleton
+│   └── theme.ts          # Material-UI theme with mobile optimization
+├── utils/                 # Business utilities
+│   ├── constants.ts      # Business constants (roles, statuses, shifts)
+│   └── helpers.ts        # Utilities (QR parsing, date formatting, validation)
+└── middleware.ts         # Route protection with NextAuth
 ```
 
 ## Business Domain Context
@@ -80,8 +144,8 @@ src/
 ### Production Flow
 ```
 ODL Creation → Clean Room (Lamination) → Autoclavi (Curing) → NDI → Rifilatura → etc.
-    ↓             ↓ QR Scan In/Out      ↓ Batch Optimization
-Gamma Sync    Time Tracking         2D Layout Planning
+    ↓             ↓ QR Scan In/Out      ↓ Batch Optimization (Python Service)
+Gamma Sync    Time Tracking         2D Layout Planning + Auto Assignment
 ```
 
 ### Key Business Rules
@@ -90,22 +154,39 @@ Gamma Sync    Time Tracking         2D Layout Planning
 - Production shifts: 6-14, 14-22
 - Mobile-first UI for operators (smartphone QR scanning)
 
-## Development Guidelines
+## Critical Implementation Architecture
 
-### Validation Strategy
-- Use Zod schemas for all data validation (frontend + backend)
-- Share schemas between client and server
-- Runtime type safety with TypeScript inference
+### Authentication Flow
+- **NextAuth v5** with custom Credentials provider (`src/lib/auth.ts`)
+- **Role-based access**: `UserRole` enum (ADMIN, SUPERVISOR, OPERATOR) in Prisma schema
+- **Route protection**: All routes protected by default via `middleware.ts`, except auth pages
+- **Session management**: JWT tokens with user ID and role embedded
+- **Password security**: bcryptjs hashing in registration API route
 
-### Component Development  
-- Follow Atomic Design: wrap MUI components in custom atoms
-- Use MUI theming for consistent styling
-- Mobile-first responsive design for production floor usage
+### Database Architecture
+- **Prisma schema** (`prisma/schema.prisma`): Core entities are User, ODL, Department, Autoclave, ProductionEvent
+- **ODL tracking**: Central entity with QR codes, part numbers, status workflow, dimensions for autoclave optimization
+- **Production events**: Audit trail of ODL movements through departments (entry/exit tracking)
+- **Autoclave optimization**: AutoclaveLoad entity stores batch layouts as JSON with 2D positioning data
+- **Gamma sync**: GammaSyncLog tracks file-based integration status
 
-### Database Integration
-- Prisma ORM with PostgreSQL
-- File-based Gamma sync (watch folder for CSV/Excel exports)
-- Background jobs with BullMQ for heavy processing (autoclave optimization)
+### Validation Architecture
+- **Zod schemas** in `src/domains/*/schemas/`: Shared between client/server for type safety
+- **Form validation**: React Hook Form + Zod resolver pattern in auth pages
+- **API validation**: Server-side schema validation in API routes before database operations
+- **Runtime safety**: TypeScript inference from Zod schemas ensures compile-time + runtime type checking
+
+### Component Architecture Strategy
+- **Atomic Design implemented**: `src/components/atoms/` wrap MUI components with custom props
+- **MUI integration**: Custom theme in `src/lib/theme.ts` with mobile-first 44px touch targets
+- **Provider pattern**: Root layout includes MUI ThemeProvider + React Query client
+- **Mobile optimization**: All components designed for smartphone use in industrial environment
+
+### QR Code System Architecture
+- **Generation**: `qrcode` library creates codes with ODL/Department data as JSON
+- **Scanning**: `@zxing/browser` (React 19 compatible) for camera-based scanning
+- **Data format**: JSON with `{type, id, timestamp}` structure parsed by `src/utils/helpers.ts`
+- **Validation**: QR data validation through Zod schemas before processing
 
 ## MVP Development Plan
 
@@ -133,12 +214,32 @@ The project follows an 8-week MVP timeline focusing on Clean Room and Autoclavi 
 
 ## Important Implementation Notes
 
-### Autoclave Algorithm Priority
-The autoclave batch optimization is the most complex and critical component. Plan for:
-- Complex constraint satisfaction (compatible curing cycles, vacuum lines, part dimensions)
-- 2D nesting/bin packing problem for optimal space utilization  
+### Python Microservices Strategy
+Complex computational algorithms are implemented as separate Python microservices for:
+
+**1. Autoclave Nesting Optimization Service**
+- 2D bin packing algorithm for optimal space utilization
+- Multi-constraint satisfaction (cycles, dimensions, vacuum lines, priorities)
 - Performance target: <30 seconds optimization time
+- Libraries: NumPy, SciPy, OR-Tools for advanced optimization
 - Fallback to manual positioning if optimization fails
+
+**2. ODL Assignment Engine Service**  
+- Automatic workforce allocation based on skills matrix and availability
+- Real-time workload balancing across operators
+- Machine learning-based performance prediction
+- Shift optimization and scheduling algorithms
+
+**3. Performance Analytics Service**
+- Real-time KPI calculation and trend analysis
+- Production efficiency metrics and bottleneck detection
+- Predictive maintenance algorithms for equipment
+
+### Microservice Communication
+- **API Gateway**: Next.js API routes proxy requests to Python services
+- **Data Format**: JSON payloads with Zod validation on both ends
+- **Error Handling**: Graceful degradation with manual override options
+- **Monitoring**: Health checks and performance metrics via Docker Compose
 
 ### Mobile-First Design
 Operators use personal smartphones for QR scanning:
@@ -150,5 +251,13 @@ Operators use personal smartphones for QR scanning:
 ### Integration Considerations
 - Gamma MES: Read-only file-based sync (CSV/Excel exports)
 - No direct database access to existing systems
-- Staging: Netlify frontend + local backend via ngrok
-- Production: On-premise server deployment
+- Python Services: Docker containers with REST APIs
+- Staging: Netlify frontend + local backend via ngrok + containerized services
+- Production: On-premise server deployment with full Docker Compose stack
+
+### Service Architecture Benefits
+- **Scalability**: Python services can scale independently based on computational load
+- **Technology Optimization**: Use best language for each problem (TypeScript for UI, Python for algorithms)
+- **Development Speed**: Teams can work on services independently
+- **Fault Tolerance**: Service failures don't crash entire application
+- **Performance**: CPU-intensive algorithms optimized with scientific Python libraries

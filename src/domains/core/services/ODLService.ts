@@ -1,0 +1,367 @@
+import { prisma } from '@/lib/prisma'
+import { ODL } from '../entities/ODL'
+import { CreateODLInput, UpdateODLInput, ODLQueryInput, GammaSyncODLInput } from '../schemas/odl.schema'
+import { SyncStatus } from '@prisma/client'
+import QRCode from 'qrcode'
+
+export class ODLService {
+  
+  async create(input: CreateODLInput): Promise<ODL> {
+    // Check if ODL number already exists
+    const existing = await prisma.oDL.findUnique({
+      where: { odlNumber: input.odlNumber }
+    })
+    
+    if (existing) {
+      throw new Error(`ODL number ${input.odlNumber} already exists`)
+    }
+
+    // Verify part exists
+    const part = await prisma.part.findUnique({
+      where: { id: input.partId }
+    })
+
+    if (!part) {
+      throw new Error(`Part with ID ${input.partId} not found`)
+    }
+
+    // Generate QR code
+    const qrData = {
+      type: 'ODL',
+      id: input.odlNumber,
+      partNumber: part.partNumber,
+      timestamp: new Date().toISOString()
+    }
+    const qrCode = await QRCode.toString(JSON.stringify(qrData), { type: 'svg' })
+
+    const data = await prisma.oDL.create({
+      data: {
+        odlNumber: input.odlNumber,
+        partId: input.partId,
+        quantity: input.quantity,
+        priority: input.priority,
+        qrCode: qrCode,
+        length: input.length,
+        width: input.width,
+        height: input.height,
+        // curingCycleId: input.curingCycleId, // TODO: Fix Prisma schema types
+        vacuumLines: input.vacuumLines,
+      },
+      include: {
+        part: true
+      }
+    })
+
+    return ODL.fromPrisma(data)
+  }
+
+  async findById(id: string): Promise<ODL | null> {
+    const data = await prisma.oDL.findUnique({
+      where: { id },
+      include: {
+        part: true,
+        events: {
+          include: {
+            department: true,
+            user: true
+          },
+          orderBy: { timestamp: 'desc' },
+          take: 10
+        }
+      }
+    })
+
+    return data ? ODL.fromPrisma(data) : null
+  }
+
+  async findByODLNumber(odlNumber: string): Promise<ODL | null> {
+    const data = await prisma.oDL.findUnique({
+      where: { odlNumber },
+      include: {
+        part: true,
+        events: {
+          include: {
+            department: true,
+            user: true
+          },
+          orderBy: { timestamp: 'desc' },
+          take: 10
+        }
+      }
+    })
+
+    return data ? ODL.fromPrisma(data) : null
+  }
+
+  async findMany(query: ODLQueryInput): Promise<{
+    odls: ODL[]
+    total: number
+    page: number
+    totalPages: number
+  }> {
+    const { search, partId, status, page, limit, sortBy, sortOrder } = query
+    const skip = (page - 1) * limit
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: { [key: string]: any } = {} // Prisma where clause
+
+    if (search) {
+      where.OR = [
+        { odlNumber: { contains: search, mode: 'insensitive' } },
+        { part: { partNumber: { contains: search, mode: 'insensitive' } } },
+        { part: { description: { contains: search, mode: 'insensitive' } } }
+      ]
+    }
+
+    if (partId) {
+      where.partId = partId
+    }
+
+    if (status) {
+      where.status = status
+    }
+
+    const orderBy = { [sortBy]: sortOrder }
+
+    const [data, total] = await Promise.all([
+      prisma.oDL.findMany({
+        where,
+        orderBy,
+        skip,
+        take: limit,
+        include: {
+          part: true,
+          _count: {
+            select: { events: true }
+          }
+        }
+      }),
+      prisma.oDL.count({ where })
+    ])
+
+    const odls = data.map(ODL.fromPrisma)
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      odls,
+      total,
+      page,
+      totalPages
+    }
+  }
+
+  async update(id: string, input: UpdateODLInput): Promise<ODL> {
+    const existing = await prisma.oDL.findUnique({
+      where: { id },
+      include: { part: true }
+    })
+
+    if (!existing) {
+      throw new Error('ODL not found')
+    }
+
+    // Check if new ODL number conflicts
+    if (input.odlNumber && input.odlNumber !== existing.odlNumber) {
+      const conflict = await prisma.oDL.findUnique({
+        where: { odlNumber: input.odlNumber }
+      })
+      if (conflict) {
+        throw new Error(`ODL number ${input.odlNumber} already exists`)
+      }
+    }
+
+    // Verify new part exists if partId is being changed
+    if (input.partId && input.partId !== existing.partId) {
+      const part = await prisma.part.findUnique({
+        where: { id: input.partId }
+      })
+      if (!part) {
+        throw new Error(`Part with ID ${input.partId} not found`)
+      }
+    }
+
+    const data = await prisma.oDL.update({
+      where: { id },
+      data: {
+        odlNumber: input.odlNumber,
+        partId: input.partId,
+        quantity: input.quantity,
+        priority: input.priority,
+        length: input.length,
+        width: input.width,
+        height: input.height,
+        // curingCycleId: input.curingCycleId, // TODO: Fix Prisma schema types
+        vacuumLines: input.vacuumLines,
+      },
+      include: {
+        part: true
+      }
+    })
+
+    return ODL.fromPrisma(data)
+  }
+
+  async delete(id: string): Promise<void> {
+    // Check if ODL has production events
+    const eventCount = await prisma.productionEvent.count({
+      where: { odlId: id }
+    })
+
+    if (eventCount > 0) {
+      throw new Error(`Cannot delete ODL with ${eventCount} production events`)
+    }
+
+    await prisma.oDL.delete({
+      where: { id }
+    })
+  }
+
+  async syncFromGamma(odls: GammaSyncODLInput[]): Promise<{
+    created: number
+    updated: number
+    skipped: number
+    errors: string[]
+  }> {
+    let created = 0
+    let updated = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (const odlData of odls) {
+      try {
+        // Find part by part number
+        const part = await prisma.part.findUnique({
+          where: { partNumber: odlData.partNumber }
+        })
+
+        if (!part) {
+          errors.push(`ODL ${odlData.odlNumber}: Part ${odlData.partNumber} not found`)
+          skipped++
+          continue
+        }
+
+        const existing = await prisma.oDL.findFirst({
+          where: {
+            OR: [
+              { odlNumber: odlData.odlNumber },
+              { gammaId: odlData.gammaId }
+            ]
+          }
+        })
+
+        if (existing) {
+          // Update existing ODL
+          await prisma.oDL.update({
+            where: { id: existing.id },
+            data: {
+              odlNumber: odlData.odlNumber,
+              partId: part.id,
+              quantity: odlData.quantity,
+              gammaId: odlData.gammaId,
+              lastSyncAt: new Date(),
+              syncStatus: SyncStatus.SUCCESS,
+            }
+          })
+          updated++
+        } else {
+          // Generate QR code for new ODL
+          const qrData = {
+            type: 'ODL',
+            id: odlData.odlNumber,
+            partNumber: part.partNumber,
+            timestamp: new Date().toISOString()
+          }
+          const qrCode = await QRCode.toString(JSON.stringify(qrData), { type: 'svg' })
+
+          // Create new ODL
+          await prisma.oDL.create({
+            data: {
+              odlNumber: odlData.odlNumber,
+              partId: part.id,
+              quantity: odlData.quantity,
+              qrCode: qrCode,
+              gammaId: odlData.gammaId,
+              lastSyncAt: new Date(),
+              syncStatus: SyncStatus.SUCCESS,
+            }
+          })
+          created++
+        }
+      } catch (error) {
+        errors.push(`ODL ${odlData.odlNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        skipped++
+      }
+    }
+
+    return { created, updated, skipped, errors }
+  }
+
+  async getODLsByPart(partId: string): Promise<ODL[]> {
+    const data = await prisma.oDL.findMany({
+      where: { partId },
+      include: { part: true },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    return data.map(ODL.fromPrisma)
+  }
+
+  async getODLsByStatus(status: string): Promise<ODL[]> {
+    const data = await prisma.oDL.findMany({
+      where: { status: status as any }, // eslint-disable-line @typescript-eslint/no-explicit-any
+      include: { part: true },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    return data.map(ODL.fromPrisma)
+  }
+
+  async getODLsInProduction(): Promise<ODL[]> {
+    const data = await prisma.oDL.findMany({
+      where: {
+        status: {
+          in: ['IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'IN_RIFILATURA']
+        }
+      },
+      include: { part: true },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    return data.map(ODL.fromPrisma)
+  }
+
+  async getODLsByGammaSync(syncStatus?: SyncStatus): Promise<ODL[]> {
+    const where = syncStatus ? { syncStatus } : { gammaId: { not: null } }
+    
+    const data = await prisma.oDL.findMany({
+      where,
+      include: { part: true },
+      orderBy: { lastSyncAt: 'desc' }
+    })
+
+    return data.map(ODL.fromPrisma)
+  }
+
+  async regenerateQRCode(id: string): Promise<ODL> {
+    const odl = await this.findById(id)
+    if (!odl) {
+      throw new Error('ODL not found')
+    }
+
+    const qrData = {
+      type: 'ODL',
+      id: odl.odlNumber,
+      partNumber: odl.part?.partNumber,
+      timestamp: new Date().toISOString()
+    }
+    const qrCode = await QRCode.toString(JSON.stringify(qrData), { type: 'svg' })
+
+    const data = await prisma.oDL.update({
+      where: { id },
+      data: { qrCode },
+      include: { part: true }
+    })
+
+    return ODL.fromPrisma(data)
+  }
+}

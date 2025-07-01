@@ -1,7 +1,36 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl:*)",
+      "Bash(ss:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(ss:*)",
+      "Bash(env)",
+      "Bash(pkill:*)",
+      "Bash(PORT=3000 npm run dev)",
+      "Bash(docker exec:*)",
+      "Bash(REDIS_URL=\"redis://localhost:6379\" PORT=3000 npm run dev)",
+      "Bash(timeout 5 curl http://localhost:3000)",
+      "Bash(docker-compose:*)",
+      "Bash(docker compose:*)",
+      "Bash(lsof:*)",
+      "Bash(cat:*)",
+      "Bash(redis-cli:*)",
+      "Bash(kill:*)",
+      "Bash(echo)"
     ],
     "deny": []
   }
