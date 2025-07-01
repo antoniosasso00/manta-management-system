@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -19,12 +19,15 @@ import {
   Switch,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { UserRole } from '@prisma/client'
+import { UserRole, DepartmentRole } from '@prisma/client'
+import { DepartmentAssignmentForm } from '@/components/molecules'
 
 const userSchema = z.object({
   name: z.string().min(2, 'Il nome deve contenere almeno 2 caratteri'),
   email: z.string().email('Email non valida'),
   role: z.nativeEnum(UserRole),
+  departmentId: z.string().nullable().optional(),
+  departmentRole: z.nativeEnum(DepartmentRole).nullable().optional(),
   isActive: z.boolean().optional().default(true),
   password: z.string().optional(),
 }).refine((data) => {
@@ -36,12 +39,26 @@ const userSchema = z.object({
 }, {
   message: "La password deve contenere almeno 8 caratteri",
   path: ["password"],
+}).refine((data) => {
+  // Validate department assignment rules
+  if (data.role === UserRole.ADMIN) {
+    return !data.departmentId && !data.departmentRole
+  }
+  if (data.role === UserRole.OPERATOR) {
+    return data.departmentId && data.departmentRole
+  }
+  return true
+}, {
+  message: "Configurazione ruoli non valida",
+  path: ["role"],
 })
 
 const updateUserSchema = z.object({
   name: z.string().min(2, 'Il nome deve contenere almeno 2 caratteri'),
   email: z.string().email('Email non valida'),
   role: z.nativeEnum(UserRole),
+  departmentId: z.string().nullable().optional(),
+  departmentRole: z.nativeEnum(DepartmentRole).nullable().optional(),
   isActive: z.boolean().optional().default(true),
   password: z.string().optional(),
 }).refine((data) => {
@@ -53,6 +70,18 @@ const updateUserSchema = z.object({
 }, {
   message: "La password deve contenere almeno 8 caratteri (lascia vuoto per mantenere quella attuale)",
   path: ["password"],
+}).refine((data) => {
+  // Validate department assignment rules
+  if (data.role === UserRole.ADMIN) {
+    return !data.departmentId && !data.departmentRole
+  }
+  if (data.role === UserRole.OPERATOR) {
+    return data.departmentId && data.departmentRole
+  }
+  return true
+}, {
+  message: "Configurazione ruoli non valida",
+  path: ["role"],
 })
 
 // type UserFormData = z.infer<typeof userSchema>
@@ -63,6 +92,8 @@ interface User {
   name: string | null
   email: string
   role: UserRole
+  departmentId: string | null
+  departmentRole: DepartmentRole | null
   isActive: boolean
 }
 
@@ -76,6 +107,11 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  
+  // State per la gestione dei reparti
+  const [departmentId, setDepartmentId] = useState<string | null>(user?.departmentId || null)
+  const [departmentRole, setDepartmentRole] = useState<DepartmentRole | null>(user?.departmentRole || null)
+  const [currentRole, setCurrentRole] = useState<UserRole>(user?.role || UserRole.OPERATOR)
 
   const isEditing = !!user
 
@@ -83,16 +119,28 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(isEditing ? updateUserSchema : userSchema),
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
       role: user?.role || UserRole.OPERATOR,
+      departmentId: user?.departmentId || null,
+      departmentRole: user?.departmentRole || null,
       isActive: user?.isActive ?? true,
       password: '',
     },
   })
+
+  // Watch del campo role per aggiornamenti in tempo reale
+  const watchedRole = watch('role')
+  
+  // Aggiorna currentRole quando cambia il role nel form
+  useEffect(() => {
+    setCurrentRole(watchedRole)
+  }, [watchedRole])
 
   const onSubmit = async (data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     setIsSubmitting(true)
@@ -102,8 +150,14 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
       const url = isEditing ? `/api/admin/users/${user.id}` : '/api/admin/users'
       const method = isEditing ? 'PATCH' : 'POST'
 
+      // Prepare payload with department data
+      const payload = { 
+        ...data,
+        departmentId: departmentId || null,
+        departmentRole: departmentRole || null,
+      }
+      
       // Don't send empty password for updates
-      const payload = { ...data }
       if (isEditing && !payload.password) {
         delete payload.password
       }
@@ -177,10 +231,10 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
 
           <Box>
             <FormControl fullWidth error={!!errors.role}>
-              <InputLabel>Ruolo</InputLabel>
+              <InputLabel>Ruolo Sistema</InputLabel>
               <Select
                 {...register('role')}
-                label="Ruolo"
+                label="Ruolo Sistema"
                 disabled={isSubmitting}
               >
                 {Object.values(UserRole).map((role) => (
@@ -190,6 +244,26 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
                 ))}
               </Select>
             </FormControl>
+          </Box>
+
+          {/* Assegnazione Reparto */}
+          <Box>
+            <DepartmentAssignmentForm
+              userRole={currentRole}
+              departmentId={departmentId}
+              departmentRole={departmentRole}
+              onDepartmentChange={(newDepartmentId) => {
+                setDepartmentId(newDepartmentId)
+                setValue('departmentId', newDepartmentId)
+              }}
+              onDepartmentRoleChange={(newDepartmentRole) => {
+                setDepartmentRole(newDepartmentRole)
+                setValue('departmentRole', newDepartmentRole)
+              }}
+              disabled={isSubmitting}
+              error={!!errors.role || !!errors.departmentId || !!errors.departmentRole}
+              helperText={errors.role?.message}
+            />
           </Box>
 
           <Box>

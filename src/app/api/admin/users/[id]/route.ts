@@ -3,14 +3,30 @@ import { requireAdmin } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { hash } from 'bcryptjs'
 import { z } from 'zod'
-import { UserRole } from '@prisma/client'
+import { UserRole, DepartmentRole } from '@prisma/client'
 
 const updateUserSchema = z.object({
   name: z.string().min(2, 'Il nome deve contenere almeno 2 caratteri'),
   email: z.string().email('Email non valida'),
   role: z.nativeEnum(UserRole),
+  departmentId: z.string().nullable().optional(),
+  departmentRole: z.nativeEnum(DepartmentRole).nullable().optional(),
   isActive: z.boolean(),
   password: z.string().min(8, 'La password deve contenere almeno 8 caratteri').optional(),
+}).refine((data) => {
+  // Use the same validation logic as updateUserRoleSchema
+  if (data.role === UserRole.ADMIN) {
+    return !data.departmentId && !data.departmentRole
+  }
+  
+  if (data.role === UserRole.OPERATOR) {
+    return data.departmentId && data.departmentRole
+  }
+  
+  return true
+}, {
+  message: "Configurazione ruoli non valida",
+  path: ["role"],
 })
 
 export async function GET(
@@ -28,8 +44,18 @@ export async function GET(
         name: true,
         email: true,
         role: true,
+        departmentId: true,
+        departmentRole: true,
         createdAt: true,
         isActive: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            type: true,
+          }
+        },
       },
     })
 
@@ -101,11 +127,27 @@ export async function PATCH(
       )
     }
 
+    // Validate department assignment if provided
+    if (validatedData.departmentId) {
+      const department = await prisma.department.findUnique({
+        where: { id: validatedData.departmentId }
+      })
+
+      if (!department || !department.isActive) {
+        return NextResponse.json(
+          { error: 'Reparto non valido o non attivo' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Prepare update data
     const updateData: {
       name: string;
       email: string;
       role: UserRole;
+      departmentId?: string | null;
+      departmentRole?: DepartmentRole | null;
       isActive: boolean;
       password?: string;
     } = {
@@ -113,6 +155,15 @@ export async function PATCH(
       email: validatedData.email,
       role: validatedData.role,
       isActive: validatedData.isActive,
+    }
+
+    // Handle department assignment
+    if (validatedData.departmentId !== undefined) {
+      updateData.departmentId = validatedData.departmentId
+    }
+    
+    if (validatedData.departmentRole !== undefined) {
+      updateData.departmentRole = validatedData.departmentRole
     }
 
     // Add password if provided
@@ -129,8 +180,18 @@ export async function PATCH(
         name: true,
         email: true,
         role: true,
+        departmentId: true,
+        departmentRole: true,
         createdAt: true,
         isActive: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            type: true,
+          }
+        },
       },
     })
 

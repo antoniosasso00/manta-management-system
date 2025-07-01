@@ -1,8 +1,28 @@
-// User roles
+// User roles (system-level)
 export const USER_ROLES = {
   ADMIN: 'ADMIN',
   SUPERVISOR: 'SUPERVISOR',
   OPERATOR: 'OPERATOR',
+} as const
+
+// Department roles (department-specific)
+export const DEPARTMENT_ROLES = {
+  CAPO_REPARTO: 'CAPO_REPARTO',
+  CAPO_TURNO: 'CAPO_TURNO',
+  OPERATORE: 'OPERATORE',
+} as const
+
+// Role display names (Italian)
+export const ROLE_DISPLAY_NAMES = {
+  // System roles
+  ADMIN: 'Amministratore',
+  SUPERVISOR: 'Supervisore',
+  OPERATOR: 'Operatore',
+  
+  // Department roles
+  CAPO_REPARTO: 'Capo Reparto',
+  CAPO_TURNO: 'Capo Turno',
+  OPERATORE: 'Operatore Reparto',
 } as const
 
 // ODL Status

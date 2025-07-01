@@ -28,10 +28,10 @@ export async function GET() {
         REDIS_URL_SET: !!process.env.REDIS_URL
       }
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({
       status: "error",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }

@@ -23,7 +23,15 @@ interface MemoryEntry {
 }
 
 export class RedisRateLimiter {
-  private redis: any = null // eslint-disable-line @typescript-eslint/no-explicit-any
+  private redis: {
+    ping(): Promise<string>
+    eval(script: string, numKeys: number, ...args: string[]): Promise<number[]>
+    del(...keys: string[]): Promise<number>
+    get(key: string): Promise<string | null>
+    zcard(key: string): Promise<number>
+    quit(): Promise<string>
+    on(event: string, callback: (arg?: Error) => void): void
+  } | null = null
   private fallbackLimiter: Map<string, MemoryEntry> = new Map()
   private isRedisAvailable: boolean = false
   private initializationPromise: Promise<void> | null = null
@@ -69,8 +77,8 @@ export class RedisRateLimiter {
       } else {
         console.log('⚠️ No Redis URL provided, using in-memory rate limiting')
       }
-    } catch (error: any) {
-      console.error('❌ Redis initialization failed, using fallback:', error.message || error)
+    } catch (error: unknown) {
+      console.error('❌ Redis initialization failed, using fallback:', error instanceof Error ? error.message : error)
       this.isRedisAvailable = false
     }
   }

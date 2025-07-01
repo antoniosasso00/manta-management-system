@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { PartService } from '@/domains/core/services/PartService'
+import { PartService } from '@/domains/core/services/part.service'
 import { createPartSchema, partQuerySchema } from '@/domains/core/schemas/part.schema'
 import { ZodError } from 'zod'
-
-const partService = new PartService()
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     const validatedQuery = partQuerySchema.parse(queryParams)
-    const result = await partService.findMany(validatedQuery)
+    const result = await PartService.findMany(validatedQuery)
 
     return NextResponse.json(result)
   } catch (error) {
@@ -58,7 +56,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createPartSchema.parse(body)
     
-    const part = await partService.create(validatedData)
+    const part = await PartService.create(validatedData)
 
     return NextResponse.json(part, { status: 201 })
   } catch (error) {

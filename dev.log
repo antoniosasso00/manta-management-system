@@ -1,0 +1,342 @@
+
+> manta-management-system@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.3.4 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.151:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 590ms
+ ✓ Ready in 2.2s
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 1136ms
+🔄 Attempting to connect to Redis at: redis://localhost:6379
+✅ Redis rate limiter initialized successfully
+ GET /api/health 200 in 1368ms
+ GET /api/health 200 in 33ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 6.3s
+ GET /login?from=%2F 200 in 7147ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1600ms
+ GET /api/auth/session 200 in 2679ms
+ GET /api/auth/session 200 in 76ms
+ GET /login?from=%2F 200 in 364ms
+ GET /login 200 in 204ms
+ GET /api/auth/session 200 in 101ms
+ GET /api/auth/session 200 in 46ms
+ ○ Compiling /register ...
+ ✓ Compiled /register in 3.9s
+ GET /register 200 in 4028ms
+ GET /register 200 in 85ms
+ ○ Compiling /api/auth/register ...
+ ✓ Compiled /api/auth/register in 1170ms
+Received body: {
+  email: 'antoniosasso00@hotmail.com',
+  password: 'V3fz6eh.KP9PGLv',
+  confirmPassword: 'V3fz6eh.KP9PGLv',
+  name: 'Antonio Sasso'
+}
+ POST /api/auth/register 201 in 1925ms
+ GET /login?message=Registration+successful.+Please+sign+in. 200 in 50ms
+ GET /api/auth/providers 200 in 141ms
+ GET /api/auth/csrf 200 in 68ms
+ POST /api/auth/callback/credentials? 200 in 686ms
+ GET /api/auth/session 200 in 59ms
+ ○ Compiling / ...
+ ✓ Compiled / in 5.1s
+ GET / 200 in 5515ms
+ GET / 200 in 253ms
+ GET /api/auth/providers 200 in 142ms
+ GET /api/auth/csrf 200 in 48ms
+ POST /api/auth/callback/credentials? 200 in 602ms
+ GET /api/auth/session 200 in 43ms
+ GET / 200 in 73ms
+ GET / 200 in 93ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 2s
+ GET /my-department/odl 404 in 2193ms
+ GET /my-department/events 404 in 428ms
+ GET /qr-scanner 404 in 1217ms
+ GET /my-department/events 404 in 129ms
+ GET /api/auth/session 200 in 187ms
+ GET /api/auth/session 200 in 101ms
+ GET /api/auth/session 200 in 84ms
+ GET /api/auth/session 200 in 75ms
+ GET / 200 in 500ms
+ GET / 200 in 255ms
+ GET /api/auth/session 200 in 195ms
+ ○ Compiling /favicon.ico ...
+ GET /api/auth/session 200 in 44ms
+ GET /api/auth/session 200 in 84ms
+ GET /api/auth/session 200 in 36ms
+ ✓ Compiled /favicon.ico in 915ms
+ GET /favicon.ico 200 in 907ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1170ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 243ms
+ ✓ Compiled in 224ms
+ GET /login 200 in 1110ms
+ GET /api/auth/csrf 200 in 178ms
+ POST /api/auth/signout 200 in 71ms
+ GET /login 200 in 372ms
+ GET /api/auth/session 200 in 49ms
+ GET /api/auth/session 200 in 46ms
+ GET /api/auth/providers 200 in 150ms
+ GET /api/auth/csrf 200 in 59ms
+ POST /api/auth/callback/credentials? 200 in 678ms
+ GET /api/auth/session 200 in 142ms
+ GET / 200 in 58ms
+ GET / 200 in 118ms
+ ○ Compiling /admin/users ...
+ GET /admin/departments 404 in 135ms
+ GET /admin/departments 404 in 250ms
+ GET /api/auth/session 200 in 195ms
+ GET /api/auth/session 200 in 31ms
+ GET /api/auth/session 200 in 29ms
+ GET /api/auth/session 200 in 31ms
+ ✓ Compiled /admin/users in 4.9s
+ GET / 200 in 375ms
+ GET /api/auth/session 200 in 287ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/auth/session 200 in 63ms
+ GET /api/auth/session 200 in 100ms
+ GET /admin/settings 404 in 61ms
+ GET /admin/settings 404 in 154ms
+ GET /api/auth/session 200 in 225ms
+ GET /api/auth/session 200 in 48ms
+ GET /api/auth/session 200 in 49ms
+ GET /api/auth/session 200 in 44ms
+ GET / 200 in 237ms
+ GET /api/auth/session 200 in 300ms
+ GET /api/auth/session 200 in 40ms
+ GET /api/auth/session 200 in 79ms
+ GET /api/auth/session 200 in 64ms
+ ○ Compiling /planning ...
+ GET /reports 404 in 129ms
+ GET /reports 404 in 226ms
+ GET /api/auth/session 200 in 189ms
+ GET /api/auth/session 200 in 31ms
+ GET /api/auth/session 200 in 35ms
+ GET /api/auth/session 200 in 39ms
+ ✓ Compiled /planning in 3.3s
+ GET / 200 in 242ms
+ GET /api/auth/session 200 in 240ms
+ GET /api/auth/session 200 in 32ms
+ GET /api/auth/session 200 in 61ms
+ GET /api/auth/session 200 in 43ms
+ ✓ Compiled in 215ms
+ ✓ Compiled middleware in 1ms
+ GET / 200 in 658ms
+ GET / 200 in 140ms
+ ✓ Compiled in 153ms
+🔄 Attempting to connect to Redis at: redis://localhost:6379
+✅ Redis rate limiter initialized successfully
+ GET /api/health 200 in 243ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.7s
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.1sv2juthadu'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.1sv2juthadu'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.0frzchc2240r'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.0frzchc2240r'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.zlotg10rx2'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.zlotg10rx2'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.22snofp3wjn'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.22snofp3wjn'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/api/health/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.q2avjnvdaan'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.q2avjnvdaan'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.byalczpbml'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.byalczpbml'
+}
+ ✓ Compiled middleware in 0ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.o5htq4rg68'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.o5htq4rg68'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.e1nqtn56trk'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.e1nqtn56trk'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.2h9n1pz464v'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.2h9n1pz464v'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.f6seyz2xnjp'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.f6seyz2xnjp'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.ytv6w3njb7'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.ytv6w3njb7'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.n6pabzpqrh'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.n6pabzpqrh'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.mw70fe4qw7'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.mw70fe4qw7'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.fop895ttydc'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.fop895ttydc'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.skyy7kehxy'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.skyy7kehxy'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.uqp882ikunb'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.uqp882ikunb'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.mn3j9fg1y4'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.mn3j9fg1y4'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.zsojyh0sbs'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.zsojyh0sbs'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ✓ Compiled middleware in 0ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.scde9rn7hs9'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.scde9rn7hs9'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.0yjztq3h4p7'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.0yjztq3h4p7'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.smhave5jfop'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.smhave5jfop'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.d2mq5rqzfw9'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/static/development/_buildManifest.js.tmp.d2mq5rqzfw9'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 7ms
+ ✓ Compiled in 28ms
+ ✓ Compiled middleware in 0ms

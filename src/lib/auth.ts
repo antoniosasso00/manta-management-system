@@ -4,11 +4,13 @@ import Credentials from "next-auth/providers/credentials"
 import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
 import { redisRateLimiter, getClientIdentifier, RATE_LIMIT_CONFIGS } from "./rate-limit-redis"
-import type { UserRole } from "@prisma/client"
+import type { UserRole, DepartmentRole } from "@prisma/client"
 
 declare module "next-auth" {
   interface User {
     role: UserRole
+    departmentId: string | null
+    departmentRole: DepartmentRole | null
   }
   
   interface Session {
@@ -17,6 +19,8 @@ declare module "next-auth" {
       email: string
       name: string | null
       role: UserRole
+      departmentId: string | null
+      departmentRole: DepartmentRole | null
     }
   }
 }
@@ -76,6 +80,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          departmentId: user.departmentId,
+          departmentRole: user.departmentRole,
         }
       },
     }),
@@ -85,6 +91,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.departmentId = user.departmentId
+        token.departmentRole = user.departmentRole
       }
       return token
     },
@@ -92,6 +100,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as UserRole
+        session.user.departmentId = token.departmentId as string | null
+        session.user.departmentRole = token.departmentRole as DepartmentRole | null
       }
       return session
     },

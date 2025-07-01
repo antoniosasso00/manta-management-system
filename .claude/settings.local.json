@@ -30,7 +30,15 @@
       "Bash(cat:*)",
       "Bash(redis-cli:*)",
       "Bash(kill:*)",
-      "Bash(echo)"
+      "Bash(echo)",
+      "Bash(docker-compose:*)",
+      "Bash(lsof:*)",
+      "Bash(wget:*)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "Bash(chmod:*)",
+      "Bash(rg:*)",
+      "Bash(./scripts/start.sh:*)"
     ],
     "deny": []
   }

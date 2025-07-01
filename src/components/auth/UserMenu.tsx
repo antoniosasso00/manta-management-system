@@ -156,17 +156,15 @@ export function UserMenu() {
         </MenuItem>
 
         {/* Admin Panel */}
-        {isAdmin && (
-          <>
-            <Divider />
-            <MenuItem onClick={() => handleMenuAction(() => router.push('/admin/users'))}>
-              <ListItemIcon>
-                <AdminIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Gestione Utenti</ListItemText>
-            </MenuItem>
-          </>
-        )}
+        {isAdmin && [
+          <Divider key="admin-divider" />,
+          <MenuItem key="admin-menu" onClick={() => handleMenuAction(() => router.push('/admin/users'))}>
+            <ListItemIcon>
+              <AdminIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Gestione Utenti</ListItemText>
+          </MenuItem>
+        ]}
 
         <Divider />
 

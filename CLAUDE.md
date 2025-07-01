@@ -25,39 +25,69 @@ npm run db:generate            # Generate Prisma client after schema changes
 npm run db:push                # Push schema changes to database (development)
 npm run db:migrate             # Create and run database migrations (production)
 npm run db:studio              # Open Prisma Studio GUI
+npm run db:seed                # Seed database with initial data
 docker-compose down            # Stop services
 docker-compose logs postgres   # View database logs
+docker-compose ps              # Check container status
+docker-compose restart postgres # Restart database container
 ```
 
 ### Development Setup (First Time)
 ```bash
 npm install                    # Install dependencies
-docker-compose up -d           # Start PostgreSQL, Redis, and Python microservices
+docker-compose up -d           # Start PostgreSQL and Redis
 npm run db:push                # Setup database schema
 npm run dev                    # Start development server
 # Visit http://localhost:3000/register to create first user
 ```
 
+### Quick Start (Single Command)
+```bash
+docker-compose up -d && npm run db:push && npm run dev
+# Then open http://localhost:3000 and go to /register
+```
+
+### Troubleshooting Commands
+```bash
+# Database connection issues
+docker-compose restart postgres
+docker-compose logs -f postgres
+
+# Schema sync issues  
+npm run db:generate
+npm run db:push
+
+# Port conflicts
+npm run dev -- -p 3001
+
+# Reset database (WARNING: loses data)
+npx prisma db push --force-reset
+```
+
 ### Microservices Development
 ```bash
-docker-compose up optimization-service  # Start autoclave nesting service
-docker-compose up assignment-service    # Start ODL assignment service
-docker-compose logs optimization-service # Monitor service logs
+# Note: Python microservices not yet implemented in current version
+# docker-compose up optimization-service  # Start autoclave nesting service (planned)
+# docker-compose up assignment-service    # Start ODL assignment service (planned)
+# docker-compose logs optimization-service # Monitor service logs (planned)
 ```
 
 ## Current Development Status
 
-**Phase**: Core Business Logic Implemented - Part/ODL Foundation Complete
+**Phase**: Authentication & Core Infrastructure Complete
 - ✅ Next.js 15.3.4 with TypeScript and Turbopack
 - ✅ Material-UI v7 with custom theme and dark mode
 - ✅ NextAuth.js v5 authentication with JWT and role-based access
-- ✅ Prisma ORM with comprehensive database schema
+- ✅ Comprehensive user management with password reset functionality
+- ✅ Department-specific role assignment (CAPO_REPARTO, CAPO_TURNO, OPERATORE)
+- ✅ Prisma ORM with comprehensive database schema (19 tables)
 - ✅ Docker development environment (PostgreSQL + Redis)
 - ✅ Zod validation schemas for all domains
 - ✅ Atomic Design component structure with MUI integration
 - ✅ ESLint 9 with flat config - production build tested
-- ✅ **Part & ODL Core Implementation**: Complete CRUD API + Domain Logic
-- ✅ **Gamma MES Sync Architecture**: Database schema + sync tracking
+- ✅ **Complete API Routes**: Auth, admin, ODL, parts, departments endpoints
+- ✅ **Protected Route System**: Middleware-based with role guards
+- ✅ **Database Schema**: Full domain model with audit trails and sync tracking
 - 🚧 UI Components for Part/ODL management (forms, tables, selectors)
 - 🚧 QR scanning components and production event tracking
 - 🔄 Python microservices architecture for complex algorithms
@@ -104,28 +134,52 @@ Detailed documentation available in `/docs`:
 - **Type Safety**: End-to-end TypeScript with runtime validation via Zod
 - **API Gateway**: Next.js API routes proxy requests to Python microservices
 
-### Project Structure (Implemented)
+### Project Structure (Current Implementation)
 ```
 src/
 ├── app/                    # Next.js App Router with route groups
-│   ├── (auth)/            # Auth pages: login, register  
-│   ├── api/auth/          # NextAuth API routes + user registration
+│   ├── (auth)/            # Authentication pages (login, register, profile, etc.)
+│   │   ├── admin/users/   # User management for admin
+│   │   ├── change-password/ # Password change functionality
+│   │   ├── forgot-password/ # Password reset flow
+│   │   └── reset-password/  # Password reset completion
+│   ├── (dashboard)/       # Main application dashboard
+│   ├── api/               # API routes
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── admin/         # Admin-only endpoints (users, cleanup)
+│   │   ├── departments/   # Department management
+│   │   ├── odl/           # ODL (Work Order) CRUD
+│   │   ├── parts/         # Parts management
+│   │   └── health/        # Health check endpoint
+│   ├── production/        # Production modules (cleanroom, autoclavi)
+│   ├── planning/          # Production planning interface
 │   ├── page.tsx           # Protected dashboard home
 │   └── layout.tsx         # Root layout with providers
 ├── components/            # Atomic Design System
 │   ├── atoms/             # Button, Input, Card (MUI wrappers)
+│   ├── auth/              # Authentication components (forms, guards)
 │   ├── molecules/         # (ready for QRScanner, ODLCard)
 │   ├── organisms/         # (ready for Navigation, ODLList)
-│   ├── templates/         # (ready for DashboardLayout)
+│   ├── templates/         # DashboardLayout (implemented)
 │   └── providers/         # MUI Theme + React Query providers
-├── domains/               # DDD business domains with schemas
-│   ├── production/schemas/# ODL validation (createODLSchema, odlEventSchema)
-│   ├── planning/schemas/  # Autoclave optimization validation
-│   └── user/schemas/      # Auth validation (loginSchema, registerSchema)
+├── domains/               # DDD business domains with complete schemas
+│   ├── core/              # Core entities (ODL, Part) with services
+│   ├── optimization/      # Autoclave optimization schemas
+│   ├── production/        # Production event tracking
+│   └── user/              # Complete auth schemas (login, register, reset)
 ├── lib/                   # Core infrastructure
 │   ├── auth.ts           # NextAuth config with Prisma adapter
+│   ├── auth-utils.ts     # Authentication utilities
+│   ├── email-service.ts  # Email service for password reset
 │   ├── prisma.ts         # Prisma client singleton
-│   └── theme.ts          # Material-UI theme with mobile optimization
+│   ├── theme.ts          # Material-UI theme with mobile optimization
+│   └── cleanup-tasks.ts  # Background cleanup jobs
+├── hooks/                 # Custom React hooks
+│   └── useAuth.ts        # Authentication hook
+├── services/              # API and external services
+│   ├── api/              # API client layer
+│   └── gamma-sync/       # Gamma MES integration (planned)
+├── stores/                # Zustand state management
 ├── utils/                 # Business utilities
 │   ├── constants.ts      # Business constants (roles, statuses, shifts)
 │   └── helpers.ts        # Utilities (QR parsing, date formatting, validation)
@@ -158,17 +212,27 @@ Gamma Sync    Time Tracking         2D Layout Planning + Auto Assignment
 
 ### Authentication Flow
 - **NextAuth v5** with custom Credentials provider (`src/lib/auth.ts`)
-- **Role-based access**: `UserRole` enum (ADMIN, SUPERVISOR, OPERATOR) in Prisma schema
+- **Multi-level Role System**: 
+  - Global roles: `UserRole` enum (ADMIN, SUPERVISOR, OPERATOR)
+  - Department roles: `DepartmentRole` enum (CAPO_REPARTO, CAPO_TURNO, OPERATORE)
+- **Complete Password Management**: Registration, login, change, forgot/reset flow
 - **Route protection**: All routes protected by default via `middleware.ts`, except auth pages
-- **Session management**: JWT tokens with user ID and role embedded
-- **Password security**: bcryptjs hashing in registration API route
+- **Session management**: JWT tokens with user ID, role, and department embedded
+- **Password security**: bcryptjs hashing with validation rules
+- **Admin Features**: User management, status toggle, cleanup tasks
+- **Email Integration**: Password reset emails via email service
 
 ### Database Architecture
-- **Prisma schema** (`prisma/schema.prisma`): Core entities are User, ODL, Department, Autoclave, ProductionEvent
-- **ODL tracking**: Central entity with QR codes, part numbers, status workflow, dimensions for autoclave optimization
-- **Production events**: Audit trail of ODL movements through departments (entry/exit tracking)
-- **Autoclave optimization**: AutoclaveLoad entity stores batch layouts as JSON with 2D positioning data
-- **Gamma sync**: GammaSyncLog tracks file-based integration status
+- **Comprehensive Prisma schema** (`prisma/schema.prisma`): 19 tables with complete domain model
+- **User Management**: User, PasswordResetToken with department-specific roles
+- **Core Entities**: Part, ODL, Department, Tool with master data management
+- **Production Tracking**: ProductionEvent for audit trail, AutoclaveLoad for batch optimization
+- **Authentication**: NextAuth Account/Session tables with JWT integration
+- **Autoclave System**: Autoclave, AutoclaveLoad, AutoclaveLoadItem for 2D optimization
+- **Tool Management**: Tool, PartTool for lamination tooling requirements
+- **Curing Cycles**: CuringCycle with dual-phase temperature/pressure profiles
+- **Gamma Integration**: GammaSyncLog for file-based MES synchronization
+- **Performance Indexes**: Optimized queries for production workloads
 
 ### Validation Architecture
 - **Zod schemas** in `src/domains/*/schemas/`: Shared between client/server for type safety
@@ -212,25 +276,38 @@ The project follows an 8-week MVP timeline focusing on Clean Room and Autoclavi 
 - Basic reporting system
 - Production deployment
 
-## Important Implementation Notes
+## Current Implementation Status & Next Steps
 
-### Python Microservices Strategy
-Complex computational algorithms are implemented as separate Python microservices for:
+### Completed Core Infrastructure
+- **Authentication System**: Complete user management with role-based access
+- **Database Schema**: Full domain model with 19 tables and proper indexing
+- **API Foundation**: All core endpoints implemented (auth, admin, ODL, parts, departments)
+- **Component Architecture**: Atomic design system with MUI integration
+- **Development Environment**: Docker, Prisma, TypeScript, ESLint all configured
 
-**1. Autoclave Nesting Optimization Service**
+### Next Development Priorities
+1. **UI Implementation**: Complete forms and tables for ODL/Part management
+2. **QR Code System**: Generation and scanning components
+3. **Production Tracking**: Clean Room and Autoclave department modules
+4. **Python Microservices**: Optimization algorithms (planned for later phases)
+
+### Python Microservices Strategy (Future Implementation)
+Complex computational algorithms will be implemented as separate Python microservices:
+
+**1. Autoclave Nesting Optimization Service** (Planned)
 - 2D bin packing algorithm for optimal space utilization
 - Multi-constraint satisfaction (cycles, dimensions, vacuum lines, priorities)
 - Performance target: <30 seconds optimization time
 - Libraries: NumPy, SciPy, OR-Tools for advanced optimization
 - Fallback to manual positioning if optimization fails
 
-**2. ODL Assignment Engine Service**  
+**2. ODL Assignment Engine Service** (Planned)
 - Automatic workforce allocation based on skills matrix and availability
 - Real-time workload balancing across operators
 - Machine learning-based performance prediction
 - Shift optimization and scheduling algorithms
 
-**3. Performance Analytics Service**
+**3. Performance Analytics Service** (Planned)
 - Real-time KPI calculation and trend analysis
 - Production efficiency metrics and bottleneck detection
 - Predictive maintenance algorithms for equipment
@@ -249,15 +326,52 @@ Operators use personal smartphones for QR scanning:
 - Simple, single-purpose interfaces
 
 ### Integration Considerations
-- Gamma MES: Read-only file-based sync (CSV/Excel exports)
-- No direct database access to existing systems
-- Python Services: Docker containers with REST APIs
-- Staging: Netlify frontend + local backend via ngrok + containerized services
-- Production: On-premise server deployment with full Docker Compose stack
+- **Gamma MES**: Read-only file-based sync (CSV/Excel exports) - schema ready
+- **No direct database access** to existing systems for security
+- **Python Services**: Docker containers with REST APIs (when implemented)
+- **Current Deployment**: Docker Compose with PostgreSQL + Redis
+- **Production**: On-premise server deployment planned
 
-### Service Architecture Benefits
-- **Scalability**: Python services can scale independently based on computational load
-- **Technology Optimization**: Use best language for each problem (TypeScript for UI, Python for algorithms)
-- **Development Speed**: Teams can work on services independently
-- **Fault Tolerance**: Service failures don't crash entire application
-- **Performance**: CPU-intensive algorithms optimized with scientific Python libraries
+### Development Workflow Tips
+- **Database Changes**: Always use `npm run db:generate` after schema modifications
+- **Authentication Testing**: Use `/register` to create users, admin panel at `/admin/users`
+- **API Testing**: Health check available at `/api/health`
+- **Component Development**: Follow atomic design pattern in `src/components/`
+- **Type Safety**: All domains have Zod schemas for validation
+- **Error Handling**: Authentication errors logged, email service configured
+
+### Key Implementation Patterns
+
+**Authentication Pattern**:
+```typescript
+// Route protection in middleware.ts
+// Role-based access in components with RoleGuard
+// JWT sessions with user/role/department data
+```
+
+**API Pattern**:
+```typescript
+// All routes: Zod validation → Service layer → Prisma operations
+// Error handling with proper HTTP status codes
+// Authentication required for all non-auth routes
+```
+
+**Component Pattern**:
+```typescript
+// Atomic Design: atoms (MUI wrappers) → molecules → organisms → templates
+// Custom theme with mobile-first 44px touch targets
+// TypeScript strict mode with proper prop types
+```
+
+**Database Pattern**:
+```typescript
+// Domain-driven entities with proper relations
+// Audit trails for all production operations
+// Performance indexes for common queries
+// Sync tracking for external integrations
+```
+
+## Memories
+
+### Language and Interaction
+- **Rispondi in italiano**: Indicates a preference for Italian language interactions when possible

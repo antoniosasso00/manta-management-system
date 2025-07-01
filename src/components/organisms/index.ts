@@ -1,0 +1,1 @@
+export { PartsTable } from './PartsTable'

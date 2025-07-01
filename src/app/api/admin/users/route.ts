@@ -3,35 +3,93 @@ import { requireAdmin } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { hash } from 'bcryptjs'
 import { z } from 'zod'
-import { UserRole } from '@prisma/client'
+import { createUserWithRoleSchema } from '@/domains/user/schemas/user.schema'
+import { auditHelpers } from '@/lib/audit-logger'
 
-const createUserSchema = z.object({
-  name: z.string().min(2, 'Il nome deve contenere almeno 2 caratteri'),
-  email: z.string().email('Email non valida'),
-  password: z.string().min(8, 'La password deve contenere almeno 8 caratteri'),
-  role: z.nativeEnum(UserRole),
-  isActive: z.boolean().default(true),
-})
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await requireAdmin()
 
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search') || ''
+    const role = searchParams.get('role') || ''
+    const departmentId = searchParams.get('departmentId') || ''
+    const status = searchParams.get('status') || ''
+
+    // Build where clause
+    const where: Record<string, unknown> = {}
+    
+    // Search filter
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+    
+    // Role filter
+    if (role) {
+      where.role = role
+    }
+    
+    // Department filter
+    if (departmentId) {
+      where.departmentId = departmentId
+    }
+    
+    // Status filter
+    if (status === 'active') {
+      where.isActive = true
+    } else if (status === 'inactive') {
+      where.isActive = false
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit
+
+    // Get total count for pagination
+    const total = await prisma.user.count({ where })
+    const totalPages = Math.ceil(total / limit)
+
+    // Get users with filters and pagination
     const users = await prisma.user.findMany({
+      where,
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        departmentId: true,
+        departmentRole: true,
         createdAt: true,
         isActive: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            type: true,
+          }
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
+      skip,
+      take: limit,
     })
 
-    return NextResponse.json({ users })
+    return NextResponse.json({ 
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
+    })
 
   } catch (error) {
     console.error('Get users error:', error)
@@ -44,10 +102,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin()
+    const adminUser = await requireAdmin()
 
     const body = await request.json()
-    const validatedData = createUserSchema.parse(body)
+    const validatedData = createUserWithRoleSchema.parse(body)
 
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({
@@ -61,6 +119,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate department assignment if provided
+    if (validatedData.departmentId) {
+      const department = await prisma.department.findUnique({
+        where: { id: validatedData.departmentId }
+      })
+
+      if (!department || !department.isActive) {
+        return NextResponse.json(
+          { error: 'Reparto non valido o non attivo' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Hash password
     const hashedPassword = await hash(validatedData.password, 12)
 
@@ -71,17 +143,32 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         role: validatedData.role,
-        isActive: validatedData.isActive,
+        departmentId: validatedData.departmentId,
+        departmentRole: validatedData.departmentRole,
+        isActive: true,
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        departmentId: true,
+        departmentRole: true,
         createdAt: true,
         isActive: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            type: true,
+          }
+        },
       },
     })
+
+    // Log audit action
+    await auditHelpers.logUserCreate(adminUser.user.id, adminUser.user.email, user, request)
 
     return NextResponse.json({
       message: 'Utente creato con successo',

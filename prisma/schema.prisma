@@ -9,23 +9,30 @@ datasource db {
 
 // User Management
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String          @id @default(cuid())
+  email         String          @unique
   name          String?
   password      String
-  role          UserRole  @default(OPERATOR)
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          UserRole        @default(OPERATOR)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  // Department-specific role assignment
+  departmentId     String?          // Reparto assegnato (null per ADMIN globali)
+  departmentRole   DepartmentRole?  // Ruolo specifico nel reparto
   
   // Relations
   sessions      Session[]
   accounts      Account[]
   odlEvents     ProductionEvent[]
   passwordResetTokens PasswordResetToken[]
+  auditLogs     AuditLog[]
+  department    Department?      @relation(fields: [departmentId], references: [id])
   
   @@index([email, isActive])
   @@index([role])
+  @@index([departmentId, departmentRole])
   @@index([createdAt])
   @@map("users")
 }
@@ -52,6 +59,12 @@ enum UserRole {
   ADMIN
   SUPERVISOR
   OPERATOR
+}
+
+enum DepartmentRole {
+  CAPO_REPARTO      // Responsabile completo del reparto
+  CAPO_TURNO        // Responsabile turno con supervisione operatori
+  OPERATORE         // Operatore standard del reparto
 }
 
 // NextAuth models
@@ -223,6 +236,7 @@ model Department {
   // Relations
   events        ProductionEvent[]
   autoclaves    Autoclave[]
+  users         User[]           // Utenti assegnati al reparto
   
   @@map("departments")
 }
@@ -389,4 +403,40 @@ model CuringCycle {
   
   @@index([code])
   @@map("curing_cycles")
+}
+
+// Audit Log for Admin Actions
+model AuditLog {
+  id          String      @id @default(cuid())
+  action      AuditAction
+  resource    String      // e.g., "User", "Department", "ODL"
+  resourceId  String?     // ID dell'entità modificata
+  userId      String      // Admin che ha eseguito l'azione
+  userEmail   String      // Email dell'admin (per sicurezza)
+  details     Json?       // Dettagli dell'azione (before/after per update)
+  ipAddress   String?     // IP da cui è stata eseguita l'azione
+  userAgent   String?     // User agent del browser
+  timestamp   DateTime    @default(now())
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  
+  @@index([userId, timestamp])
+  @@index([action, timestamp])
+  @@index([resource, timestamp])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  BULK_UPDATE
+  BULK_DELETE
+  EXPORT
+  IMPORT
+  LOGIN
+  LOGOUT
+  PASSWORD_RESET
 }
