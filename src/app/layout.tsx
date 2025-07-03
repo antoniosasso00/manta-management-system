@@ -46,18 +46,18 @@ export const metadata: Metadata = {
     url: 'https://mes.mantagroup.it',
     images: [
       {
-        url: '/android-chrome-512x512.png',
-        width: 512,
-        height: 512,
-        alt: 'Manta Group Logo',
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Manta Group MES Aerospazio - Manufacturing Execution System',
       },
     ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Manta Group MES',
     description: 'Manufacturing Execution System per la produzione aerospaziale',
-    images: ['/android-chrome-512x512.png'],
+    images: ['/og-image.png'],
   },
   viewport: {
     width: 'device-width',
