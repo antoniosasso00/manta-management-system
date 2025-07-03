@@ -26,8 +26,6 @@ export class CleanupTasks {
    * Start all cleanup tasks
    */
   start(): void {
-    console.log('Starting cleanup tasks...')
-    
     // Clean expired password reset tokens every hour
     const tokenCleanup = setInterval(() => {
       this.cleanExpiredPasswordResetTokens()
@@ -51,7 +49,6 @@ export class CleanupTasks {
    * Stop all cleanup tasks
    */
   stop(): void {
-    console.log('Stopping cleanup tasks...')
     this.intervals.forEach(interval => clearInterval(interval))
     this.intervals = []
   }
@@ -70,9 +67,7 @@ export class CleanupTasks {
         }
       })
 
-      if (result.count > 0) {
-        console.log(`Cleaned up ${result.count} expired password reset tokens`)
-      }
+      // Cleanup completed silently
     } catch (error) {
       console.error('Error cleaning password reset tokens:', error)
     }
@@ -89,9 +84,7 @@ export class CleanupTasks {
         }
       })
 
-      if (result.count > 0) {
-        console.log(`Cleaned up ${result.count} expired sessions`)
-      }
+      // Sessions cleanup completed silently
     } catch (error) {
       console.error('Error cleaning expired sessions:', error)
     }

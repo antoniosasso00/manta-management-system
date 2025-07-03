@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { PartService } from '@/domains/core/services/part.service'
+import { PartService } from '@/domains/core/services/PartService'
 
 export async function GET() {
   try {

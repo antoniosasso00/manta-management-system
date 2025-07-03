@@ -164,14 +164,13 @@ model ODL {
   events          ProductionEvent[]
   autoclaveLoadItems AutoclaveLoadItem[]
   
-  @@index([status])
-  @@index([partId])
-  @@index([gammaId])
-  @@index([curingCycleId])
-  @@index([qrCode])
-  @@index([createdAt])
-  @@index([status, createdAt])
-  @@index([priority, status])
+  // Ottimizzazione indici - rimosse ridondanze e aggiunti indici composti strategici
+  @@index([qrCode]) // Unique constraint già presente, indice automatico
+  @@index([partId, status]) // Query frequent per parti in uno specifico stato
+  @@index([status, priority, createdAt]) // Dashboard queries con filtri multipli
+  @@index([gammaId]) // Sync operations
+  @@index([curingCycleId]) // Autoclave batch operations
+  @@index([createdAt]) // Time-based queries
   @@map("odls")
 }
 
@@ -204,16 +203,20 @@ model ProductionEvent {
   timestamp     DateTime        @default(now())
   userId        String
   notes         String?
+  duration      Int?            // Durata timer in millisecondi
+  isAutomatic   Boolean         @default(false) // Per trasferimenti automatici
   
   // Relations
   odl           ODL             @relation(fields: [odlId], references: [id])
   department    Department      @relation(fields: [departmentId], references: [id])
   user          User            @relation(fields: [userId], references: [id])
   
-  @@index([odlId, timestamp])
-  @@index([departmentId, timestamp])
-  @@index([userId, timestamp])
-  @@index([eventType, timestamp])
+  // Ottimizzazione indici ProductionEvent per performance queries
+  @@index([odlId, timestamp]) // Timeline eventi per ODL specifico
+  @@index([departmentId, eventType, timestamp]) // Query eventi per reparto e tipo
+  @@index([userId, timestamp]) // Audit trail per utente
+  @@index([timestamp, isAutomatic]) // Separare eventi automatici/manuali
+  @@index([odlId, departmentId, eventType]) // Stato corrente ODL in reparto
   @@map("production_events")
 }
 
@@ -277,7 +280,7 @@ model AutoclaveLoad {
   actualStart   DateTime?
   plannedEnd    DateTime
   actualEnd     DateTime?
-  status        LoadStatus       @default(PLANNED)
+  status        LoadStatus       @default(DRAFT)
   layoutData    Json?            // 2D layout optimization result
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
@@ -287,8 +290,11 @@ model AutoclaveLoad {
   curingCycle   CuringCycle      @relation(fields: [curingCycleId], references: [id])
   loadItems     AutoclaveLoadItem[]
   
-  @@index([status, plannedStart])
-  @@index([curingCycleId])
+  // Ottimizzazione indici AutoclaveLoad per scheduling efficiente
+  @@index([autoclaveId, status, plannedStart]) // Planning autoclave specifiche
+  @@index([status, plannedStart]) // Global planning view
+  @@index([curingCycleId, status]) // Batch per ciclo di cura
+  @@index([plannedStart, plannedEnd]) // Time window queries
   @@map("autoclave_loads")
 }
 
@@ -299,6 +305,7 @@ model AutoclaveLoadItem {
   autoclaveLoadId String
   position        Json?            // 2D position data in autoclave layout
   addedAt         DateTime         @default(now())
+  previousStatus  ODLStatus?       // Stato ODL prima di entrare nel batch (per ripristino)
   
   // Relations
   odl             ODL              @relation(fields: [odlId], references: [id], onDelete: Cascade)
@@ -310,10 +317,12 @@ model AutoclaveLoadItem {
 }
 
 enum LoadStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  DRAFT         // Creazione in corso - modificabile
+  READY         // Pronto per avvio - modificabile  
+  IN_CURE       // In cura - modificabile
+  COMPLETED     // Cura completata - modificabile
+  RELEASED      // ODL rilasciati al reparto successivo
+  CANCELLED     // Annullato
 }
 
 // Gamma MES Sync tracking
@@ -343,10 +352,10 @@ enum SyncStatus {
 model Tool {
   id              String    @id @default(cuid())
   toolPartNumber  String    @unique
-  description     String
-  base            Float     // Dimensioni base
-  height          Float     // Altezza
-  weight          Float     // Peso
+  description     String?   // Descrizione breve (opzionale)
+  base            Float     // Dimensioni base in mm
+  height          Float     // Altezza in mm
+  weight          Float?    // Peso in kg (opzionale)
   material        String    // Materiale
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
@@ -421,10 +430,11 @@ model AuditLog {
   // Relations
   user        User        @relation(fields: [userId], references: [id])
   
-  @@index([userId, timestamp])
-  @@index([action, timestamp])
-  @@index([resource, timestamp])
-  @@index([timestamp])
+  // Ottimizzazione indici AuditLog per audit e compliance
+  @@index([resource, resourceId, timestamp]) // Audit trail per entità specifica
+  @@index([action, timestamp]) // Query per tipo di azione
+  @@index([userId, timestamp]) // Query per utente
+  @@index([timestamp]) // Cleanup e archivio cronologico
   @@map("audit_logs")
 }
 

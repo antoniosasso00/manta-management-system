@@ -1,7 +1,32 @@
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import { corsHandler, corsConfigs } from "@/lib/cors-config"
 
 export default auth((req) => {
+  // Gestisci CORS per tutte le richieste API
+  if (req.nextUrl.pathname.startsWith('/api/')) {
+    // Determina configurazione CORS basata sul path
+    let corsConfig = corsConfigs.development;
+    
+    if (process.env.NODE_ENV === 'production') {
+      if (req.nextUrl.pathname.startsWith('/api/admin/')) {
+        corsConfig = corsConfigs.admin;
+      } else if (req.nextUrl.pathname.startsWith('/api/production/')) {
+        corsConfig = corsConfigs.production;
+      } else {
+        corsConfig = corsConfigs.public;
+      }
+    }
+    
+    // Applica CORS
+    const corsMiddleware = corsHandler(corsConfig);
+    const corsResponse = corsMiddleware(req);
+    
+    if (corsResponse) {
+      return corsResponse;
+    }
+  }
+
   const isLoggedIn = !!req.auth
   const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
                      req.nextUrl.pathname.startsWith("/register") ||

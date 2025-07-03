@@ -11,256 +11,63 @@
 - **Obiettivo**: Sistema completo tutti i reparti + ottimizzazioni
 - **Estensione**: +16 settimane per completamento
 
-## 2. Roadmap MVP Dettagliata (8 Settimane)
+## 2. Roadmap MVP Settimanale (8 Settimane)
 
 ### **SETTIMANA 1 (30h) - Foundation Setup**
-
 **Obiettivi**: Infrastruttura base e autenticazione
-```
-Giorni 1-2 (12h): Project Setup
-□ Setup Next.js 15 + TypeScript
-□ Configurazione MUI + Tailwind
-□ Setup Prisma + PostgreSQL
-□ Docker Compose per sviluppo
-□ Repository Git + struttura folders
-
-Giorni 3-4 (12h): Authentication System
-□ NextAuth.js setup con JWT
-□ Schema utenti + ruoli nel database
-□ Login/logout interface
-□ Middleware protezione routes
-□ Hash password con bcrypt
-
-Giorni 5 (6h): UI Foundation
-□ Layout principale con navigazione
-□ Atomic components base (Button, Input, Card)
-□ Theme MUI personalizzato
-□ Responsive design base
-```
-
-**Deliverable**: App con login funzionante + UI base
-**Test**: Login/logout, navigazione, responsive
-
----
+- Setup Next.js 15 + TypeScript + MUI + Tailwind
+- Setup Prisma + PostgreSQL + Docker Compose
+- NextAuth.js con JWT + schema utenti/ruoli
+- Layout principale + componenti atomic base
+- Theme MUI personalizzato + responsive design
 
 ### **SETTIMANA 2 (30h) - QR Code System**
-
 **Obiettivi**: Sistema completo generazione e scansione QR
-```
-Giorni 1-2 (12h): QR Generation
-□ Servizio generazione QR per ODL
-□ Schema database QR codes
-□ API endpoint generazione QR
-□ Component visualizzazione QR
-□ Test stampa QR codes
-
-Giorni 3-4 (12h): QR Scanner
-□ Integrazione html5-qrcode
-□ Component scanner mobile-friendly
-□ Parsing e validazione QR data
-□ Gestione errori scansione
-□ UI feedback scansione
-
-Giorni 5 (6h): QR Management
-□ CRUD QR codes (lista, dettaglio)
-□ Associazione QR → ODL
-□ API endpoints QR management
-□ Test integrazione completa
-```
-
-**Deliverable**: Sistema QR completo (genera + scansiona)
-**Test**: Generazione QR, scansione da mobile, validazione dati
-
----
+- Servizio generazione QR per ODL + schema database
+- Integrazione @zxing/browser per scanner mobile
+- Parsing/validazione QR data + gestione errori
+- CRUD QR codes + API endpoints management
 
 ### **SETTIMANA 3 (30h) - Produzione Base + Deploy Test**
-
 **Obiettivi**: Gestione ODL e tracking eventi + primo deploy
-```
-Giorni 1-2 (12h): Work Orders Management
-□ Schema database ODL completo
-□ CRUD ODL (create, read, update, delete)
-□ Interfaccia gestione ODL
-□ Validazione dati con Zod
-□ Filtri e ricerca ODL
-
-Giorni 3-4 (12h): Production Events
-□ Schema eventi produzione
-□ API registrazione eventi (enter/exit)
-□ Scansione QR → creazione evento
-□ Dashboard eventi real-time
-□ Log audit completo
-
-Giorni 5 (6h): First Deploy
-□ Docker build produzione
-□ Deploy ambiente test
-□ Configurazione SSL
-□ Test deployment completo
-□ Documentazione deploy
-```
-
-**Deliverable**: Sistema base ODL + eventi + deploy test
-**Test**: CRUD ODL, scansione eventi, accesso da mobile
-**Milestone**: Prima demo funzionante
-
----
+- Schema database ODL + CRUD completo + validazione Zod
+- Schema eventi produzione + API registrazione eventi
+- Scansione QR → creazione evento + dashboard real-time
+- Docker build produzione + deploy ambiente test + SSL
 
 ### **SETTIMANA 4 (30h) - Clean Room Complete**
-
 **Obiettivi**: Reparto laminazione completo con dashboard
-```
-Giorni 1-2 (12h): Department Management
-□ Schema reparti nel database
-□ Gestione Clean Room specifico
-□ Stati ODL per reparto
-□ Workflow ingresso/uscita
-□ Validazioni business logic
-
-Giorni 3-4 (12h): Time Tracking
-□ Calcolo tempi permanenza
-□ Confronto tempi standard vs effettivi
-□ Alert ritardi automatici
-□ Statistiche tempi per ODL
-□ Esportazione dati tempi
-
-Giorni 5 (6h): Clean Room Dashboard
-□ Dashboard real-time stato Clean Room
-□ Visualizzazione ODL in corso
-□ Grafici tempi medi
-□ Lista operatori attivi
-□ Notifiche in-app
-```
-
-**Deliverable**: Clean Room completamente funzionale
-**Test**: Workflow completo laminazione, calcolo tempi, dashboard
-**Review**: Aggiornamento progressi (milestone 2 settimane)
-
----
+- Schema reparti + gestione Clean Room specifico
+- Stati ODL per reparto + workflow ingresso/uscita
+- Calcolo tempi permanenza + confronto standard vs effettivi
+- Dashboard real-time stato Clean Room + grafici + notifiche
 
 ### **SETTIMANA 5 (30h) - Algoritmo Autoclavi (CRITICO)**
-
 **Obiettivi**: Ottimizzazione batch - priorità massima
-```
-Giorni 1 (6h): Analisi Requisiti Dettagliata
-□ Studio vincoli autoclavi specifici
-□ Mappatura regole business
-□ Analisi dimensioni/capacità
-□ Definizione metriche efficienza
-
-Giorni 2-3 (12h): Algoritmo Core
-□ Implementazione First-Fit Decreasing
-□ Logica raggruppamento cicli compatibili
-□ Gestione vincoli dimensionali
-□ Algoritmo posizionamento 2D
-□ Ottimizzazione spazio utilizzato
-
-Giorni 4-5 (12h): Testing e Raffinamento
-□ Test con dati reali autoclavi
-□ Validazione vincoli business
-□ Ottimizzazione performance
-□ Fallback per casi limite
-□ Metriche efficienza batch
-```
-
-**Deliverable**: Algoritmo ottimizzazione funzionante
-**Test**: Ottimizzazione con dati reali, validazione vincoli
-**Rischio**: Se non funziona, 1 settimana buffer disponibile
-
----
+- Analisi vincoli autoclavi + definizione metriche efficienza
+- Implementazione First-Fit Decreasing + gestione vincoli
+- Algoritmo posizionamento 2D + ottimizzazione spazio
+- Test con dati reali + validazione + fallback casi limite
 
 ### **SETTIMANA 6 (30h) - Autoclavi UI + Test Operatori**
-
 **Obiettivi**: Interfaccia autoclavi + primi test con utenti
-```
-Giorni 1-2 (12h): Autoclavi Management
-□ Schema database autoclavi/batch
-□ CRUD gestione autoclavi
-□ Interfaccia creazione batch
-□ Visualizzazione risultati ottimizzazione
-□ Gestione stati batch
-
-Giorni 3-4 (12h): Visualizzazione 2D
-□ Component visualizzazione piano autoclave
-□ Rendering posizionamento pezzi
-□ Interazione drag-and-drop (opzionale)
-□ Colori per priorità/stato
-□ Export layout per operatori
-
-Giorni 5 (6h): Test con Operatori
-□ Preparazione ambiente test
-□ Sessioni test con operatori reali
-□ Raccolta feedback usabilità
-□ Identificazione problemi UX
-□ Pianificazione miglioramenti
-```
-
-**Deliverable**: Autoclavi complete + feedback operatori
-**Milestone**: Test produzione (settimana 6)
-**Test**: Workflow autoclavi completo, usabilità mobile
-
----
+- Schema database autoclavi/batch + CRUD gestione
+- Component visualizzazione piano autoclave + rendering pezzi
+- Colori per priorità/stato + export layout operatori
+- Test con operatori reali + raccolta feedback UX
 
 ### **SETTIMANA 7 (30h) - Sync Gamma + Reports**
-
 **Obiettivi**: Integrazione MES Gamma e reporting base
-```
-Giorni 1-2 (12h): Gamma Integration
-□ File watcher per export Gamma
-□ Parser CSV/Excel robusto
-□ Mappatura dati Gamma → sistema
-□ Queue processing con BullMQ
-□ Error handling e retry logic
-
-Giorni 3-4 (12h): Reporting System
-□ Report tempi produzione per ODL
-□ Report efficienza batch autoclavi
-□ Statistiche per reparto
-□ Export PDF/Excel
-□ Dashboard KPI management
-
-Giorni 5 (6h): Notifications
-□ Sistema notifiche base
-□ Alert ritardi produzione
-□ Notifiche batch completati
-□ Integration Telegram (opzionale)
-□ Email notifications
-```
-
-**Deliverable**: Sync Gamma + reporting funzionali
-**Test**: Import dati reali, accuratezza report
-**Review**: Aggiornamento progressi (milestone 4 settimane)
-
----
+- File watcher export Gamma + parser CSV/Excel
+- Queue processing BullMQ + mappatura dati + error handling
+- Report tempi produzione + efficienza batch + statistiche
+- Sistema notifiche base + alert ritardi + email/Telegram
 
 ### **SETTIMANA 8 (30h) - Deploy Produzione + Stabilizzazione**
-
 **Obiettivi**: Deploy finale + bug fixing + documentazione
-```
-Giorni 1-2 (12h): Production Deploy
-□ Setup ambiente produzione finale
-□ Configurazione backup automatici
-□ Monitoring e logging produzione
-□ SSL certificati finali
-□ Performance tuning
-
-Giorni 3-4 (12h): Bug Fixing e Stabilizzazione
-□ Fix bug identificati nei test
-□ Ottimizzazioni performance
-□ Miglioramenti UX da feedback
-□ Test regressione completi
-□ Validazione finale algoritmi
-
-Giorni 5 (6h): Documentazione e Handover
-□ Documentazione utente finale
-□ Manuale operatori
-□ Procedure backup/restore
-□ Documentazione tecnica
-□ Training materiali
-```
-
-**Deliverable**: Sistema MVP completo in produzione
-**Milestone**: Go-live produzione
-**Test**: Stress testing, validazione completa
+- Setup ambiente produzione + backup automatici + monitoring
+- Bug fixing + ottimizzazioni performance + UX improvements
+- Documentazione utente + manuale operatori + procedure
 
 ## 3. Roadmap Post-MVP (Settimane 9-24)
 

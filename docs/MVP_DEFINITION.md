@@ -1,4 +1,4 @@
-# Definizione MVP - MES Aerospazio
+# MVP Definition & Roadmap - MES Aerospazio
 
 ## 1. Panoramica MVP
 
@@ -18,7 +18,168 @@ Sistema MES funzionante per il monitoraggio completo di **Clean Room (Laminazion
 - ✅ Sync Gamma automatica senza errori
 - ✅ Report tempi accurati ±5%
 
-## 2. Funzionalità Incluse nell'MVP
+## 2. Roadmap Funzione per Funzione
+
+### 🏗️ **FASE 1: FONDAMENTA QR E TRACKING BASE**
+
+#### **STEP 1.1: Sistema QR Code Completo** 
+⏱️ **Tempo**: 8-10 ore | 🎯 **Priorità**: CRITICA
+
+**Obiettivi**:
+- Generazione QR codes per ODL
+- Scanner QR mobile-ready  
+- Validazione e parsing QR data
+
+**Implementazione**:
+```typescript
+// 1. QR Generator Component
+src/components/molecules/QRGenerator.tsx
+- Props: odlId, size, downloadable
+- Generate QR con formato: {type: "ODL", id: string, timestamp: number}
+- Export PDF/PNG per stampa
+
+// 2. QR Scanner Component  
+src/components/molecules/QRScanner.tsx
+- Camera access con @zxing/browser
+- Parsing e validazione QR data
+- Success/error feedback immediato
+- Supporto upload immagine QR
+
+// 3. QR Management API
+src/app/api/qr/generate/route.ts - POST
+src/app/api/qr/validate/route.ts - POST
+```
+
+**Verifica Frontend**:
+- ✅ **Pagina**: `/qr-test` 
+- ✅ **Test 1**: Genera QR per ODL esistente → visualizza QR → scarica PDF
+- ✅ **Test 2**: Scansiona QR da mobile → mostra dati ODL parsed
+- ✅ **Test 3**: Scansiona QR invalido → mostra errore appropriato
+- ✅ **Test 4**: Upload foto QR → parsing corretto
+
+#### **STEP 1.2: Gestione Eventi Produzione Base**
+⏱️ **Tempo**: 6-8 ore | 🎯 **Priorità**: ALTA
+
+**Obiettivi**:
+- Registrazione eventi ENTRY/EXIT per reparto
+- Workflow QR scan → evento automatico
+- Dashboard eventi real-time
+
+**Implementazione**:
+```typescript
+// 1. Production Event Service
+src/domains/production/services/ProductionEventService.ts
+- createEvent(odlId, departmentId, eventType, userId)
+- validateEventFlow(odl, eventType) // No EXIT senza ENTRY
+- calculateDepartmentTime(odlId, departmentId)
+
+// 2. Event Creation API
+src/app/api/production/events/route.ts - POST
+src/app/api/production/events/[odlId]/route.ts - GET
+
+// 3. Event Dashboard Component
+src/components/organisms/ProductionEventsDashboard.tsx
+- Lista eventi in corso per reparto
+- Timeline eventi per ODL
+- Alert eventi anomali
+```
+
+**Verifica Frontend**:
+- ✅ **Pagina**: `/production/events`
+- ✅ **Test 1**: Scansiona QR ODL → seleziona reparto → registra ENTRY → vedi evento in dashboard
+- ✅ **Test 2**: Registra EXIT per stesso ODL → calcola tempo permanenza → aggiorna dashboard
+- ✅ **Test 3**: Tenta EXIT senza ENTRY → ricevi errore validation
+- ✅ **Test 4**: Dashboard si aggiorna in real-time (polling ogni 5 sec)
+
+### 🧪 **FASE 2: CLEAN ROOM WORKFLOW COMPLETO**
+
+#### **STEP 2.1: Modulo Clean Room Base**
+⏱️ **Tempo**: 10-12 ore | 🎯 **Priorità**: ALTA
+
+**Obiettivi**:
+- Workflow completo Clean Room: Ingresso → Lavorazione → Uscita
+- Tracking tempi automatico
+- Stati ODL specifici per Clean Room
+
+**Verifica Frontend**:
+- ✅ **Pagina**: `/production/cleanroom`
+- ✅ **Test 1**: Scansiona QR ODL → avvia lavorazione Clean Room → ODL passa a IN_CLEANROOM
+- ✅ **Test 2**: Dashboard mostra ODL attivo con timer live
+- ✅ **Test 3**: Completa lavorazione → ODL passa a CLEANROOM_COMPLETED → calcola tempo totale
+- ✅ **Test 4**: Visualizza storico lavorazioni Clean Room con tempi
+
+#### **STEP 2.2: Time Tracking e Alerting**
+⏱️ **Tempo**: 6-8 ore | 🎯 **Priorità**: MEDIA
+
+**Obiettivi**:
+- Calcolo tempi permanenza Clean Room
+- Sistema alert per ritardi
+- Report tempi per ODL/Part Number
+
+### 🏭 **FASE 3: SISTEMA AUTOCLAVI E OTTIMIZZAZIONE**
+
+#### **STEP 3.1: Gestione Autoclavi Base**
+⏱️ **Tempo**: 8-10 ore | 🎯 **Priorità**: ALTA
+
+**Obiettivi**:
+- CRUD Autoclavi con specifiche tecniche
+- Gestione cicli di cura
+- Creazione batch manuale
+
+#### **STEP 3.2: Algoritmo Ottimizzazione Batch** 
+⏱️ **Tempo**: 15-20 ore | 🎯 **Priorità**: CRITICA
+
+**Obiettivi**:
+- Algoritmo First-Fit Decreasing per ottimizzazione 2D
+- Constraint handling (cicli, dimensioni, priorità)
+- Visualizzazione layout ottimizzato
+
+**Verifica Frontend**:
+- ✅ **Pagina**: `/production/autoclaves/optimize`
+- ✅ **Test 1**: Seleziona ODL pronti → esegui ottimizzazione → mostra layout 2D
+- ✅ **Test 2**: Visualizza efficienza batch (% spazio utilizzato)
+- ✅ **Test 3**: Modifica posizioni manualmente → ricalcola efficienza
+- ✅ **Test 4**: Export layout PDF per operatori
+- ✅ **Test 5**: Performance ottimizzazione <30 secondi per 20+ ODL
+
+#### **STEP 3.3: Workflow Autoclavi Completo**
+⏱️ **Tempo**: 8-10 ore | 🎯 **Priorità**: ALTA  
+
+**Obiettivi**:
+- Workflow completo: Batch creation → Loading → Curing → Unloading
+- Tracking eventi batch con QR scan
+- Dashboard controllo autoclavi
+
+### 📊 **FASE 4: REPORTING E DASHBOARD ADVANCED**
+
+#### **STEP 4.1: Dashboard KPI Management**
+⏱️ **Tempo**: 10-12 ore | 🎯 **Priorità**: MEDIA
+
+#### **STEP 4.2: Sistema Report Completo**
+⏱️ **Tempo**: 8-10 ore | 🎯 **Priorità**: MEDIA
+
+### 🔄 **FASE 5: INTEGRAZIONE E NOTIFICHE**
+
+#### **STEP 5.1: Sistema Notifiche Completo**
+⏱️ **Tempo**: 6-8 ore | 🎯 **Priorità**: MEDIA
+
+#### **STEP 5.2: Integrazione Gamma MES (Opzionale)**
+⏱️ **Tempo**: 10-12 ore | 🎯 **Priorità**: BASSA
+
+### 🎯 **TIMELINE E PRIORITÀ**
+
+| **Settimana** | **Steps** | **Ore** | **Valore Business** |
+|---------------|-----------|---------|---------------------|
+| **1** | Step 1.1 + 1.2 | 16h | 🟢 QR + Eventi Base |
+| **2** | Step 2.1 | 12h | 🟢 Clean Room Workflow |
+| **3** | Step 2.2 + 3.1 | 16h | 🟡 Time Tracking + Autoclavi |
+| **4** | Step 3.2 | 20h | 🔴 Algoritmo Ottimizzazione |
+| **5** | Step 3.3 | 10h | 🟢 Workflow Autoclavi |
+| **6** | Step 4.1 + 4.2 | 20h | 🟡 Dashboard + Reports |
+| **7** | Step 5.1 | 8h | 🟡 Notifiche |
+| **8** | Buffer + Testing | 16h | 🟢 Stabilizzazione |
+
+## 3. Funzionalità Incluse nell'MVP
 
 ### 2.1 Sistema Autenticazione ✅
 **Settimana 1**

@@ -38,7 +38,17 @@
       "Bash(rg:*)",
       "Bash(chmod:*)",
       "Bash(rg:*)",
-      "Bash(./scripts/start.sh:*)"
+      "Bash(./scripts/start.sh:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(DEBUG=*)",
+      "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d mes_aerospazio -c \"\\dt\")",
+      "Bash(npx prisma:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

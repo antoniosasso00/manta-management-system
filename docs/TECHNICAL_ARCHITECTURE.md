@@ -173,163 +173,21 @@ src/
     └── jobs/               # Background jobs
 ```
 
-### 4.2 Domain Entities (Prisma Schema)
-```prisma
-// schema.prisma
-model WorkOrder {
-  id          String   @id @default(cuid())
-  odlNumber   String   @unique
-  partNumber  String
-  description String?
-  quantity    Int
-  priority    Priority @default(NORMAL)
-  status      OrderStatus @default(PENDING)
-  dueDate     DateTime
-  
-  // Relations
-  events      ProductionEvent[]
-  allocations ResourceAllocation[]
-  batchItems  BatchItem[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("work_orders")
-}
+### 4.2 Domain Entities
+Vedi schema completo in `/prisma/schema.prisma`
 
-model ProductionEvent {
-  id            String    @id @default(cuid())
-  workOrderId   String
-  departmentId  String
-  eventType     EventType // ENTER, EXIT, START, COMPLETE
-  timestamp     DateTime  @default(now())
-  operatorId    String?
-  qrCode        String?
-  
-  // Relations
-  workOrder     WorkOrder @relation(fields: [workOrderId], references: [id])
-  department    Department @relation(fields: [departmentId], references: [id])
-  operator      User?      @relation(fields: [operatorId], references: [id])
-  
-  @@map("production_events")
-}
+**Entità principali**:
+- **User**: Gestione utenti con ruoli dipartimentali
+- **WorkOrder**: ODL con stati e priorità
+- **ProductionEvent**: Eventi di produzione con tracking
+- **Department**: Reparti produttivi
+- **Autoclave**: Gestione autoclavi con batch optimization
+- **Part**: Anagrafica parti con specifiche tecniche
 
-model Department {
-  id          String   @id @default(cuid())
-  name        String
-  code        String   @unique
-  type        DepartmentType // CLEAN_ROOM, AUTOCLAVE, MACHINING
-  capacity    Int
-  isActive    Boolean  @default(true)
-  
-  // Relations
-  events      ProductionEvent[]
-  allocations ResourceAllocation[]
-  
-  @@map("departments")
-}
-
-model Autoclave {
-  id          String   @id @default(cuid())
-  name        String
-  width       Float    // cm
-  height      Float    // cm
-  maxTemp     Int      // °C
-  isActive    Boolean  @default(true)
-  
-  // Relations
-  batches     ProductionBatch[]
-  
-  @@map("autoclaves")
-}
-
-model ProductionBatch {
-  id          String   @id @default(cuid())
-  autoclaveId String
-  startTime   DateTime?
-  endTime     DateTime?
-  temperature Int?
-  status      BatchStatus @default(PLANNED)
-  efficiency  Float?
-  
-  // Relations
-  autoclave   Autoclave @relation(fields: [autoclaveId], references: [id])
-  items       BatchItem[]
-  
-  @@map("production_batches")
-}
-
-model BatchItem {
-  id           String   @id @default(cuid())
-  batchId      String
-  workOrderId  String
-  positionX    Float    // Coordinate X su piano autoclave
-  positionY    Float    // Coordinate Y su piano autoclave
-  rotation     Float    @default(0)
-  
-  // Relations
-  batch        ProductionBatch @relation(fields: [batchId], references: [id])
-  workOrder    WorkOrder @relation(fields: [workOrderId], references: [id])
-  
-  @@map("batch_items")
-}
-
-model ResourceAllocation {
-  id           String   @id @default(cuid())
-  resourceId   String
-  workOrderId  String
-  departmentId String
-  startTime    DateTime
-  endTime      DateTime
-  isActive     Boolean  @default(true)
-  
-  // Relations
-  resource     User       @relation(fields: [resourceId], references: [id])
-  workOrder    WorkOrder  @relation(fields: [workOrderId], references: [id])
-  department   Department @relation(fields: [departmentId], references: [id])
-  
-  @@map("resource_allocations")
-}
-
-// Enums
-enum Priority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-enum OrderStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum EventType {
-  ENTER
-  EXIT
-  START
-  COMPLETE
-  PAUSE
-  RESUME
-}
-
-enum DepartmentType {
-  CLEAN_ROOM
-  AUTOCLAVE
-  MACHINING
-  ASSEMBLY
-  QUALITY
-}
-
-enum BatchStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-```
+**Per dettagli implementativi vedi**:
+- [Authentication Implementation](./Implementations/AUTHENTICATION_IMPLEMENTATION.md)
+- [QR System Implementation](./Implementations/QR_SYSTEM_IMPLEMENTATION.md)
+- [Autoclave Optimization](./Implementations/AUTOCLAVE_OPTIMIZATION_IMPLEMENTATION.md)
 
 ## 5. Integrazione MES Gamma
 
@@ -405,176 +263,33 @@ export class GammaMapper {
 
 ## 6. Algoritmo Ottimizzazione Autoclavi
 
-### 6.1 Approccio Euristico (Fase 1)
-```typescript
-// domains/planning/services/BatchOptimizer.ts
-export class BatchOptimizer {
-  async optimizeBatch(
-    workOrders: WorkOrder[],
-    autoclave: Autoclave
-  ): Promise<BatchSolution> {
-    
-    // 1. Filtra ODL compatibili
-    const compatible = this.filterCompatibleCycles(workOrders);
-    
-    // 2. Ordina per priorità e dimensione
-    const sorted = this.sortByPriorityAndSize(compatible);
-    
-    // 3. Algoritmo First-Fit Decreasing
-    const placement = this.firstFitDecreasing(sorted, autoclave);
-    
-    // 4. Ottimizza posizionamento
-    const optimized = this.optimizePositioning(placement);
-    
-    return {
-      items: optimized,
-      efficiency: this.calculateEfficiency(optimized, autoclave),
-      estimatedTime: this.calculateCycleTime(optimized)
-    };
-  }
-  
-  private firstFitDecreasing(
-    items: WorkOrder[],
-    autoclave: Autoclave
-  ): BatchItem[] {
-    const result: BatchItem[] = [];
-    const occupiedAreas: Rectangle[] = [];
-    
-    for (const item of items) {
-      const position = this.findBestPosition(
-        item.dimensions,
-        autoclave.dimensions,
-        occupiedAreas
-      );
-      
-      if (position) {
-        result.push({
-          workOrderId: item.id,
-          positionX: position.x,
-          positionY: position.y,
-          rotation: position.rotation
-        });
-        
-        occupiedAreas.push({
-          x: position.x,
-          y: position.y,
-          width: item.dimensions.width,
-          height: item.dimensions.height
-        });
-      }
-    }
-    
-    return result;
-  }
-}
-```
+### 6.1 Approccio Implementativo
+- **Algoritmo**: First-Fit Decreasing per 2D bin packing
+- **Vincoli**: Cicli compatibili, dimensioni, priorità
+- **Performance**: <30 secondi per ottimizzazione
+- **Efficienza target**: >80% utilizzo spazio
 
-### 6.2 Visualizzazione 2D
-```typescript
-// components/organisms/AutoclaveVisualizer.tsx
-import { Canvas } from '@react-three/fiber';
+### 6.2 Componenti Principali
+- **BatchOptimizer**: Service di ottimizzazione
+- **AutoclaveVisualizer**: Visualizzazione 2D layout
+- **API Endpoints**: `/api/autoclaves/[id]/optimize`
 
-export const AutoclaveVisualizer = ({ batch, autoclave }) => {
-  return (
-    <div className="w-full h-96 border rounded-lg">
-      <Canvas>
-        {/* Piano autoclave */}
-        <mesh position={[0, 0, 0]}>
-          <planeGeometry args={[autoclave.width, autoclave.height]} />
-          <meshBasicMaterial color="lightgray" />
-        </mesh>
-        
-        {/* Pezzi posizionati */}
-        {batch.items.map((item, index) => (
-          <mesh 
-            key={index}
-            position={[item.positionX, item.positionY, 0.1]}
-          >
-            <boxGeometry args={[item.width, item.height, 0.1]} />
-            <meshStandardMaterial color={getColorByPriority(item.priority)} />
-          </mesh>
-        ))}
-      </Canvas>
-    </div>
-  );
-};
-```
+**Per implementazione completa vedi**: [Autoclave Optimization Implementation](./Implementations/AUTOCLAVE_OPTIMIZATION_IMPLEMENTATION.md)
 
 ## 7. Sistema QR Code
 
-### 7.1 Generazione QR
-```typescript
-// domains/production/services/QRService.ts
-import QRCode from 'qrcode';
+### 7.1 Caratteristiche
+- **Generazione**: QR univoci per ODL con JSON data
+- **Scanner**: @zxing/browser per mobile compatibility
+- **Formato**: `{type: 'ODL', id: string, timestamp: string}`
+- **Validazione**: Zod schemas per data integrity
 
-export class QRService {
-  async generateQRCode(workOrder: WorkOrder): Promise<string> {
-    const qrData = {
-      type: 'ODL',
-      id: workOrder.id,
-      odlNumber: workOrder.odlNumber,
-      timestamp: new Date().toISOString()
-    };
-    
-    const qrString = JSON.stringify(qrData);
-    const qrCode = await QRCode.toDataURL(qrString, {
-      width: 256,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    });
-    
-    return qrCode;
-  }
-  
-  parseQRCode(qrString: string): QRData {
-    const data = JSON.parse(qrString);
-    return QRDataSchema.parse(data);
-  }
-}
-```
+### 7.2 Componenti
+- **QRService**: Generazione e parsing QR
+- **QRScanner**: Scanner mobile-optimized
+- **QRGenerator**: Component per visualizzazione/download
 
-### 7.2 Scanner Component
-```typescript
-// components/molecules/QRScanner.tsx
-import { Html5QrcodeScanner } from 'html5-qrcode';
-
-export const QRScanner = ({ onScan, onError }) => {
-  const scannerRef = useRef<Html5QrcodeScanner>();
-  
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      false
-    );
-    
-    scanner.render(
-      (decodedText) => {
-        try {
-          const qrData = JSON.parse(decodedText);
-          onScan(qrData);
-        } catch (error) {
-          onError('QR Code non valido');
-        }
-      },
-      (error) => {
-        console.warn('QR Scanner error:', error);
-      }
-    );
-    
-    scannerRef.current = scanner;
-    
-    return () => {
-      scanner.clear();
-    };
-  }, [onScan, onError]);
-  
-  return <div id="qr-reader" className="w-full max-w-sm mx-auto" />;
-};
-```
+**Per implementazione completa vedi**: [QR System Implementation](./Implementations/QR_SYSTEM_IMPLEMENTATION.md)
 
 ## 8. Real-time Updates
 
@@ -714,58 +429,17 @@ volumes:
 ## 10. Sicurezza e Performance
 
 ### 10.1 Autenticazione
-```typescript
-// middleware/auth.ts
-import jwt from 'jsonwebtoken';
+- **NextAuth.js**: JWT con Prisma adapter
+- **Role-based access**: Admin, Supervisor, Operator
+- **Department roles**: Ruoli specifici per reparto
+- **Middleware**: Protezione routes automatica
 
-export const authenticate = async (req: NextApiRequest, res: NextApiResponse) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Token mancante' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
-    req.user = await prisma.user.findUnique({
-      where: { id: decoded.userId }
-    });
-    
-    if (!req.user) {
-      return res.status(401).json({ error: 'Utente non trovato' });
-    }
-  } catch (error) {
-    return res.status(401).json({ error: 'Token non valido' });
-  }
-};
-```
+### 10.2 Validazione
+- **Zod schemas**: Validazione runtime end-to-end
+- **Input sanitization**: Protezione SQL injection
+- **Type safety**: TypeScript strict mode
 
-### 10.2 Validazione Input
-```typescript
-// utils/validation.ts
-import { z } from 'zod';
-
-export const createODLSchema = z.object({
-  odlNumber: z.string().min(1, 'Numero ODL richiesto'),
-  partNumber: z.string().regex(/^[A-Z0-9]+$/, 'Formato part number non valido'),
-  quantity: z.number().positive('Quantità deve essere positiva'),
-  dueDate: z.date().min(new Date(), 'Data consegna deve essere futura')
-});
-
-export const validateRequest = (schema: z.ZodSchema) => {
-  return (req: NextApiRequest, res: NextApiResponse, next: NextFunction) => {
-    try {
-      schema.parse(req.body);
-      next();
-    } catch (error) {
-      res.status(400).json({ 
-        error: 'Dati non validi',
-        details: error.errors 
-      });
-    }
-  };
-};
-```
+**Per implementazione completa vedi**: [Authentication Implementation](./Implementations/AUTHENTICATION_IMPLEMENTATION.md)
 
 ## 11. Monitoraggio e Logging
 

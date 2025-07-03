@@ -5,8 +5,9 @@ import { hash } from 'bcryptjs'
 import { z } from 'zod'
 import { createUserWithRoleSchema } from '@/domains/user/schemas/user.schema'
 import { auditHelpers } from '@/lib/audit-logger'
+import { withRateLimit, adminRateLimiter } from '@/lib/rate-limit-middleware'
 
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest) {
   try {
     await requireAdmin()
 
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   try {
     const adminUser = await requireAdmin()
 
@@ -191,3 +192,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+// Export handlers with rate limiting
+export const GET = withRateLimit(getHandler, adminRateLimiter);
+export const POST = withRateLimit(postHandler, adminRateLimiter);

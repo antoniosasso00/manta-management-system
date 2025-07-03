@@ -108,7 +108,6 @@ export class EmailService {
     // const sgMail = require('@sendgrid/mail')
     // sgMail.setApiKey(process.env.SENDGRID_API_KEY!)
     // ...
-    console.log('SendGrid not implemented yet')
     return false
   }
 
@@ -121,7 +120,6 @@ export class EmailService {
     // const { Resend } = require('resend')
     // const resend = new Resend(process.env.RESEND_API_KEY)
     // ...
-    console.log('Resend not implemented yet')
     return false
   }
 
@@ -133,7 +131,6 @@ export class EmailService {
     // TODO: Implement Nodemailer SMTP
     // const nodemailer = require('nodemailer')
     // ...
-    console.log('SMTP not implemented yet')
     return false
   }
 

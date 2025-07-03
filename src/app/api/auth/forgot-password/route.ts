@@ -82,8 +82,6 @@ export async function POST(request: NextRequest) {
     // Log email result for monitoring
     if (!emailResult.success) {
       console.error('Email sending failed:', emailResult.error, emailResult.provider)
-    } else {
-      console.log('Password reset email sent:', emailResult.messageId, emailResult.provider)
     }
 
     // In development, include the token for testing

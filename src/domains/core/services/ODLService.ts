@@ -3,6 +3,7 @@ import { ODL } from '../entities/ODL'
 import { CreateODLInput, UpdateODLInput, ODLQueryInput, GammaSyncODLInput } from '../schemas/odl.schema'
 import { SyncStatus } from '@prisma/client'
 import QRCode from 'qrcode'
+import { QRGenerator, QRValidator } from '@/utils/qr-validation'
 
 export class ODLService {
   
@@ -25,14 +26,20 @@ export class ODLService {
       throw new Error(`Part with ID ${input.partId} not found`)
     }
 
-    // Generate QR code
-    const qrData = {
-      type: 'ODL',
+    // Generate QR code using secure generator
+    const qrData = QRGenerator.generateODLQR({
       id: input.odlNumber,
       partNumber: part.partNumber,
-      timestamp: new Date().toISOString()
+      priority: input.priority
+    })
+    
+    // Validate generated QR data
+    const validation = QRValidator.validateODLQR(QRGenerator.toQRString(qrData))
+    if (!validation.success) {
+      throw new Error(`Invalid QR data generated: ${validation.error}`)
     }
-    const qrCode = await QRCode.toString(JSON.stringify(qrData), { type: 'svg' })
+    
+    const qrCode = await QRCode.toString(QRGenerator.toQRString(qrData), { type: 'svg' })
 
     const data = await prisma.oDL.create({
       data: {
@@ -264,14 +271,19 @@ export class ODLService {
           })
           updated++
         } else {
-          // Generate QR code for new ODL
-          const qrData = {
-            type: 'ODL',
+          // Generate QR code for new ODL using secure generator
+          const qrData = QRGenerator.generateODLQR({
             id: odlData.odlNumber,
-            partNumber: part.partNumber,
-            timestamp: new Date().toISOString()
+            partNumber: part.partNumber
+          })
+          
+          // Validate generated QR data
+          const validation = QRValidator.validateODLQR(QRGenerator.toQRString(qrData))
+          if (!validation.success) {
+            throw new Error(`Invalid QR data for ODL ${odlData.odlNumber}: ${validation.error}`)
           }
-          const qrCode = await QRCode.toString(JSON.stringify(qrData), { type: 'svg' })
+          
+          const qrCode = await QRCode.toString(QRGenerator.toQRString(qrData), { type: 'svg' })
 
           // Create new ODL
           await prisma.oDL.create({
@@ -348,13 +360,19 @@ export class ODLService {
       throw new Error('ODL not found')
     }
 
-    const qrData = {
-      type: 'ODL',
+    const qrData = QRGenerator.generateODLQR({
       id: odl.odlNumber,
-      partNumber: odl.part?.partNumber,
-      timestamp: new Date().toISOString()
+      partNumber: odl.part?.partNumber || '',
+      priority: odl.priority as any
+    })
+    
+    // Validate regenerated QR data
+    const validation = QRValidator.validateODLQR(QRGenerator.toQRString(qrData))
+    if (!validation.success) {
+      throw new Error(`Invalid QR data for regeneration: ${validation.error}`)
     }
-    const qrCode = await QRCode.toString(JSON.stringify(qrData), { type: 'svg' })
+    
+    const qrCode = await QRCode.toString(QRGenerator.toQRString(qrData), { type: 'svg' })
 
     const data = await prisma.oDL.update({
       where: { id },

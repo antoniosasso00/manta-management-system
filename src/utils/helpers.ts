@@ -37,6 +37,10 @@ export function generateODLNumber(): string {
   return `ODL${year}${month}${day}${time}`
 }
 
+/**
+ * @deprecated Usa QRGenerator per generazione sicura di QR data
+ * Mantenuto per backward compatibility
+ */
 export function generateQRCodeData(type: 'ODL' | 'DEPARTMENT', id: string): string {
   return JSON.stringify({
     type,
@@ -45,6 +49,10 @@ export function generateQRCodeData(type: 'ODL' | 'DEPARTMENT', id: string): stri
   })
 }
 
+/**
+ * @deprecated Usa QRValidator.validateAndParse() per validazione sicura
+ * Mantenuto per backward compatibility
+ */
 export function parseQRCodeData(data: string): { type: string; id: string; timestamp: string } | null {
   try {
     const parsed = JSON.parse(data)

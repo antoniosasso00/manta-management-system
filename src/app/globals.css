@@ -1,8 +1,32 @@
 @import "tailwindcss";
 
+/* MES Aerospazio Global Styles */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* MES-specific CSS variables for consistency */
+  --mes-primary: #1976d2;
+  --mes-secondary: #d81b60;
+  --mes-success: #388e3c;
+  --mes-warning: #f57c00;
+  --mes-error: #d32f2f;
+  --mes-info: #0288d1;
+  
+  /* Touch target sizes for industrial environment */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  
+  /* Sidebar dimensions */
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 60px;
+  
+  /* Z-index scale */
+  --z-sidebar: 1000;
+  --z-modal: 2000;
+  --z-popover: 3000;
+  --z-tooltip: 4000;
+  --z-toast: 5000;
 }
 
 @theme inline {
@@ -14,13 +38,173 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #121212;
+    --foreground: #ffffff;
+    
+    /* Dark mode adjustments for industrial visibility */
+    --mes-primary: #42a5f5;
+    --mes-secondary: #f48fb1;
+    --mes-success: #66bb6a;
+    --mes-warning: #ffb74d;
+    --mes-error: #ef5350;
+    --mes-info: #29b6f6;
   }
+}
+
+/* Base styles optimized for industrial use */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Improve focus visibility for accessibility */
+*:focus {
+  outline: 2px solid var(--mes-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+  
+  [data-theme="dark"] {
+    --background: #000000;
+    --foreground: #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles for reports */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .print-hide {
+    display: none !important;
+  }
+  
+  .print-show {
+    display: block !important;
+  }
+  
+  /* Ensure QR codes print well */
+  .qr-code {
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}
+
+/* Scrollbar styling for better UX */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark mode scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Custom utilities for MES components */
+.touch-friendly {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Status indicator animations */
+.status-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Loading states */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+}
+
+/* Material-UI integration fixes */
+.MuiButton-root.touch-target {
+  min-height: var(--touch-target-min) !important;
+}
+
+.MuiIconButton-root.touch-target {
+  width: var(--touch-target-min) !important;
+  height: var(--touch-target-min) !important;
 }

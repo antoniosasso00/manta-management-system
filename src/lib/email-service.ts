@@ -63,8 +63,6 @@ export class EmailService {
 
       this.config = emailConfigSchema.parse(config)
       this.isConfigured = this.config.enabled && this.validateProviderConfig()
-      
-      console.log(`Email service initialized: ${this.config.provider} (enabled: ${this.isConfigured})`)
     } catch (error) {
       console.error('Email configuration error:', error)
       this.isConfigured = false
@@ -200,7 +198,7 @@ export class EmailService {
     try {
       const nodemailer = await import('nodemailer')
       
-      const transporter = nodemailer.createTransporter({
+      const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || '587'),
         secure: process.env.SMTP_SECURE === 'true',
@@ -278,7 +276,7 @@ export class EmailService {
         subject: options.subject,
         html: options.html,
         text: options.text,
-        reply_to: this.config.replyTo,
+        replyTo: this.config.replyTo,
       })
 
       if (result.error) {

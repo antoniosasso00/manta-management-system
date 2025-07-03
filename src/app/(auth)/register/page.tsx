@@ -33,8 +33,6 @@ export default function RegisterPage() {
     setIsLoading(true)
     setError(null)
 
-    console.log('Form data:', data) // Debug log
-
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',

@@ -23,27 +23,25 @@ import { PartForm } from '@/components/molecules/PartForm'
 import { usePermissions } from '@/hooks/usePermissions'
 import type { CreatePartInput, UpdatePartInput, PartQueryInput } from '@/domains/core/schemas/part.schema'
 import { format } from 'date-fns'
+import type { Prisma } from '@prisma/client'
 
-interface Part {
-  id: string
-  partNumber: string
-  description: string
-  standardLength?: number | null
-  standardWidth?: number | null
-  standardHeight?: number | null
-  defaultVacuumLines?: number | null
-  createdAt: Date
-  updatedAt: Date
-  defaultCuringCycle?: {
-    id: string
-    code: string
-    name: string
-  } | null
-  _count: {
-    odls: number
-    partTools: number
+type Part = Prisma.PartGetPayload<{
+  include: {
+    defaultCuringCycle: {
+      select: {
+        id: true
+        code: true
+        name: true
+      }
+    }
+    _count: {
+      select: {
+        odls: true
+        partTools: true
+      }
+    }
   }
-}
+}>
 
 interface PartsTableProps {
   data: Part[]
@@ -296,7 +294,7 @@ export function PartsTable({
       </Box>
 
       {/* Table */}
-      <DataTable
+      <DataTable<Part>
         columns={columns}
         data={data}
         loading={loading}

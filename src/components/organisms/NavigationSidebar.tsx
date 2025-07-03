@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Drawer,
   List,
@@ -11,16 +11,22 @@ import {
   useMediaQuery,
   Avatar,
   Chip,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
 } from '@mui/material'
 import {
   ChevronLeft,
   ChevronRight,
   AccountCircle,
+  PersonSearch,
 } from '@mui/icons-material'
 import { NavigationItem } from '@/components/molecules/NavigationItem'
 import { getNavigationForUser } from '@/config/navigationConfig'
 import { useAuth } from '@/hooks/useAuth'
-import { ROLE_DISPLAY_NAMES } from '@/utils/constants'
+import { ROLE_DISPLAY_NAMES, USER_ROLES } from '@/utils/constants'
+import type { UserRole } from '@/utils/constants'
 
 interface NavigationSidebarProps {
   open: boolean
@@ -41,18 +47,36 @@ export function NavigationSidebar({
   variant = 'permanent',
 }: NavigationSidebarProps) {
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'), {
+    noSsr: true // Evita hydration mismatch
+  })
   const { user, isAuthenticated } = useAuth()
+  
+  // Stato per la selezione del ruolo (solo per admin)
+  const [selectedRole, setSelectedRole] = useState<string>('')
+  
+  // Determina il ruolo da usare per la navigazione
+  const effectiveRole = useMemo(() => {
+    if (user?.role === USER_ROLES.ADMIN && selectedRole) {
+      return selectedRole
+    }
+    return user?.role || ''
+  }, [user?.role, selectedRole])
 
   // Ottieni la navigazione specifica per l'utente corrente
   const navigation = useMemo(() => {
     if (!user) return []
     
+    // Se l'admin ha selezionato un ruolo, usa quello
+    if (user.role === USER_ROLES.ADMIN && selectedRole) {
+      return getNavigationForUser(selectedRole, undefined)
+    }
+    
     return getNavigationForUser(
       user.role,
       user.departmentRole || undefined
     )
-  }, [user])
+  }, [user, selectedRole])
 
   const currentWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH
 
@@ -127,7 +151,7 @@ export function NavigationSidebar({
       </Box>
 
       {/* Info reparto se presente */}
-      {!collapsed && user.departmentRole && (
+      {!collapsed && user.departmentRole && user.role !== UserRole.ADMIN && (
         <Box sx={{ px: 2, py: 1 }}>
           <Chip
             label={ROLE_DISPLAY_NAMES[user.departmentRole]}
@@ -136,6 +160,46 @@ export function NavigationSidebar({
             color="primary"
             sx={{ fontSize: '0.75rem' }}
           />
+        </Box>
+      )}
+      
+      {/* Dropdown Impersona Ruolo per Admin */}
+      {!collapsed && user.role === UserRole.ADMIN && (
+        <Box sx={{ px: 2, py: 1 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="role-select-label">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <PersonSearch sx={{ fontSize: 18 }} />
+                <span>Impersona Ruolo</span>
+              </Box>
+            </InputLabel>
+            <Select
+              labelId="role-select-label"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              label="Impersona Ruolo"
+            >
+              <MenuItem value="">
+                <em>Vista Admin (Default)</em>
+              </MenuItem>
+              <MenuItem value={UserRole.SUPERVISOR}>
+                {ROLE_DISPLAY_NAMES[UserRole.SUPERVISOR]}
+              </MenuItem>
+              <MenuItem value={UserRole.OPERATOR}>
+                {ROLE_DISPLAY_NAMES[UserRole.OPERATOR]}
+              </MenuItem>
+            </Select>
+          </FormControl>
+          {selectedRole && (
+            <Chip
+              label={`Viewing as: ${ROLE_DISPLAY_NAMES[selectedRole]}`}
+              size="small"
+              color="warning"
+              variant="filled"
+              sx={{ mt: 1, fontSize: '0.75rem' }}
+              onDelete={() => setSelectedRole('')}
+            />
+          )}
         </Box>
       )}
 
@@ -218,7 +282,9 @@ export function NavigationSidebar({
 // Hook per gestire lo stato della sidebar
 export function useSidebar() {
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'), {
+    noSsr: true // Evita hydration mismatch
+  })
   
   return {
     isMobile,

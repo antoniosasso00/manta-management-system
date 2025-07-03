@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
   MenuItem,
   Alert,
   Box,
@@ -121,9 +120,9 @@ export function PartForm({
             </Alert>
           )}
 
-          <Grid container spacing={3} sx={{ mt: 1 }}>
+          <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             {/* Part Number */}
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Box className="md:col-span-1">
               <Controller
                 name="partNumber"
                 control={control}
@@ -138,10 +137,10 @@ export function PartForm({
                   />
                 )}
               />
-            </Grid>
+            </Box>
 
             {/* Description */}
-            <Grid size={{ xs: 12 }}>
+            <Box className="col-span-full">
               <Controller
                 name="description"
                 control={control}
@@ -158,80 +157,82 @@ export function PartForm({
                   />
                 )}
               />
-            </Grid>
+            </Box>
 
             {/* Dimensions Section */}
-            <Grid size={{ xs: 12 }}>
+            <Box className="col-span-full">
               <Typography variant="h6" gutterBottom>
                 Standard Dimensions (optional)
               </Typography>
-            </Grid>
+            </Box>
 
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Controller
-                name="standardLength"
-                control={control}
-                render={({ field: { value, onChange, ...field } }) => (
-                  <Input
-                    {...field}
-                    type="number"
-                    label="Length (mm)"
-                    value={value || ''}
-                    onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                    error={!!errors.standardLength}
-                    helperText={errors.standardLength?.message}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Grid>
+            <Box className="grid grid-cols-1 md:grid-cols-3 gap-6 col-span-full">
+              <Box>
+                <Controller
+                  name="standardLength"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <Input
+                      {...field}
+                      type="number"
+                      label="Length (mm)"
+                      value={value || ''}
+                      onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      error={!!errors.standardLength}
+                      helperText={errors.standardLength?.message}
+                      disabled={loading}
+                    />
+                  )}
+                />
+              </Box>
 
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Controller
-                name="standardWidth"
-                control={control}
-                render={({ field: { value, onChange, ...field } }) => (
-                  <Input
-                    {...field}
-                    type="number"
-                    label="Width (mm)"
-                    value={value || ''}
-                    onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                    error={!!errors.standardWidth}
-                    helperText={errors.standardWidth?.message}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Grid>
+              <Box>
+                <Controller
+                  name="standardWidth"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <Input
+                      {...field}
+                      type="number"
+                      label="Width (mm)"
+                      value={value || ''}
+                      onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      error={!!errors.standardWidth}
+                      helperText={errors.standardWidth?.message}
+                      disabled={loading}
+                    />
+                  )}
+                />
+              </Box>
 
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Controller
-                name="standardHeight"
-                control={control}
-                render={({ field: { value, onChange, ...field } }) => (
-                  <Input
-                    {...field}
-                    type="number"
-                    label="Height (mm)"
-                    value={value || ''}
-                    onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                    error={!!errors.standardHeight}
-                    helperText={errors.standardHeight?.message}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Grid>
+              <Box>
+                <Controller
+                  name="standardHeight"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <Input
+                      {...field}
+                      type="number"
+                      label="Height (mm)"
+                      value={value || ''}
+                      onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      error={!!errors.standardHeight}
+                      helperText={errors.standardHeight?.message}
+                      disabled={loading}
+                    />
+                  )}
+                />
+              </Box>
+            </Box>
 
             {/* Production Settings */}
-            <Grid size={{ xs: 12 }}>
+            <Box className="col-span-full">
               <Typography variant="h6" gutterBottom>
                 Production Settings (optional)
               </Typography>
-            </Grid>
+            </Box>
 
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Box>
               <Controller
                 name="defaultVacuumLines"
                 control={control}
@@ -249,9 +250,9 @@ export function PartForm({
                   />
                 )}
               />
-            </Grid>
+            </Box>
 
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Box>
               <Controller
                 name="defaultCuringCycleId"
                 control={control}
@@ -276,8 +277,8 @@ export function PartForm({
                   </Input>
                 )}
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

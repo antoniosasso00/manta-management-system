@@ -32,12 +32,13 @@ export function RoleBasedAccess({
   // Controlla ruolo sistema
   const hasSystemRole = requiredRoles.length === 0 || requiredRoles.includes(user.role)
   
-  // Controlla ruolo reparto
+  // Controlla ruolo reparto - ADMIN bypassa i controlli di reparto
   const hasDepartmentRole = requiredDepartmentRoles.length === 0 || 
+    user.role === 'ADMIN' ||
     (user.departmentRole && requiredDepartmentRoles.includes(user.departmentRole))
   
-  // Controlla reparto specifico
-  const hasCorrectDepartment = !departmentId || user.departmentId === departmentId
+  // Controlla reparto specifico - ADMIN bypassa il controllo reparto
+  const hasCorrectDepartment = !departmentId || user.role === 'ADMIN' || user.departmentId === departmentId
 
   // Se ha tutti i permessi necessari, mostra il contenuto
   if (hasSystemRole && hasDepartmentRole && hasCorrectDepartment) {
@@ -139,8 +140,10 @@ export function useRoleAccess() {
     departmentId?: string
   ) => {
     const hasSystemRole = requiredRoles.length === 0 || hasRole(requiredRoles)
-    const hasDeptRole = requiredDepartmentRoles.length === 0 || hasDepartmentRole(requiredDepartmentRoles)
-    const hasCorrectDept = !departmentId || isInDepartment(departmentId)
+    const hasDeptRole = requiredDepartmentRoles.length === 0 || 
+      hasRole('ADMIN') ||
+      hasDepartmentRole(requiredDepartmentRoles)
+    const hasCorrectDept = !departmentId || hasRole('ADMIN') || isInDepartment(departmentId)
     
     return hasSystemRole && hasDeptRole && hasCorrectDept
   }

@@ -340,3 +340,427 @@ Received body: {
  ✓ Compiled middleware in 7ms
  ✓ Compiled in 28ms
  ✓ Compiled middleware in 0ms
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+✅ Redis connection restored
+✅ Redis connection restored
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+✅ Redis connection restored
+✅ Redis connection restored
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/edge/chunks/_cb097f24._.js']
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/_not-found/page/app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/antonio/Scrivania/manta-management-system/.next/server/app/favicon.ico/[__metadata_id__]/route/app-paths-manifest.json'
+}
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+✅ Redis connection restored
+✅ Redis connection restored
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+Redis error, falling back to in-memory: connect ECONNREFUSED 127.0.0.1:6379
+[?25h

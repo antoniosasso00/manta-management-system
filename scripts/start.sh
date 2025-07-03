@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 # Banner
 echo -e "${BLUE}"
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║                    MES AEROSPAZIO                            ║"
+echo "║                    Manta Group MES                           ║"
 echo "║            Manufacturing Execution System                    ║"
 echo "║                   Startup Script                             ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
@@ -47,6 +47,17 @@ log_step() {
 # Funzione per verificare se un comando esiste
 command_exists() {
     command -v "$1" >/dev/null 2>&1
+}
+
+# Funzione per determinare il comando Docker Compose disponibile
+get_docker_compose_cmd() {
+    if command_exists docker && docker compose version >/dev/null 2>&1; then
+        echo "docker compose"
+    elif command_exists docker-compose; then
+        echo "docker-compose"
+    else
+        return 1
+    fi
 }
 
 # Funzione per verificare se una porta è in uso
@@ -154,26 +165,27 @@ start_docker() {
         exit 1
     fi
     
-    if ! command_exists docker-compose; then
+    local compose_cmd
+    if ! compose_cmd=$(get_docker_compose_cmd); then
         log_error "Docker Compose non installato"
         exit 1
     fi
     
     # Ferma eventuali container esistenti
-    docker-compose down 2>/dev/null || true
+    $compose_cmd down 2>/dev/null || true
     
     # Avvia i servizi
     log_info "Avviando PostgreSQL e Redis..."
-    docker-compose up -d postgres redis
+    $compose_cmd up -d postgres redis
     
     # Attende che i servizi siano pronti
     log_info "Attendo che i servizi siano pronti..."
     sleep 5
     
     # Verifica che i servizi siano attivi
-    if ! docker-compose ps | grep -q "Up"; then
+    if ! $compose_cmd ps | grep -q "Up"; then
         log_error "Errore nell'avvio dei servizi Docker"
-        docker-compose logs
+        $compose_cmd logs
         exit 1
     fi
     
@@ -244,19 +256,25 @@ start_docker_full() {
         exit 1
     fi
     
+    local compose_cmd
+    if ! compose_cmd=$(get_docker_compose_cmd); then
+        log_error "Docker Compose non installato"
+        exit 1
+    fi
+    
     # Ferma eventuali container esistenti
-    docker-compose down 2>/dev/null || true
+    $compose_cmd down 2>/dev/null || true
     
     log_info "Building e avvio di tutti i servizi..."
-    docker-compose up --build -d
+    $compose_cmd up --build -d
     
     log_info "Attendo che i servizi siano pronti..."
     sleep 10
     
     # Verifica che i servizi siano attivi
-    if ! docker-compose ps | grep -q "Up"; then
+    if ! $compose_cmd ps | grep -q "Up"; then
         log_error "Errore nell'avvio dei servizi Docker"
-        docker-compose logs
+        $compose_cmd logs
         exit 1
     fi
     
@@ -266,9 +284,9 @@ start_docker_full() {
     echo -e "${GREEN}Redis disponibile su: localhost:6379${NC}"
     echo ""
     echo "Comandi utili:"
-    echo "  docker-compose logs -f        # Visualizza i log"
-    echo "  docker-compose stop           # Ferma i servizi"
-    echo "  docker-compose down           # Ferma e rimuove i container"
+    echo "  $compose_cmd logs -f        # Visualizza i log"
+    echo "  $compose_cmd stop           # Ferma i servizi"
+    echo "  $compose_cmd down           # Ferma e rimuove i container"
 }
 
 # Funzione per cleanup
@@ -283,8 +301,11 @@ cleanup() {
     
     # Ferma Docker se richiesto
     if [ "$1" = "docker" ]; then
-        docker-compose down 2>/dev/null || true
-        log_success "Servizi Docker fermati"
+        local compose_cmd
+        if compose_cmd=$(get_docker_compose_cmd); then
+            $compose_cmd down 2>/dev/null || true
+            log_success "Servizi Docker fermati"
+        fi
     fi
     
     log_success "Pulizia completata"
@@ -315,10 +336,11 @@ show_status() {
     
     echo ""
     
-    if command_exists docker-compose; then
+    local compose_cmd
+    if compose_cmd=$(get_docker_compose_cmd); then
         echo -e "${CYAN}Docker Compose Status:${NC}"
-        if docker-compose ps 2>/dev/null | grep -q "Up"; then
-            docker-compose ps
+        if $compose_cmd ps 2>/dev/null | grep -q "Up"; then
+            $compose_cmd ps
         else
             echo -e "  ${YELLOW}Nessun servizio Docker attivo${NC}"
         fi

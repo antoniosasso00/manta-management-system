@@ -81,12 +81,91 @@ export const theme = createTheme({
         variant: 'outlined',
         fullWidth: true,
       },
+      styleOverrides: {
+        root: {
+          '& .MuiInputBase-root': {
+            minHeight: 44, // WCAG 2.1 AA compliant
+          },
+        },
+      },
     },
     MuiIconButton: {
       styleOverrides: {
         root: {
           minHeight: 44, // Mobile-friendly touch target
           minWidth: 44,
+        },
+      },
+    },
+    // WCAG 2.1 AA Compliance - Touch Target Optimization
+    MuiCheckbox: {
+      styleOverrides: {
+        root: {
+          padding: '12px', // Aumenta area touch a 48px (24px + 12px padding * 2)
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
+        },
+      },
+    },
+    MuiRadio: {
+      styleOverrides: {
+        root: {
+          padding: '12px', // Aumenta area touch a 48px
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
+        },
+      },
+    },
+    MuiTableSortLabel: {
+      styleOverrides: {
+        root: {
+          minHeight: 44,
+          padding: '8px 12px',
+          '& .MuiTableSortLabel-icon': {
+            fontSize: '1.2rem',
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          '&.MuiChip-clickable': {
+            minHeight: 44,
+          },
+        },
+      },
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          '& .MuiInputBase-root': {
+            minHeight: 44,
+          },
+          '& .MuiSelect-select': {
+            minHeight: 44,
+            display: 'flex',
+            alignItems: 'center',
+          },
+        },
+      },
+    },
+    // Industrial environment optimizations
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          minHeight: 44,
+          padding: '12px 16px',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          minHeight: 44,
+          padding: '8px 16px',
         },
       },
     },

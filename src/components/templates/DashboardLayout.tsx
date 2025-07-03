@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -31,15 +31,22 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   const theme = useTheme()
   const { isMobile, defaultOpen, sidebarWidth, sidebarCollapsedWidth } = useSidebar()
   
+  // Stato per evitare hydration mismatch
+  const [mounted, setMounted] = useState(false)
+  
   // Stato sidebar
   const [sidebarOpen, setSidebarOpen] = useState(defaultOpen)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Auto-generate breadcrumbs if not provided
   const autoBreadcrumbs = breadcrumbs || generateBreadcrumbs(pathname)
 
-  // Show loading state during authentication check to prevent hydration mismatch
-  if (isLoading) {
+  // Show loading state during authentication check and mount to prevent hydration mismatch
+  if (isLoading || !mounted) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Typography>Loading...</Typography>

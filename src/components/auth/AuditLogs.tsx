@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Paper,
@@ -18,7 +18,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
   Pagination,
   Card,
   CardContent,
@@ -87,11 +86,7 @@ export function AuditLogs() {
     totalPages: 0
   })
 
-  useEffect(() => {
-    fetchAuditLogs()
-  }, [filters, pagination.page, pagination.limit])
-
-  const fetchAuditLogs = async () => {
+  const fetchAuditLogs = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -120,7 +115,11 @@ export function AuditLogs() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters, pagination.page, pagination.limit])
+
+  useEffect(() => {
+    fetchAuditLogs()
+  }, [fetchAuditLogs])
 
   const handleFilterChange = (key: keyof AuditFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
@@ -192,8 +191,8 @@ export function AuditLogs() {
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
+            <Box>
               <FormControl fullWidth size="small">
                 <InputLabel>Azione</InputLabel>
                 <Select
@@ -211,8 +210,8 @@ export function AuditLogs() {
                   <MenuItem value="IMPORT">Import</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            </Box>
+            <Box>
               <FormControl fullWidth size="small">
                 <InputLabel>Risorsa</InputLabel>
                 <Select
@@ -227,8 +226,8 @@ export function AuditLogs() {
                   <MenuItem value="Part">Parti</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label="User ID"
@@ -237,8 +236,8 @@ export function AuditLogs() {
                 onChange={(e) => handleFilterChange('userId', e.target.value)}
                 size="small"
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            </Box>
+            <Box>
               <Button
                 fullWidth
                 variant="outlined"
@@ -248,8 +247,8 @@ export function AuditLogs() {
               >
                 Pulisci
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -357,51 +356,51 @@ export function AuditLogs() {
         <DialogContent>
           {selectedLog && (
             <Box>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 6 }}>
+              <Box className="grid grid-cols-2 gap-4">
+                <Box>
                   <Typography variant="subtitle2">Azione:</Typography>
                   <Chip
                     label={getActionLabel(selectedLog.action)}
                     color={getActionColor(selectedLog.action)}
                     size="small"
                   />
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2">Timestamp:</Typography>
                   <Typography variant="body2">
                     {new Date(selectedLog.timestamp).toLocaleString('it-IT')}
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2">Risorsa:</Typography>
                   <Typography variant="body2">{selectedLog.resource}</Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2">Resource ID:</Typography>
                   <Typography variant="body2" fontFamily="monospace">
                     {selectedLog.resourceId || '-'}
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2">Utente:</Typography>
                   <Typography variant="body2">
                     {selectedLog.user.name || selectedLog.userEmail}
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2">IP Address:</Typography>
                   <Typography variant="body2" fontFamily="monospace">
                     {selectedLog.ipAddress || '-'}
                   </Typography>
-                </Grid>
-                <Grid size={{ xs: 12 }}>
+                </Box>
+                <Box className="col-span-2">
                   <Typography variant="subtitle2">User Agent:</Typography>
                   <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
                     {selectedLog.userAgent || '-'}
                   </Typography>
-                </Grid>
+                </Box>
                 {selectedLog.details && (
-                  <Grid size={{ xs: 12 }}>
+                  <Box className="col-span-2">
                     <Typography variant="subtitle2">Dettagli:</Typography>
                     <Paper sx={{ p: 2, mt: 1, bgcolor: 'grey.50' }}>
                       <pre style={{ 
@@ -412,9 +411,9 @@ export function AuditLogs() {
                         {JSON.stringify(selectedLog.details, null, 2)}
                       </pre>
                     </Paper>
-                  </Grid>
+                  </Box>
                 )}
-              </Grid>
+              </Box>
             </Box>
           )}
         </DialogContent>

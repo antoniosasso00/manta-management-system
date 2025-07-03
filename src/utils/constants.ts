@@ -5,6 +5,8 @@ export const USER_ROLES = {
   OPERATOR: 'OPERATOR',
 } as const
 
+export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
+
 // Department roles (department-specific)
 export const DEPARTMENT_ROLES = {
   CAPO_REPARTO: 'CAPO_REPARTO',

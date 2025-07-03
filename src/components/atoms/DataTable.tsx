@@ -41,7 +41,7 @@ export interface DataTableProps<T = Record<string, unknown>> {
   stickyHeader?: boolean
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends Record<string, unknown> = Record<string, unknown>>({
   columns,
   data,
   loading = false,

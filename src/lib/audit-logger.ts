@@ -32,7 +32,6 @@ export async function logAuditAction({
         request.headers.get('x-forwarded-for')?.split(',')[0] ||
         request.headers.get('x-real-ip') ||
         request.headers.get('cf-connecting-ip') ||
-        request.ip ||
         'unknown'
       
       userAgent = request.headers.get('user-agent') || undefined
@@ -45,7 +44,7 @@ export async function logAuditAction({
         resourceId,
         userId,
         userEmail,
-        details: details ? JSON.stringify(details) : null,
+        details: details ? JSON.stringify(details) : undefined,
         ipAddress,
         userAgent,
       }
@@ -62,7 +61,7 @@ export const auditHelpers = {
     await logAuditAction({
       action: AuditAction.CREATE,
       resource: 'User',
-      resourceId: createdUser.id,
+      resourceId: String(createdUser.id),
       userId: adminUserId,
       userEmail: adminEmail,
       details: {
@@ -112,7 +111,7 @@ export const auditHelpers = {
     await logAuditAction({
       action: AuditAction.DELETE,
       resource: 'User',
-      resourceId: deletedUser.id,
+      resourceId: String(deletedUser.id),
       userId: adminUserId,
       userEmail: adminEmail,
       details: {

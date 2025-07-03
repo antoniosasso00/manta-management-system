@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { PartService } from '@/domains/core/services/part.service'
+import { PartService } from '@/domains/core/services/PartService'
 import { createPartSchema, partQuerySchema } from '@/domains/core/schemas/part.schema'
 import { ZodError } from 'zod'
 

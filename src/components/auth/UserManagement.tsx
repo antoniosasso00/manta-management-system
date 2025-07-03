@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Paper,
@@ -29,7 +29,6 @@ import {
   InputLabel,
   Select,
   MenuItem as SelectItem,
-  Grid,
   Pagination,
   Card,
   CardContent,
@@ -132,16 +131,7 @@ export function UserManagement() {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
   const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(null)
 
-  useEffect(() => {
-    fetchUsers()
-    fetchDepartments()
-  }, [])
-  
-  useEffect(() => {
-    fetchUsers()
-  }, [filters, pagination.page, pagination.limit])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -170,9 +160,9 @@ export function UserManagement() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters, pagination.page, pagination.limit])
   
-  const fetchDepartments = async () => {
+  const fetchDepartments = useCallback(async () => {
     try {
       const response = await fetch('/api/departments')
       if (response.ok) {
@@ -182,7 +172,16 @@ export function UserManagement() {
     } catch {
       // Silently fail - departments are optional for filtering
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchUsers()
+    fetchDepartments()
+  }, [fetchUsers, fetchDepartments])
+  
+  useEffect(() => {
+    fetchUsers()
+  }, [filters, pagination.page, pagination.limit, fetchUsers])
 
   const handleCreateUser = () => {
     setSelectedUser(null)
@@ -388,8 +387,8 @@ export function UserManagement() {
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4 items-center">
+            <Box className="col-span-1 sm:col-span-1 md:col-span-3">
               <TextField
                 fullWidth
                 label="Cerca"
@@ -401,8 +400,8 @@ export function UserManagement() {
                 }}
                 size="small"
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            </Box>
+            <Box className="col-span-1 sm:col-span-1 md:col-span-2">
               <FormControl fullWidth size="small">
                 <InputLabel>Ruolo</InputLabel>
                 <Select
@@ -416,8 +415,8 @@ export function UserManagement() {
                   <SelectItem value="OPERATOR">Operatore</SelectItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            </Box>
+            <Box className="col-span-1 sm:col-span-1 md:col-span-2">
               <FormControl fullWidth size="small">
                 <InputLabel>Reparto</InputLabel>
                 <Select
@@ -433,8 +432,8 @@ export function UserManagement() {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            </Box>
+            <Box className="col-span-1 sm:col-span-1 md:col-span-2">
               <FormControl fullWidth size="small">
                 <InputLabel>Stato</InputLabel>
                 <Select
@@ -447,8 +446,8 @@ export function UserManagement() {
                   <SelectItem value="inactive">Disattivati</SelectItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            </Box>
+            <Box className="col-span-1 sm:col-span-1 md:col-span-2">
               <Button
                 fullWidth
                 variant="outlined"
@@ -458,8 +457,8 @@ export function UserManagement() {
               >
                 Pulisci
               </Button>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 1 }}>
+            </Box>
+            <Box className="col-span-1 sm:col-span-1 md:col-span-1">
               <Box display="flex" gap={1}>
                 <Tooltip title="Esporta utenti">
                   <IconButton onClick={handleExport} color="primary">
@@ -472,8 +471,8 @@ export function UserManagement() {
                   </IconButton>
                 </Tooltip>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
