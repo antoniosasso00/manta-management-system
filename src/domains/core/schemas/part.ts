@@ -1,21 +1,38 @@
 import { z } from 'zod'
 
-// Base Part schema matching Prisma model
+// API Part schema matching Part entity structure with serialized dates
 export const partSchema = z.object({
   id: z.string(),
   partNumber: z.string(),
   description: z.string(),
-  material: z.string().nullable(),
-  isActive: z.boolean(),
-  defaultCuringCycleId: z.string().nullable(),
-  dimensions: z.string().nullable(),
-  weight: z.number().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  
+  // Gamma MES sync tracking
+  gammaId: z.string().nullable().optional(),
+  lastSyncAt: z.string().datetime().nullable().optional(),
+  syncStatus: z.enum(['SUCCESS', 'FAILED', 'PENDING']),
+  
+  // Production specifications
+  defaultCuringCycle: z.string().nullable().optional(),
+  standardLength: z.number().nullable().optional(),
+  standardWidth: z.number().nullable().optional(), 
+  standardHeight: z.number().nullable().optional(),
+  defaultVacuumLines: z.number().nullable().optional(),
+  
+  // Optional counts for API responses
   _count: z.object({
     odls: z.number().optional(),
     partTools: z.number().optional()
   }).optional()
+})
+
+// Paginated response schema for getAll
+export const paginatedPartsSchema = z.object({
+  parts: z.array(partSchema),
+  total: z.number(),
+  page: z.number(),
+  totalPages: z.number()
 })
 
 // Create Part schema

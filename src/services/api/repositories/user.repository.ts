@@ -1,15 +1,16 @@
 import { ValidatedRepository } from '../repository'
 import { z } from 'zod'
-import { UserRole, DepartmentRole } from '@/utils/constants'
+import { USER_ROLES, DEPARTMENT_ROLES } from '@/utils/constants'
+import type { UserRole, DepartmentRole } from '@/utils/constants'
 
 // User schemas
 const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   name: z.string().nullable(),
-  role: z.nativeEnum(UserRole),
+  role: z.nativeEnum(USER_ROLES),
   departmentId: z.string().nullable(),
-  departmentRole: z.nativeEnum(DepartmentRole).nullable(),
+  departmentRole: z.nativeEnum(DEPARTMENT_ROLES).nullable(),
   isActive: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -20,17 +21,17 @@ const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().optional(),
-  role: z.nativeEnum(UserRole),
+  role: z.nativeEnum(USER_ROLES),
   departmentId: z.string().optional(),
-  departmentRole: z.nativeEnum(DepartmentRole).optional()
+  departmentRole: z.nativeEnum(DEPARTMENT_ROLES).optional()
 })
 
 const updateUserSchema = z.object({
   email: z.string().email().optional(),
   name: z.string().optional(),
-  role: z.nativeEnum(UserRole).optional(),
+  role: z.nativeEnum(USER_ROLES).optional(),
   departmentId: z.string().nullable().optional(),
-  departmentRole: z.nativeEnum(DepartmentRole).nullable().optional(),
+  departmentRole: z.nativeEnum(DEPARTMENT_ROLES).nullable().optional(),
   isActive: z.boolean().optional()
 })
 

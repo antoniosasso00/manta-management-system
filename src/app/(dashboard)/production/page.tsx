@@ -95,76 +95,20 @@ export default function ProductionPage() {
         const odlData = await odlResponse.json();
         setOdlList(odlData);
       } else {
-        // Dati mock per sviluppo
-        setOdlList([
-          {
-            id: '1',
-            odlNumber: 'ODL-2024-001',
-            partNumber: '8G5350A01',
-            description: 'Pannello laterale carbonio',
-            status: 'IN_CLEANROOM',
-            priority: 'HIGH',
-            quantity: 2,
-            currentDepartment: 'Clean Room',
-            assignedOperator: 'Mario Rossi',
-            timeInDepartment: 125,
-            lastUpdate: new Date().toISOString(),
-            nextDepartment: 'Autoclavi'
-          },
-          {
-            id: '2',
-            odlNumber: 'ODL-2024-002',
-            partNumber: '8G5350B02',
-            description: 'Longherone principale',
-            status: 'CLEANROOM_COMPLETED',
-            priority: 'NORMAL',
-            quantity: 1,
-            currentDepartment: 'Clean Room',
-            assignedOperator: 'Luigi Verdi',
-            timeInDepartment: 0,
-            lastUpdate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            nextDepartment: 'Autoclavi'
-          },
-          {
-            id: '3',
-            odlNumber: 'ODL-2024-003',
-            partNumber: '8G5350C03',
-            description: 'Rivestimento interno',
-            status: 'IN_AUTOCLAVE',
-            priority: 'LOW',
-            quantity: 4,
-            currentDepartment: 'Autoclavi',
-            assignedOperator: 'Anna Bianchi',
-            timeInDepartment: 45,
-            lastUpdate: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-            nextDepartment: 'NDI'
-          },
-          {
-            id: '4',
-            odlNumber: 'ODL-2024-004',
-            partNumber: '8G5350D04',
-            description: 'Elemento strutturale',
-            status: 'COMPLETED',
-            priority: 'HIGH',
-            quantity: 1,
-            currentDepartment: 'Rifilatura',
-            assignedOperator: 'Paolo Neri',
-            timeInDepartment: 0,
-            lastUpdate: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
-          }
-        ]);
+        console.error('Errore nel caricamento ODL produzione:', response.statusText)
+        setOdlList([]);
       }
 
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(statsData);
       } else {
-        // Stats mock
+        console.error('Errore nel caricamento statistiche produzione:', statsResponse.statusText)
         setStats({
-          totalODL: 4,
-          inProgress: 2,
-          completed: 1,
-          averageCycleTime: 185
+          totalODL: 0,
+          inProgress: 0,
+          completed: 0,
+          averageCycleTime: 0
         });
       }
 
@@ -279,13 +223,8 @@ export default function ProductionPage() {
 
   return (
     <Box className="p-4 space-y-6">
-      {/* Header */}
-      <Box className="flex items-center justify-between">
-        <Typography variant="h4" className="flex items-center gap-2">
-          <Factory />
-          Produzione - Overview
-        </Typography>
-        <Box className="space-x-2">
+        {/* Header Actions */}
+        <Box className="flex items-center justify-end gap-2">
           <Button
             variant="outlined"
             startIcon={<QrCodeScanner />}
@@ -297,7 +236,6 @@ export default function ProductionPage() {
             <Refresh />
           </IconButton>
         </Box>
-      </Box>
 
       {/* Stats Cards */}
       <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">

@@ -1,12 +1,15 @@
 import { ValidatedRepository } from '../repository'
 import { 
   partSchema, 
-  createPartSchema, 
+  paginatedPartsSchema,
+  type Part
+} from '@/domains/core/schemas/part'
+import {
+  createPartSchema,
   updatePartSchema,
-  type Part,
   type CreatePartInput,
   type UpdatePartInput
-} from '@/domains/core/schemas/part'
+} from '@/domains/core/schemas/part.schema'
 
 export class PartRepository extends ValidatedRepository<Part, CreatePartInput, UpdatePartInput> {
   constructor() {
@@ -17,9 +20,26 @@ export class PartRepository extends ValidatedRepository<Part, CreatePartInput, U
       {
         entity: partSchema,
         create: createPartSchema,
-        update: updatePartSchema
+        update: updatePartSchema.omit({ id: true })
       }
     )
+  }
+
+  // Override getAll to handle paginated response
+  async getAll(params?: Record<string, string | number | boolean | string[]>): Promise<Part[]> {
+    const queryString = this.buildQueryString(params)
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${queryString}`)
+    const data = await this.handleResponse(response)
+    const validatedData = paginatedPartsSchema.parse(data)
+    return validatedData.parts
+  }
+
+  // Get paginated response with metadata
+  async getPaginated(params?: Record<string, string | number | boolean | string[]>) {
+    const queryString = this.buildQueryString(params)
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${queryString}`)
+    const data = await this.handleResponse(response)
+    return paginatedPartsSchema.parse(data)
   }
 
   // Part-specific methods

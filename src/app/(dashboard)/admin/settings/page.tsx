@@ -28,6 +28,8 @@ import {
   ListItemSecondaryAction,
   Dialog,
   DialogTitle,
+  Snackbar,
+  CircularProgress,
   DialogContent,
   DialogActions,
 } from '@mui/material'
@@ -94,6 +96,8 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [testEmailDialog, setTestEmailDialog] = useState(false)
   const [backupDialog, setBackupDialog] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' }>({ open: false, message: '', severity: 'success' })
   const [settings, setSettings] = useState<SystemSettings>({
     email: {
       smtpHost: 'smtp.gmail.com',
@@ -132,9 +136,26 @@ export default function SettingsPage() {
     },
   })
 
-  const handleSave = () => {
-    // In produzione salverebbe le impostazioni
-    alert('Impostazioni salvate con successo!')
+  const handleSave = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      })
+      
+      if (response.ok) {
+        setSnackbar({ open: true, message: 'Impostazioni salvate con successo!', severity: 'success' })
+      } else {
+        setSnackbar({ open: true, message: 'Errore nel salvataggio delle impostazioni', severity: 'error' })
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      setSnackbar({ open: true, message: 'Errore di connessione', severity: 'error' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleTestEmail = () => {
@@ -145,9 +166,27 @@ export default function SettingsPage() {
     setBackupDialog(true)
   }
 
-  const handleRestore = () => {
+  const handleRestore = async () => {
     if (confirm('Sei sicuro di voler ripristinare le impostazioni predefinite?')) {
-      alert('Impostazioni ripristinate!')
+      setLoading(true)
+      try {
+        const response = await fetch('/api/admin/settings/reset', {
+          method: 'POST'
+        })
+        
+        if (response.ok) {
+          setSnackbar({ open: true, message: 'Impostazioni ripristinate!', severity: 'success' })
+          // Ricarica le impostazioni default
+          window.location.reload()
+        } else {
+          setSnackbar({ open: true, message: 'Errore nel ripristino delle impostazioni', severity: 'error' })
+        }
+      } catch (error) {
+        console.error('Error resetting settings:', error)
+        setSnackbar({ open: true, message: 'Errore di connessione', severity: 'error' })
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -164,15 +203,17 @@ export default function SettingsPage() {
             variant="outlined"
             startIcon={<RestartAlt />}
             onClick={handleRestore}
+            disabled={loading}
           >
             Ripristina Default
           </Button>
           <Button
             variant="contained"
-            startIcon={<Save />}
+            startIcon={loading ? <CircularProgress size={20} /> : <Save />}
             onClick={handleSave}
+            disabled={loading}
           >
-            Salva Modifiche
+            {loading ? 'Salvataggio...' : 'Salva Modifiche'}
           </Button>
         </Box>
       </Box>
@@ -841,15 +882,46 @@ export default function SettingsPage() {
           <Button onClick={() => setBackupDialog(false)}>Annulla</Button>
           <Button 
             variant="contained"
-            onClick={() => {
-              alert('Backup avviato! Riceverai una notifica al completamento.')
-              setBackupDialog(false)
+            onClick={async () => {
+              setLoading(true)
+              try {
+                const response = await fetch('/api/admin/backup', {
+                  method: 'POST'
+                })
+                
+                if (response.ok) {
+                  setSnackbar({ open: true, message: 'Backup avviato! Riceverai una notifica al completamento.', severity: 'success' })
+                } else {
+                  setSnackbar({ open: true, message: 'Errore nell\'avvio del backup', severity: 'error' })
+                }
+              } catch (error) {
+                console.error('Error starting backup:', error)
+                setSnackbar({ open: true, message: 'Errore di connessione', severity: 'error' })
+              } finally {
+                setLoading(false)
+                setBackupDialog(false)
+              }
             }}
+            disabled={loading}
           >
-            Avvia Backup
+            {loading ? 'Avvio...' : 'Avvia Backup'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar per notifiche */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

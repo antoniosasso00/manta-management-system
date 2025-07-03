@@ -30,6 +30,19 @@ model User {
   auditLogs     AuditLog[]
   department    Department?      @relation(fields: [departmentId], references: [id])
   
+  // Quality Control Relations
+  qualityInspections QualityInspection[] @relation("QualityInspector")
+  qualitySignatures QualityInspection[] @relation("QualitySigner")
+  nonConformityReports NonConformity[] @relation("NCReporter")
+  nonConformityAssignments NonConformity[] @relation("NCAssignee")
+  capaAssignments CorrectiveAction[] @relation("CAPAAssignee")
+  capaVerifications CorrectiveAction[] @relation("CAPAVerifier")
+  certificateIssued QualityCertificate[] @relation("CertificateIssuer")
+  certificateApproved QualityCertificate[] @relation("CertificateApprover")
+  
+  // Department Relations
+  // Future: department-specific relations when needed
+  
   @@index([email, isActive])
   @@index([role])
   @@index([departmentId, departmentRole])
@@ -125,6 +138,14 @@ model Part {
   odls               ODL[]
   defaultCuringCycle CuringCycle?  @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
   partTools          PartTool[]
+  qualityPlans       QualityControlPlan[]
+  
+  // Department Extensions (One-to-One Optional)
+  honeycombConfig    PartHoneycomb? @relation("PartHoneycombConfig")
+  cncConfig          PartControlloNumerico? @relation("PartCNCConfig")
+  assemblyConfig     PartMontaggio? @relation("PartAssemblyConfig")
+  coatingConfig      PartVerniciatura? @relation("PartCoatingConfig")
+  engineConfig       PartMotori? @relation("PartEngineConfig")
   
   @@index([partNumber])
   @@index([gammaId])
@@ -163,6 +184,9 @@ model ODL {
   curingCycle     CuringCycle?     @relation("ODLCuringCycle", fields: [curingCycleId], references: [id])
   events          ProductionEvent[]
   autoclaveLoadItems AutoclaveLoadItem[]
+  qualityInspections QualityInspection[]
+  nonConformities NonConformity[]
+  qualityCertificates QualityCertificate[]
   
   // Ottimizzazione indici - rimosse ridondanze e aggiunti indici composti strategici
   @@index([qrCode]) // Unique constraint già presente, indice automatico
@@ -183,12 +207,34 @@ enum Priority {
 
 enum ODLStatus {
   CREATED
+  // Honeycomb processing
+  IN_HONEYCOMB
+  HONEYCOMB_COMPLETED
+  // Clean room processing
   IN_CLEANROOM
   CLEANROOM_COMPLETED
+  // CNC processing
+  IN_CONTROLLO_NUMERICO
+  CONTROLLO_NUMERICO_COMPLETED
+  // Assembly processing
+  IN_MONTAGGIO
+  MONTAGGIO_COMPLETED
+  // Autoclave processing
   IN_AUTOCLAVE
   AUTOCLAVE_COMPLETED
+  // NDI processing
   IN_NDI
-  IN_RIFILATURA
+  NDI_COMPLETED
+  // Coating processing
+  IN_VERNICIATURA
+  VERNICIATURA_COMPLETED
+  // Motor processing
+  IN_MOTORI
+  MOTORI_COMPLETED
+  // Quality control
+  IN_CONTROLLO_QUALITA
+  CONTROLLO_QUALITA_COMPLETED
+  // Final states
   COMPLETED
   ON_HOLD
   CANCELLED
@@ -245,11 +291,16 @@ model Department {
 }
 
 enum DepartmentType {
-  CLEANROOM
-  AUTOCLAVE
-  NDI
-  RIFILATURA
-  OTHER
+  HONEYCOMB          // HC - Lavorazione honeycomb cores
+  CLEANROOM          // CR - Camera bianca per laminazione
+  CONTROLLO_NUMERICO // CN - Lavorazioni CNC
+  MONTAGGIO          // RM - Assemblaggio componenti
+  AUTOCLAVE          // AC - Curing con cicli temperatura/pressione
+  NDI                // ND - Controlli non distruttivi
+  VERNICIATURA       // VR - Verniciatura/coating
+  MOTORI             // MT - Lavorazioni motori
+  CONTROLLO_QUALITA  // CQ - Controllo qualità finale
+  OTHER              // Categoria per reparti aggiuntivi
 }
 
 // Autoclave specific models
@@ -449,4 +500,519 @@ enum AuditAction {
   LOGIN
   LOGOUT
   PASSWORD_RESET
+}
+
+// ==================== CONTROLLO QUALITA MODELS ====================
+
+// Piani di Controllo - Definiscono i controlli da eseguire per ogni parte
+model QualityControlPlan {
+  id            String        @id @default(cuid())
+  partId        String
+  version       String        @default("1.0")
+  title         String
+  description   String?
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  createdBy     String        // User ID
+  
+  // Parametri di controllo
+  inspectionType    QCInspectionType
+  frequency         QCFrequency
+  sampleSize        Int           @default(1)
+  acceptanceCriteria Json        // Criteri di accettazione strutturati
+  
+  // Relations
+  part          Part          @relation(fields: [partId], references: [id])
+  inspections   QualityInspection[]
+  
+  @@index([partId, isActive])
+  @@index([inspectionType, isActive])
+  @@index([createdAt])
+  @@map("quality_control_plans")
+}
+
+// Ispezioni di Qualità - Controlli eseguiti su ODL specifici
+model QualityInspection {
+  id            String        @id @default(cuid())
+  planId        String
+  odlId         String
+  inspectorId   String        // User ID dell'ispettore
+  
+  // Stato ispezione
+  status        QCStatus      @default(PENDING)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  
+  // Risultati
+  result        QCResult?
+  measurements  Json?         // Misure effettuate
+  notes         String?
+  attachments   String[]      @default([]) // File paths/URLs
+  
+  // Certificazione
+  certificateNumber String?   @unique
+  signedBy      String?       // User ID che ha firmato
+  signedAt      DateTime?
+  
+  // Relations
+  plan          QualityControlPlan @relation(fields: [planId], references: [id])
+  odl           ODL           @relation(fields: [odlId], references: [id])
+  inspector     User          @relation("QualityInspector", fields: [inspectorId], references: [id])
+  signer        User?         @relation("QualitySigner", fields: [signedBy], references: [id])
+  nonConformities NonConformity[]
+  
+  @@index([odlId, status])
+  @@index([inspectorId, status])
+  @@index([completedAt])
+  @@index([certificateNumber])
+  @@map("quality_inspections")
+}
+
+// Non Conformità - Registrazione di problemi di qualità
+model NonConformity {
+  id            String        @id @default(cuid())
+  inspectionId  String?       // Può essere null se NC rilevata fuori da ispezione
+  odlId         String
+  reportedBy    String        // User ID
+  
+  // Classificazione
+  type          NCType
+  severity      NCSeverity
+  category      NCCategory
+  
+  // Descrizione
+  title         String
+  description   String
+  rootCause     String?
+  
+  // Stato
+  status        NCStatus      @default(OPEN)
+  detectedAt    DateTime      @default(now())
+  
+  // Gestione
+  assignedTo    String?       // User ID responsabile
+  dueDate       DateTime?
+  
+  // Relations
+  inspection    QualityInspection? @relation(fields: [inspectionId], references: [id])
+  odl           ODL           @relation(fields: [odlId], references: [id])
+  reporter      User          @relation("NCReporter", fields: [reportedBy], references: [id])
+  assignee      User?         @relation("NCAssignee", fields: [assignedTo], references: [id])
+  actions       CorrectiveAction[]
+  
+  @@index([odlId, status])
+  @@index([assignedTo, status])
+  @@index([severity, status])
+  @@index([detectedAt])
+  @@map("non_conformities")
+}
+
+// Azioni Correttive - CAPA (Corrective and Preventive Actions)
+model CorrectiveAction {
+  id            String        @id @default(cuid())
+  nonConformityId String
+  type          CAPAType
+  
+  // Descrizione
+  title         String
+  description   String
+  
+  // Pianificazione
+  plannedAction String
+  dueDate       DateTime
+  assignedTo    String        // User ID
+  
+  // Esecuzione
+  status        CAPAStatus    @default(PLANNED)
+  actualAction  String?
+  completedAt   DateTime?
+  verifiedBy    String?       // User ID
+  verifiedAt    DateTime?
+  
+  // Efficacia
+  effectiveness String?       // Valutazione efficacia
+  followUpDate  DateTime?
+  
+  // Relations
+  nonConformity NonConformity @relation(fields: [nonConformityId], references: [id])
+  assignee      User          @relation("CAPAAssignee", fields: [assignedTo], references: [id])
+  verifier      User?         @relation("CAPAVerifier", fields: [verifiedBy], references: [id])
+  
+  @@index([nonConformityId])
+  @@index([assignedTo, status])
+  @@index([dueDate, status])
+  @@index([completedAt])
+  @@map("corrective_actions")
+}
+
+// Certificati di Qualità - Documenti finali
+model QualityCertificate {
+  id            String        @id @default(cuid())
+  odlId         String
+  certificateNumber String    @unique
+  
+  // Contenuto
+  title         String
+  description   String?
+  
+  // Conformità
+  conformityStatus Boolean    @default(false)
+  standardsRef  String[]     @default([]) // Riferimenti normativi
+  
+  // Firme
+  issuedBy      String        // User ID
+  approvedBy    String?       // User ID
+  issuedAt      DateTime      @default(now())
+  approvedAt    DateTime?
+  
+  // Documento
+  documentPath  String?       // Path del PDF generato
+  
+  // Relations
+  odl           ODL           @relation(fields: [odlId], references: [id])
+  issuer        User          @relation("CertificateIssuer", fields: [issuedBy], references: [id])
+  approver      User?         @relation("CertificateApprover", fields: [approvedBy], references: [id])
+  
+  @@index([odlId])
+  @@index([certificateNumber])
+  @@index([issuedAt])
+  @@index([conformityStatus])
+  @@map("quality_certificates")
+}
+
+// ==================== CONTROLLO QUALITA ENUMS ====================
+
+enum QCInspectionType {
+  DIMENSIONAL      // Controllo dimensionale
+  VISUAL           // Controllo visivo
+  FUNCTIONAL       // Test funzionale
+  MATERIAL         // Controllo materiale
+  SURFACE          // Controllo superficie
+  ASSEMBLY         // Controllo assemblaggio
+  FINAL            // Controllo finale
+}
+
+enum QCFrequency {
+  EVERY_PIECE      // Ogni pezzo
+  FIRST_PIECE      // Primo pezzo
+  SAMPLE           // Campionamento
+  PERIODIC         // Periodico
+  FINAL_ONLY       // Solo finale
+}
+
+enum QCStatus {
+  PENDING          // In attesa
+  IN_PROGRESS      // In corso
+  COMPLETED        // Completato
+  ON_HOLD          // In sospeso
+  CANCELLED        // Annullato
+}
+
+enum QCResult {
+  PASS             // Conforme
+  FAIL             // Non conforme
+  CONDITIONAL      // Conforme con riserva
+  RECHECK          // Da ricontrollare
+}
+
+enum NCType {
+  DIMENSIONAL      // Difetto dimensionale
+  VISUAL           // Difetto visivo
+  FUNCTIONAL       // Difetto funzionale
+  MATERIAL         // Difetto materiale
+  PROCESS          // Difetto di processo
+  DOCUMENTATION    // Difetto documentale
+}
+
+enum NCSeverity {
+  CRITICAL         // Critico - blocca produzione
+  MAJOR            // Maggiore - richiede azione
+  MINOR            // Minore - da monitorare
+  COSMETIC         // Estetico - non blocca
+}
+
+enum NCCategory {
+  CUSTOMER_IMPACT  // Impatto cliente
+  SAFETY           // Sicurezza
+  REGULATORY       // Normativo
+  INTERNAL         // Interno
+  SUPPLIER         // Fornitore
+}
+
+enum NCStatus {
+  OPEN             // Aperto
+  ASSIGNED         // Assegnato
+  IN_PROGRESS      // In corso
+  RESOLVED         // Risolto
+  VERIFIED         // Verificato
+  CLOSED           // Chiuso
+}
+
+enum CAPAType {
+  CORRECTIVE       // Azione correttiva
+  PREVENTIVE       // Azione preventiva
+  IMPROVEMENT      // Miglioramento
+}
+
+enum CAPAStatus {
+  PLANNED          // Pianificato
+  IN_PROGRESS      // In corso
+  COMPLETED        // Completato
+  VERIFIED         // Verificato
+  CLOSED           // Chiuso
+  OVERDUE          // Scaduto
+}
+
+// ==================== DEPARTMENT EXTENSION TABLES (Pattern CLAUDE.md) ====================
+
+// Honeycomb Department Extensions
+model PartHoneycomb {
+  id                String        @id @default(cuid())
+  partId            String        @unique
+  
+  // Specifiche core honeycomb
+  coreType          HoneycombType
+  cellSize          Float         // Dimensione cella in mm
+  coreDensity       Float         // Densità core kg/m³
+  coreThickness     Float         // Spessore core in mm
+  
+  // Specifiche skin
+  skinMaterial      String?       // Materiale skin (es. CFRP, Alluminio)
+  skinThickness     Float?        // Spessore skin singolo in mm
+  
+  // Processo produzione
+  adhesiveType      String        // Tipo adesivo per bonding
+  cureTemperature   Float         // Temperatura cura °C
+  cureTime          Int           // Tempo cura in minuti
+  pressure          Float         // Pressione applicata bar
+  
+  // Controlli qualità standard
+  bondStrength      Float?        // Resistenza bond N/mm²
+  compressionStrength Float?      // Resistenza compressione MPa
+  
+  // Timing e setup
+  setupTimeMinutes  Int?          // Tempo setup standard
+  cycleTimeMinutes  Int?          // Tempo ciclo standard
+  skillLevel        SkillLevel    @default(BASIC)
+  
+  // Relations
+  part              Part          @relation("PartHoneycombConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@index([coreType])
+  @@map("part_honeycomb")
+}
+
+// Controllo Numerico Department Extensions  
+model PartControlloNumerico {
+  id                String        @id @default(cuid())
+  partId            String        @unique
+  
+  // Specifiche lavorazione CNC
+  materialType      CNCMaterialType
+  toolingRequired   String[]      // Tools necessari
+  programmingTime   Int?          // Tempo programmazione minuti
+  setupTime         Int?          // Tempo setup macchina minuti
+  cycleTime         Int?          // Tempo ciclo standard minuti
+  
+  // Tolleranze
+  toleranceClass    ToleranceClass @default(STANDARD)
+  surfaceFinish     String?       // Ra richiesta
+  
+  // Macchine compatibili
+  compatibleMachines String[]     // Codici macchine CNC
+  priority          Int           @default(1)
+  
+  // Controlli qualità
+  dimensionalChecks Json          // Punti controllo dimensionale
+  requiredInspection String?      // Tipo ispezione richiesta
+  
+  // Relations
+  part              Part          @relation("PartCNCConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@index([materialType])
+  @@map("part_controllo_numerico")
+}
+
+// Montaggio Department Extensions
+model PartMontaggio {
+  id                String        @id @default(cuid())
+  partId            String        @unique
+  
+  // Specifiche assemblaggio
+  assemblyType      AssemblyType
+  componentCount    Int           // Numero componenti
+  assemblyTime      Int?          // Tempo assemblaggio minuti
+  testingTime       Int?          // Tempo test funzionali
+  
+  // Distinta base
+  requiredParts     Json          // {"partNumber": "qty", ...}
+  requiredTools     String[]      // Utensili necessari
+  requiredFixtures  String[]      // Attrezzature necessarie
+  
+  // Istruzioni
+  assemblySequence  Json          // Sequenza step assemblaggio
+  testProcedure     String?       // Procedura test finale
+  qualityChecks     String[]      // Controlli qualità richiesti
+  
+  // Relations
+  part              Part          @relation("PartAssemblyConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@index([assemblyType])
+  @@map("part_montaggio")
+}
+
+// Verniciatura Department Extensions
+model PartVerniciatura {
+  id                String        @id @default(cuid())
+  partId            String        @unique
+  
+  // Specifiche verniciatura
+  coatingType       CoatingType
+  primerRequired    Boolean       @default(false)
+  coatLayers        Int           @default(1)
+  
+  // Preparazione superficie
+  surfacePrep       SurfacePrepType
+  cleaningRequired  Boolean       @default(true)
+  maskingRequired   Boolean       @default(false)
+  
+  // Processo
+  sprayPattern      String?       // Pattern spruzzatura
+  cureTemperature   Float?        // Temperatura cura se richiesta
+  cureTime          Int?          // Tempo cura minuti
+  dryTime           Int           // Tempo asciugatura minuti
+  
+  // Controlli qualità
+  thicknessCheck    Boolean       @default(true)
+  adhesionTest      Boolean       @default(false)
+  colorMatch        String?       // Codice colore riferimento
+  
+  // Relations
+  part              Part          @relation("PartCoatingConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@index([coatingType])
+  @@map("part_verniciatura")
+}
+
+// Motori Department Extensions
+model PartMotori {
+  id                String        @id @default(cuid())
+  partId            String        @unique
+  
+  // Specifiche motore
+  engineType        EngineType
+  powerRating       Float?        // Potenza HP/kW
+  rpmRange          String?       // Range RPM operativo
+  fuelType          FuelType?     // Tipo carburante
+  
+  // Assemblaggio
+  assemblyTime      Int?          // Tempo assemblaggio ore
+  testingTime       Int?          // Tempo test funzionali ore
+  burnInTime        Int?          // Tempo rodaggio ore
+  
+  // Test richiesti
+  compressionTest   Boolean       @default(false)
+  leakTest          Boolean       @default(true)
+  performanceTest   Boolean       @default(true)
+  vibrationTest     Boolean       @default(false)
+  
+  // Certificazioni
+  certificationReq  String[]      // Certificazioni richieste
+  documentationReq  String[]      // Documentazione richiesta
+  
+  // Relations
+  part              Part          @relation("PartEngineConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@index([engineType])
+  @@map("part_motori")
+}
+
+// ==================== DEPARTMENT EXTENSION ENUMS ====================
+
+// Honeycomb
+enum HoneycombType {
+  ALUMINUM_3_16    // Alluminio 3/16"
+  ALUMINUM_1_4     // Alluminio 1/4"
+  ALUMINUM_3_8     // Alluminio 3/8"
+  NOMEX_3_16       // Nomex 3/16"
+  NOMEX_1_4        // Nomex 1/4"
+  NOMEX_3_8        // Nomex 3/8"
+  CARBON_3_16      // Carbon fiber 3/16"
+  CARBON_1_4       // Carbon fiber 1/4"
+}
+
+enum SkillLevel {
+  BASIC            // Livello base
+  INTERMEDIATE     // Livello intermedio
+  ADVANCED         // Livello avanzato
+  EXPERT           // Livello esperto
+}
+
+// Controllo Numerico
+enum CNCMaterialType {
+  ALUMINUM         // Alluminio
+  CARBON_FIBER     // Fibra di carbonio
+  STEEL            // Acciaio
+  TITANIUM         // Titanio
+  COMPOSITE        // Composito
+  PLASTIC          // Plastica
+}
+
+enum ToleranceClass {
+  ROUGH            // Grossolana
+  STANDARD         // Standard
+  FINE             // Fine
+  PRECISION        // Precisione
+  HIGH_PRECISION   // Alta precisione
+}
+
+// Montaggio
+enum AssemblyType {
+  MECHANICAL       // Assemblaggio meccanico
+  BONDED          // Assemblaggio incollato
+  WELDED          // Assemblaggio saldato
+  RIVETED         // Assemblaggio ribattinato
+  HYBRID          // Assemblaggio ibrido
+}
+
+// Verniciatura
+enum CoatingType {
+  PRIMER          // Primer
+  BASE_COAT       // Vernice base
+  CLEAR_COAT      // Vernice trasparente
+  POWDER_COAT     // Verniciatura a polvere
+  ANODIZING       // Anodizzazione
+  CHEMICAL_CONVERSION // Conversione chimica
+}
+
+enum SurfacePrepType {
+  DEGREASING      // Sgrassaggio
+  SANDING         // Carteggiatura
+  BLASTING        // Sabbiatura
+  ETCHING         // Mordenzatura
+  POLISHING       // Lucidatura
+}
+
+// Motori
+enum EngineType {
+  PISTON          // Motore a pistoni
+  TURBOPROP       // Turboelica
+  TURBOJET        // Turbogetto
+  TURBOFAN        // Turbofan
+  ELECTRIC        // Elettrico
+  HYBRID          // Ibrido
+}
+
+enum FuelType {
+  AVGAS_100LL     // Avgas 100LL
+  JET_A1          // Jet A-1
+  DIESEL          // Diesel
+  ELECTRIC        // Elettrico
+  HYDROGEN        // Idrogeno
 }

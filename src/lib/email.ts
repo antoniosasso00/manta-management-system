@@ -78,8 +78,8 @@ export class EmailService {
       console.log('Text:', options.text)
       console.log('---')
       
-      // Return true to simulate successful sending in development
-      return true
+      // In development, we simulate success but in production this should be configured
+      return process.env.NODE_ENV === 'development'
     }
 
     try {

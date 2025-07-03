@@ -1,0 +1,37 @@
+{
+  "testQRCodes": [
+    {
+      "description": "ODL valido per test",
+      "data": {
+        "type": "ODL",
+        "id": "clz1234567890abcd",
+        "odlNumber": "ODL-2024-001",
+        "partNumber": "8G5350A001",
+        "timestamp": "2024-01-15T10:00:00Z"
+      },
+      "jsonString": "{\"type\":\"ODL\",\"id\":\"clz1234567890abcd\",\"odlNumber\":\"ODL-2024-001\",\"partNumber\":\"8G5350A001\",\"timestamp\":\"2024-01-15T10:00:00Z\"}"
+    },
+    {
+      "description": "ODL non valido (tipo errato)",
+      "data": {
+        "type": "PART",
+        "id": "clz0987654321dcba",
+        "timestamp": "2024-01-15T10:00:00Z"
+      },
+      "jsonString": "{\"type\":\"PART\",\"id\":\"clz0987654321dcba\",\"timestamp\":\"2024-01-15T10:00:00Z\"}"
+    }
+  ],
+  "instructions": {
+    "usage": "Usa un generatore QR online (es. qr-code-generator.com) per creare QR code con i dati JSON sopra",
+    "testing": [
+      "1. Genera QR code con il jsonString del primo esempio",
+      "2. Apri la pagina QR Scanner nell'app",
+      "3. Scansiona il QR code generato",
+      "4. Verifica che venga riconosciuto come ODL valido",
+      "5. Testa ENTRY per avviare il timer",
+      "6. Testa EXIT per fermare il timer",
+      "7. Verifica che i dati vengano salvati in localStorage",
+      "8. Disattiva la rete e verifica funzionamento offline"
+    ]
+  }
+}

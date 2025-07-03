@@ -144,55 +144,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '1.0.0',
   },
 
-  // Webpack optimizations
-  webpack: (config, { dev, isServer, webpack }) => {
-    // Optimize bundle splitting
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        ...config.optimization.splitChunks,
-        cacheGroups: {
-          ...config.optimization.splitChunks.cacheGroups,
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            maxSize: 244000, // 244KB
-          },
-          mui: {
-            test: /[\\/]node_modules[\\/]@mui[\\/]/,
-            name: 'mui',
-            chunks: 'all',
-            priority: 10,
-          },
-          react: {
-            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-            name: 'react',
-            chunks: 'all',
-            priority: 20,
-          },
-        },
-      };
-    }
-
-    // Bundle analyzer in development
-    if (dev) {
-      config.plugins.push(
-        new webpack.DefinePlugin({
-          'process.env.BUNDLE_ANALYZE': JSON.stringify(process.env.BUNDLE_ANALYZE || 'false'),
-        })
-      );
-    }
-
-    // Ignore problematic modules
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-
-    return config;
-  },
+  // Note: Webpack config disabled when using Turbopack
+  // Turbopack handles bundling automatically
 
   // Output configuration for production
   output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,

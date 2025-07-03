@@ -48,7 +48,16 @@
       "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d mes_aerospazio -c \"\\dt\")",
       "Bash(npx prisma:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(-w \"\\n\\nStatus: %{http_code}\\n\")",
+      "Bash(./test-api.js)",
+      "Bash(claude doctor)",
+      "WebFetch(domain:mui.com)",
+      "Bash(claude config get:*)",
+      "Bash(cut:*)",
+      "Bash(./start-dev.sh:*)",
+      "Bash(cp:*)",
+      "Bash(npx next dev:*)"
     ],
     "deny": []
   }

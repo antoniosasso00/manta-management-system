@@ -1,0 +1,201 @@
+{
+  "timestamp": "2025-07-03T17:58:53.361Z",
+  "baseUrl": "http://localhost:3002",
+  "summary": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "errors": []
+  },
+  "categories": {
+    "authentication": {
+      "tests": [
+        {
+          "name": "Health Check",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 200,
+            "body": {
+              "status": "ok",
+              "redis": {
+                "configured": true,
+                "available": false,
+                "fallbackEntries": 1,
+                "testAllowed": true,
+                "testRemaining": 97
+              },
+              "environment": {
+                "NODE_ENV": "development",
+                "REDIS_URL_SET": true
+              }
+            },
+            "raw": "{\"status\":\"ok\",\"redis\":{\"configured\":true,\"available\":false,\"fallbackEntries\":1,\"testAllowed\":true,\"testRemaining\":97},\"environment\":{\"NODE_ENV\":\"development\",\"REDIS_URL_SET\":true}}"
+          },
+          "timestamp": "2025-07-03T17:58:53.444Z"
+        },
+        {
+          "name": "Register - Missing confirmPassword",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 400,
+            "body": {
+              "message": "Invalid input data"
+            },
+            "raw": "{\"message\":\"Invalid input data\"}"
+          },
+          "timestamp": "2025-07-03T17:58:54.206Z"
+        },
+        {
+          "name": "Profile - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 401,
+            "body": {
+              "error": "Non autorizzato"
+            },
+            "raw": "{\"error\":\"Non autorizzato\"}"
+          },
+          "timestamp": "2025-07-03T17:58:55.072Z"
+        },
+        {
+          "name": "Forgot Password - Invalid Email",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 400,
+            "body": {
+              "error": "Email non valida"
+            },
+            "raw": "{\"error\":\"Email non valida\"}"
+          },
+          "timestamp": "2025-07-03T17:58:56.183Z"
+        }
+      ],
+      "passed": 4,
+      "failed": 0
+    },
+    "admin": {
+      "tests": [
+        {
+          "name": "Users List - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fadmin%2Fusers",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fadmin%2Fusers"
+          },
+          "timestamp": "2025-07-03T17:58:56.312Z"
+        },
+        {
+          "name": "Admin Stats - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fadmin%2Fstats",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fadmin%2Fstats"
+          },
+          "timestamp": "2025-07-03T17:58:56.325Z"
+        },
+        {
+          "name": "Audit Logs - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fadmin%2Faudit-logs",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fadmin%2Faudit-logs"
+          },
+          "timestamp": "2025-07-03T17:58:56.338Z"
+        }
+      ],
+      "passed": 3,
+      "failed": 0
+    },
+    "production": {
+      "tests": [
+        {
+          "name": "Production Stats - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fproduction%2Fstats",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fproduction%2Fstats"
+          },
+          "timestamp": "2025-07-03T17:58:56.351Z"
+        },
+        {
+          "name": "Production Events - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fproduction%2Fevents",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fproduction%2Fevents"
+          },
+          "timestamp": "2025-07-03T17:58:56.364Z"
+        }
+      ],
+      "passed": 2,
+      "failed": 0
+    },
+    "core": {
+      "tests": [
+        {
+          "name": "ODL List - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fodl",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fodl"
+          },
+          "timestamp": "2025-07-03T17:58:56.376Z"
+        },
+        {
+          "name": "Parts List - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fparts",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fparts"
+          },
+          "timestamp": "2025-07-03T17:58:56.388Z"
+        },
+        {
+          "name": "Departments List - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fdepartments",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fdepartments"
+          },
+          "timestamp": "2025-07-03T17:58:56.400Z"
+        }
+      ],
+      "passed": 3,
+      "failed": 0
+    },
+    "specialized": {
+      "tests": [
+        {
+          "name": "Rate Limit Stats - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Frate-limit-stats",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Frate-limit-stats"
+          },
+          "timestamp": "2025-07-03T17:58:56.413Z"
+        },
+        {
+          "name": "Autoclavi Batches - Unauthorized",
+          "status": "PASSED",
+          "result": {
+            "statusCode": 307,
+            "body": "http://localhost:3000/login?from=%2Fapi%2Fautoclavi%2Fbatches",
+            "raw": "http://localhost:3000/login?from=%2Fapi%2Fautoclavi%2Fbatches"
+          },
+          "timestamp": "2025-07-03T17:58:56.425Z"
+        }
+      ],
+      "passed": 2,
+      "failed": 0
+    }
+  }
+}

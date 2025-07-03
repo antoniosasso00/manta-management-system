@@ -54,6 +54,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
     )
   }
 
+  // Show only children for authentication pages
   if (!isAuthenticated) {
     return <>{children}</>
   }

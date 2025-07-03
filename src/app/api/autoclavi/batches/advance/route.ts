@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
       let updatedBatch;
       let message = '';
-      let odlUpdates: any[] = [];
+      const odlUpdates: any[] = [];
 
       switch (targetStatus) {
         case 'READY':

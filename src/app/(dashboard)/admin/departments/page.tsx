@@ -35,11 +35,8 @@ import {
   Delete,
   Upload,
   Download,
-  Schedule,
   PersonAdd,
   Groups,
-  Settings,
-  AccessTime
 } from '@mui/icons-material'
 import { FormControl, InputLabel, Select, MenuItem, FormControlLabel, Switch, Tabs, Tab } from '@mui/material'
 
@@ -111,10 +108,11 @@ export default function DepartmentsPage() {
       avgUtilizationRate: 0,
     },
   })
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     loadDepartments()
-  }, [])
+  }, [refreshKey])
 
   const loadDepartments = async () => {
     setLoading(true)
@@ -124,77 +122,8 @@ export default function DepartmentsPage() {
         const data = await response.json()
         setDepartments(data)
       } else {
-        // Dati mock per sviluppo
-        setDepartments([
-          {
-            id: '1',
-            code: 'CLEAN',
-            name: 'Clean Room',
-            description: 'Reparto laminazione in camera bianca',
-            isActive: true,
-            totalOperators: 8,
-            activeODL: 12,
-            averageProcessingTime: 145,
-            efficiency: 92,
-            shiftConfiguration: {
-              shift1Start: '06:00',
-              shift1End: '14:00',
-              shift2Start: '14:00',
-              shift2End: '22:00',
-              hasThirdShift: false,
-            },
-            performanceMetrics: {
-              targetEfficiency: 90,
-              targetCycleTime: 150,
-              maxODLCapacity: 20,
-              avgUtilizationRate: 85,
-            }
-          },
-          {
-            id: '2',
-            code: 'AUTO',
-            name: 'Autoclavi',
-            description: 'Reparto cura in autoclave',
-            isActive: true,
-            totalOperators: 4,
-            activeODL: 6,
-            averageProcessingTime: 280,
-            efficiency: 88
-          },
-          {
-            id: '3',
-            code: 'NDI',
-            name: 'NDI',
-            description: 'Controlli non distruttivi',
-            isActive: true,
-            totalOperators: 3,
-            activeODL: 4,
-            averageProcessingTime: 95,
-            efficiency: 95
-          },
-          {
-            id: '4',
-            code: 'RIF',
-            name: 'Rifilatura',
-            description: 'Rifinitura e rifilatura',
-            isActive: true,
-            totalOperators: 5,
-            activeODL: 8,
-            averageProcessingTime: 65,
-            efficiency: 90
-          },
-          {
-            id: '5',
-            code: 'QC',
-            name: 'Quality Control',
-            description: 'Controllo qualità finale',
-            isActive: false,
-            totalOperators: 2,
-            activeODL: 0,
-            averageProcessingTime: 0,
-            efficiency: 0
-          }
-        ])
+        console.error('Errore nel caricamento dipartimenti:', response.statusText)
+        setDepartments([])
       }
     } catch (error) {
       console.error('Error loading departments:', error)
@@ -291,7 +220,7 @@ export default function DepartmentsPage() {
           .catch(() => {
             alert('Errore durante l\'import dei dati')
           })
-        } catch (error) {
+        } catch {
           alert('Errore durante la lettura del file')
         }
       }
@@ -371,7 +300,7 @@ export default function DepartmentsPage() {
 
       {/* Summary Cards */}
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box className="flex items-center justify-between">
@@ -388,7 +317,7 @@ export default function DepartmentsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box className="flex items-center justify-between">
@@ -405,7 +334,7 @@ export default function DepartmentsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box className="flex items-center justify-between">
@@ -422,7 +351,7 @@ export default function DepartmentsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box className="flex items-center justify-between">
@@ -578,7 +507,7 @@ export default function DepartmentsPage() {
           {/* Tab 1: Informazioni Base */}
           {activeTab === 0 && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Codice"
@@ -587,7 +516,7 @@ export default function DepartmentsPage() {
                   onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Nome"
@@ -596,7 +525,7 @@ export default function DepartmentsPage() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Descrizione"
@@ -607,7 +536,7 @@ export default function DepartmentsPage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -624,12 +553,12 @@ export default function DepartmentsPage() {
           {/* Tab 2: Configurazione Turni */}
           {activeTab === 1 && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Primo Turno
                 </Typography>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label="Inizio"
@@ -645,7 +574,7 @@ export default function DepartmentsPage() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label="Fine"
@@ -662,12 +591,12 @@ export default function DepartmentsPage() {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Secondo Turno
                 </Typography>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label="Inizio"
@@ -683,7 +612,7 @@ export default function DepartmentsPage() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label="Fine"
@@ -700,7 +629,7 @@ export default function DepartmentsPage() {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -723,7 +652,7 @@ export default function DepartmentsPage() {
           {/* Tab 3: Metriche Performance */}
           {activeTab === 2 && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Target Efficienza (%)"
@@ -738,7 +667,7 @@ export default function DepartmentsPage() {
                   })}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Tempo Ciclo Target (min)"
@@ -753,7 +682,7 @@ export default function DepartmentsPage() {
                   })}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Capacità Max ODL"
@@ -768,7 +697,7 @@ export default function DepartmentsPage() {
                   })}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Alert severity="info">
                   Le metriche di performance verranno utilizzate per il monitoraggio KPI e gli alert automatici.
                 </Alert>

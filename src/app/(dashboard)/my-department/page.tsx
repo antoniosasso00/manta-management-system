@@ -23,7 +23,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  MenuItem
+  MenuItem,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import {
   Dashboard,
@@ -78,6 +80,7 @@ export default function MyDepartmentPage() {
   const [loading, setLoading] = useState(true);
   const [statusDialog, setStatusDialog] = useState<{ open: boolean; odl: ODLItem | null }>({ open: false, odl: null });
   const [newStatus, setNewStatus] = useState<ODLStatus | ''>('');
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'info' });
 
   useEffect(() => {
     loadDashboardData();
@@ -96,6 +99,11 @@ export default function MyDepartmentPage() {
       ]);
     } catch (error) {
       console.error('Error loading dashboard:', error);
+      setSnackbar({
+        open: true,
+        message: 'Errore nel caricamento della dashboard',
+        severity: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -117,6 +125,11 @@ export default function MyDepartmentPage() {
           averageTime: 0,
           efficiency: 0
         });
+        setSnackbar({
+          open: true,
+          message: 'Errore nel caricamento dei KPI',
+          severity: 'warning'
+        });
       }
     } catch (error) {
       console.error('Error loading KPI:', error);
@@ -125,6 +138,11 @@ export default function MyDepartmentPage() {
         odlCompleted: 0,
         averageTime: 0,
         efficiency: 0
+      });
+      setSnackbar({
+        open: true,
+        message: 'Errore di connessione nel caricamento KPI',
+        severity: 'error'
       });
     }
   };
@@ -179,9 +197,25 @@ export default function MyDepartmentPage() {
         await loadMyODL();
         setStatusDialog({ open: false, odl: null });
         setNewStatus('');
+        setSnackbar({
+          open: true,
+          message: 'Stato ODL aggiornato con successo',
+          severity: 'success'
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'Errore nell\'aggiornamento dello stato',
+          severity: 'error'
+        });
       }
     } catch (error) {
       console.error('Error updating status:', error);
+      setSnackbar({
+        open: true,
+        message: 'Errore di connessione',
+        severity: 'error'
+      });
     }
   };
 
@@ -237,15 +271,11 @@ export default function MyDepartmentPage() {
     <Box className="p-4 space-y-6">
       {/* Header */}
       <Box className="flex items-center justify-between">
-        <Typography variant="h4" className="flex items-center gap-2">
-          <Dashboard />
-          Il Mio Reparto
-        </Typography>
         <Box className="space-x-2">
           <Button
             variant="outlined"
             startIcon={<QrCodeScanner />}
-            href="/dashboard/qr-scanner"
+            href="/qr-scanner"
           >
             Scanner QR
           </Button>
@@ -485,10 +515,26 @@ export default function MyDepartmentPage() {
       <Fab
         color="primary"
         className="fixed bottom-4 right-4"
-        href="/dashboard/qr-scanner"
+        href="/qr-scanner"
       >
         <QrCodeScanner />
       </Fab>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

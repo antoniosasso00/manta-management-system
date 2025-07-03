@@ -89,35 +89,70 @@ async function main() {
     }),
   ])
 
-  // 3. DEPARTMENTS
+  // 3. DEPARTMENTS - Aggiornato con nuova struttura aziendale
   console.log('🏭 Creazione reparti...')
   const departments = await Promise.all([
     prisma.department.create({
       data: {
-        code: 'CLEANROOM',
+        code: 'HC',
+        name: 'Honeycomb - Lavorazione Core',
+        type: 'HONEYCOMB',
+      },
+    }),
+    prisma.department.create({
+      data: {
+        code: 'CR',
         name: 'Clean Room - Laminazione',
         type: 'CLEANROOM',
       },
     }),
     prisma.department.create({
       data: {
-        code: 'AUTOCLAVE',
+        code: 'CN',
+        name: 'Controllo Numerico - CNC',
+        type: 'CONTROLLO_NUMERICO',
+      },
+    }),
+    prisma.department.create({
+      data: {
+        code: 'RM',
+        name: 'Montaggio - Assembly',
+        type: 'MONTAGGIO',
+      },
+    }),
+    prisma.department.create({
+      data: {
+        code: 'AC',
         name: 'Autoclavi - Cura',
         type: 'AUTOCLAVE',
       },
     }),
     prisma.department.create({
       data: {
-        code: 'NDI',
-        name: 'Controlli Non Distruttivi',
+        code: 'ND',
+        name: 'NDI - Controlli Non Distruttivi',
         type: 'NDI',
       },
     }),
     prisma.department.create({
       data: {
-        code: 'RIFIL',
-        name: 'Rifilatura',
-        type: 'RIFILATURA',
+        code: 'VR',
+        name: 'Verniciatura - Coating',
+        type: 'VERNICIATURA',
+      },
+    }),
+    prisma.department.create({
+      data: {
+        code: 'MT',
+        name: 'Motori - Engine Components',
+        type: 'MOTORI',
+      },
+    }),
+    prisma.department.create({
+      data: {
+        code: 'CQ',
+        name: 'Controllo Qualità - Quality Control',
+        type: 'CONTROLLO_QUALITA',
       },
     }),
   ])
@@ -136,6 +171,40 @@ async function main() {
       },
     }),
     
+    // === HONEYCOMB TEAM ===
+    // Capo reparto Honeycomb
+    prisma.user.create({
+      data: {
+        email: 'capo.honeycomb@mantaaero.com',
+        name: 'Andrea Cortese',
+        password: hashedPassword,
+        role: 'SUPERVISOR',
+        departmentId: departments[0].id, // HONEYCOMB
+        departmentRole: 'CAPO_REPARTO',
+      },
+    }),
+    // Operatori Honeycomb
+    prisma.user.create({
+      data: {
+        email: 'op1.honeycomb@mantaaero.com',
+        name: 'Luca Martini',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[0].id, // HONEYCOMB
+        departmentRole: 'OPERATORE',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'op2.honeycomb@mantaaero.com',
+        name: 'Giulia Ferretti',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[0].id, // HONEYCOMB
+        departmentRole: 'OPERATORE',
+      },
+    }),
+
     // === CLEAN ROOM TEAM ===
     // Capo reparto Camera Bianca
     prisma.user.create({
@@ -144,7 +213,7 @@ async function main() {
         name: 'Marco Rossi',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'CAPO_REPARTO',
       },
     }),
@@ -155,7 +224,7 @@ async function main() {
         name: 'Laura Bianchi',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'CAPO_TURNO',
       },
     }),
@@ -166,7 +235,7 @@ async function main() {
         name: 'Paolo Verdi',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'CAPO_TURNO',
       },
     }),
@@ -177,7 +246,7 @@ async function main() {
         name: 'Giuseppe Verdi',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
     }),
@@ -187,7 +256,7 @@ async function main() {
         name: 'Sofia Neri',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
     }),
@@ -197,7 +266,7 @@ async function main() {
         name: 'Francesca Blu',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
     }),
@@ -208,7 +277,7 @@ async function main() {
         name: 'Antonio Giallo',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
     }),
@@ -218,7 +287,75 @@ async function main() {
         name: 'Valentina Rosa',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // CLEANROOM
+        departmentRole: 'OPERATORE',
+      },
+    }),
+
+    // === CONTROLLO NUMERICO TEAM ===
+    // Capo reparto CNC
+    prisma.user.create({
+      data: {
+        email: 'capo.cnc@mantaaero.com',
+        name: 'Stefano Rinaldi',
+        password: hashedPassword,
+        role: 'SUPERVISOR',
+        departmentId: departments[2].id, // CONTROLLO_NUMERICO
+        departmentRole: 'CAPO_REPARTO',
+      },
+    }),
+    // Operatori CNC
+    prisma.user.create({
+      data: {
+        email: 'op1.cnc@mantaaero.com',
+        name: 'Marco Bianchi',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[2].id, // CONTROLLO_NUMERICO
+        departmentRole: 'OPERATORE',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'op2.cnc@mantaaero.com',
+        name: 'Silvia Galli',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[2].id, // CONTROLLO_NUMERICO
+        departmentRole: 'OPERATORE',
+      },
+    }),
+
+    // === MONTAGGIO TEAM ===
+    // Capo reparto Montaggio
+    prisma.user.create({
+      data: {
+        email: 'capo.montaggio@mantaaero.com',
+        name: 'Roberto Conti',
+        password: hashedPassword,
+        role: 'SUPERVISOR',
+        departmentId: departments[3].id, // MONTAGGIO
+        departmentRole: 'CAPO_REPARTO',
+      },
+    }),
+    // Operatori Montaggio
+    prisma.user.create({
+      data: {
+        email: 'op1.montaggio@mantaaero.com',
+        name: 'Anna Moretti',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[3].id, // MONTAGGIO
+        departmentRole: 'OPERATORE',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'op2.montaggio@mantaaero.com',
+        name: 'Pietro Ricci',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[3].id, // MONTAGGIO
         departmentRole: 'OPERATORE',
       },
     }),
@@ -231,7 +368,7 @@ async function main() {
         name: 'Roberto Viola',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'CAPO_REPARTO',
       },
     }),
@@ -242,7 +379,7 @@ async function main() {
         name: 'Cristina Arancio',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'CAPO_TURNO',
       },
     }),
@@ -253,7 +390,7 @@ async function main() {
         name: 'Elena Rosa',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'OPERATORE',
       },
     }),
@@ -263,7 +400,7 @@ async function main() {
         name: 'Francesco Blu',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'OPERATORE',
       },
     }),
@@ -273,7 +410,7 @@ async function main() {
         name: 'Michele Grigio',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'OPERATORE',
       },
     }),
@@ -286,7 +423,7 @@ async function main() {
         name: 'Davide Marrone',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[2].id,
+        departmentId: departments[5].id, // NDI
         departmentRole: 'CAPO_REPARTO',
       },
     }),
@@ -297,7 +434,7 @@ async function main() {
         name: 'Chiara Gialli',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[2].id,
+        departmentId: departments[5].id, // NDI
         departmentRole: 'OPERATORE',
       },
     }),
@@ -307,41 +444,109 @@ async function main() {
         name: 'Luca Verde',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[2].id,
+        departmentId: departments[5].id, // NDI
         departmentRole: 'OPERATORE',
       },
     }),
     
-    // === RIFILATURA TEAM ===
-    // Capo reparto Rifilatura
+    // === VERNICIATURA TEAM ===
+    // Capo reparto Verniciatura
     prisma.user.create({
       data: {
-        email: 'capo.rifil@mantaaero.com',
+        email: 'capo.verniciatura@mantaaero.com',
         name: 'Simone Nero',
         password: hashedPassword,
         role: 'SUPERVISOR',
-        departmentId: departments[3].id,
+        departmentId: departments[6].id, // VERNICIATURA
         departmentRole: 'CAPO_REPARTO',
       },
     }),
-    // Operatori Rifilatura
+    // Operatori Verniciatura
     prisma.user.create({
       data: {
-        email: 'op1.rifil@mantaaero.com',
-        name: 'Andrea Arancio',
+        email: 'op1.verniciatura@mantaaero.com',
+        name: 'Federica Azzurri',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[3].id,
+        departmentId: departments[6].id, // VERNICIATURA
         departmentRole: 'OPERATORE',
       },
     }),
     prisma.user.create({
       data: {
-        email: 'op2.rifil@mantaaero.com',
+        email: 'op2.verniciatura@mantaaero.com',
+        name: 'Matteo Grigi',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[6].id, // VERNICIATURA
+        departmentRole: 'OPERATORE',
+      },
+    }),
+
+    // === MOTORI TEAM ===
+    // Capo reparto Motori
+    prisma.user.create({
+      data: {
+        email: 'capo.motori@mantaaero.com',
+        name: 'Alberto Verdi',
+        password: hashedPassword,
+        role: 'SUPERVISOR',
+        departmentId: departments[7].id, // MOTORI
+        departmentRole: 'CAPO_REPARTO',
+      },
+    }),
+    // Operatori Motori
+    prisma.user.create({
+      data: {
+        email: 'op1.motori@mantaaero.com',
+        name: 'Claudia Rossi',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[7].id, // MOTORI
+        departmentRole: 'OPERATORE',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'op2.motori@mantaaero.com',
+        name: 'Giorgio Bianchi',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[7].id, // MOTORI
+        departmentRole: 'OPERATORE',
+      },
+    }),
+
+    // === CONTROLLO QUALITA TEAM ===
+    // Capo reparto Controllo Qualità
+    prisma.user.create({
+      data: {
+        email: 'capo.qualita@mantaaero.com',
+        name: 'Maria Fabbri',
+        password: hashedPassword,
+        role: 'SUPERVISOR',
+        departmentId: departments[8].id, // CONTROLLO_QUALITA
+        departmentRole: 'CAPO_REPARTO',
+      },
+    }),
+    // Operatori Controllo Qualità
+    prisma.user.create({
+      data: {
+        email: 'op1.qualita@mantaaero.com',
+        name: 'Andrea Arancio',
+        password: hashedPassword,
+        role: 'OPERATOR',
+        departmentId: departments[8].id, // CONTROLLO_QUALITA
+        departmentRole: 'OPERATORE',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'op2.qualita@mantaaero.com',
         name: 'Giulia Azzurro',
         password: hashedPassword,
         role: 'OPERATOR',
-        departmentId: departments[3].id,
+        departmentId: departments[8].id, // CONTROLLO_QUALITA
         departmentRole: 'OPERATORE',
       },
     }),
@@ -655,14 +860,14 @@ async function main() {
     prisma.partTool.create({ data: { partId: parts[14].id, toolId: tools[7].id } }),
   ])
 
-  // 8. AUTOCLAVES - Esteso
+  // 8. AUTOCLAVES - Esteso (aggiornato per nuovo reparto AUTOCLAVE)
   console.log('🏭 Creazione autoclavi...')
   const autoclaves = await Promise.all([
     prisma.autoclave.create({
       data: {
         code: 'AUT001',
         name: 'Autoclave Alpha - Grande',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 4000,
         maxWidth: 2000,
         maxHeight: 1000,
@@ -673,7 +878,7 @@ async function main() {
       data: {
         code: 'AUT002',
         name: 'Autoclave Beta - Media',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 3500,
         maxWidth: 1800,
         maxHeight: 800,
@@ -684,7 +889,7 @@ async function main() {
       data: {
         code: 'AUT003',
         name: 'Autoclave Gamma - XL',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 5000,
         maxWidth: 2500,
         maxHeight: 1200,
@@ -695,7 +900,7 @@ async function main() {
       data: {
         code: 'AUT004',
         name: 'Autoclave Delta - Rapida',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 3000,
         maxWidth: 1500,
         maxHeight: 600,
@@ -706,7 +911,7 @@ async function main() {
       data: {
         code: 'AUT005',
         name: 'Autoclave Epsilon - Speciale',
-        departmentId: departments[1].id,
+        departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 2500,
         maxWidth: 2500,
         maxHeight: 800,
@@ -902,14 +1107,14 @@ async function main() {
       },
     }),
     
-    // === ODL IN RIFILATURA ===
+    // === ODL IN CONTROLLO QUALITA ===
     prisma.oDL.create({
       data: {
         odlNumber: 'ODL-24-014',
         partId: parts[8].id, // A330 deriva
         quantity: 2,
         priority: 'NORMAL',
-        status: 'IN_RIFILATURA',
+        status: 'IN_CONTROLLO_QUALITA',
         qrCode: 'QR-ODL-24-014',
         gammaId: 'GM-ODL-014',
         curingCycleId: curingCycles[1].id,

@@ -14,10 +14,11 @@ import { PermissionGuard } from '@/components/auth/PermissionGuard'
 import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
 import { FormBuilder, FieldConfig } from '@/components/molecules/FormBuilder'
 import { partRepository } from '@/services/api/repositories/part.repository'
-import { createPartSchema, updatePartSchema } from '@/domains/core/schemas/part'
+import { createPartSchema, updatePartSchema } from '@/domains/core/schemas/part.schema'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { Part, CreatePartInput, UpdatePartInput } from '@/domains/core/schemas/part'
+import type { CreatePartInput, UpdatePartInput } from '@/domains/core/schemas/part.schema'
+import type { Part } from '@/domains/core/schemas/part'
 import type { Column } from '@/components/atoms/DataTable'
 
 export default function PartsPage() {
@@ -48,11 +49,11 @@ export default function PartsPage() {
       
       const params: Record<string, string | number | boolean> = {}
       if (searchQuery) params.search = searchQuery
-      if (filterValues.isActive !== undefined && filterValues.isActive !== null) {
-        params.isActive = filterValues.isActive as boolean
+      if (filterValues.partNumber && typeof filterValues.partNumber === 'string') {
+        params.partNumber = filterValues.partNumber
       }
-      if (filterValues.curingCycleId && typeof filterValues.curingCycleId === 'string') {
-        params.curingCycleId = filterValues.curingCycleId
+      if (filterValues.description && typeof filterValues.description === 'string') {
+        params.description = filterValues.description
       }
       
       const data = await partRepository.getAll(params)
@@ -83,11 +84,11 @@ export default function PartsPage() {
     reset({
       partNumber: part.partNumber,
       description: part.description,
-      material: part.material ?? undefined,
-      isActive: part.isActive,
-      defaultCuringCycleId: part.defaultCuringCycleId ?? undefined,
-      dimensions: part.dimensions ?? undefined,
-      weight: part.weight ?? undefined
+      defaultCuringCycleId: part.defaultCuringCycle ?? undefined,
+      standardLength: part.standardLength ?? undefined,
+      standardWidth: part.standardWidth ?? undefined,
+      standardHeight: part.standardHeight ?? undefined,
+      defaultVacuumLines: part.defaultVacuumLines ?? undefined
     })
     setFormOpen(true)
   }
@@ -143,21 +144,16 @@ export default function PartsPage() {
       minWidth: 200
     },
     {
-      id: 'material',
-      label: 'Materiale',
-      minWidth: 150
+      id: 'standardLength',
+      label: 'Lunghezza',
+      minWidth: 100,
+      format: (value) => value ? `${value}mm` : '-'
     },
     {
-      id: 'isActive',
-      label: 'Stato',
-      minWidth: 120,
-      format: (value) => (
-        <Chip
-          label={value ? 'Attivo' : 'Inattivo'}
-          color={value ? 'success' : 'default'}
-          size="small"
-        />
-      )
+      id: 'standardWidth', 
+      label: 'Larghezza',
+      minWidth: 100,
+      format: (value) => value ? `${value}mm` : '-'
     },
     {
       id: 'odlCount' as keyof Part,
@@ -177,19 +173,16 @@ export default function PartsPage() {
   // Filter configuration
   const filters: FilterConfig[] = [
     {
-      id: 'isActive',
-      label: 'Stato',
-      type: 'select',
-      options: [
-        { value: 'true', label: 'Attivo' },
-        { value: 'false', label: 'Inattivo' }
-      ]
+      id: 'partNumber',
+      label: 'Numero Parte',
+      type: 'text',
+      placeholder: 'Filtra per numero parte...'
     },
     {
-      id: 'material',
-      label: 'Materiale',
+      id: 'description',
+      label: 'Descrizione',
       type: 'text',
-      placeholder: 'Filtra per materiale...'
+      placeholder: 'Filtra per descrizione...'
     }
   ]
 
@@ -213,34 +206,36 @@ export default function PartsPage() {
       gridSize: 6
     },
     {
-      name: 'material',
-      label: 'Materiale',
-      type: 'text',
-      required: true,
-      placeholder: 'Es. Fibra di carbonio',
-      gridSize: 6
-    },
-    {
-      name: 'weight',
-      label: 'Peso (kg)',
+      name: 'standardLength',
+      label: 'Lunghezza Standard (mm)',
       type: 'number',
       min: 0,
-      step: 0.001,
+      step: 0.1,
+      gridSize: 4
+    },
+    {
+      name: 'standardWidth',
+      label: 'Larghezza Standard (mm)', 
+      type: 'number',
+      min: 0,
+      step: 0.1,
+      gridSize: 4
+    },
+    {
+      name: 'standardHeight',
+      label: 'Altezza Standard (mm)',
+      type: 'number',
+      min: 0,
+      step: 0.1,
+      gridSize: 4
+    },
+    {
+      name: 'defaultVacuumLines',
+      label: 'Linee Vuoto Default',
+      type: 'number',
+      min: 1,
+      max: 10,
       gridSize: 6
-    },
-    {
-      name: 'dimensions',
-      label: 'Dimensioni',
-      type: 'textarea',
-      rows: 3,
-      placeholder: 'Lunghezza x Larghezza x Altezza',
-      gridSize: 12
-    },
-    {
-      name: 'isActive',
-      label: 'Parte Attiva',
-      type: 'switch',
-      gridSize: 12
     }
   ]
 
@@ -336,13 +331,14 @@ export default function PartsPage() {
 
 // Utility functions
 function convertToCSV(data: Part[]): string {
-  const headers = ['Numero Parte', 'Descrizione', 'Materiale', 'Peso', 'Stato', 'Data Creazione']
+  const headers = ['Numero Parte', 'Descrizione', 'Lunghezza', 'Larghezza', 'Altezza', 'Linee Vuoto', 'Data Creazione']
   const rows = data.map(part => [
     part.partNumber,
     part.description,
-    part.material || '',
-    part.weight || '',
-    part.isActive ? 'Attivo' : 'Inattivo',
+    part.standardLength || '',
+    part.standardWidth || '',
+    part.standardHeight || '',
+    part.defaultVacuumLines || '',
     new Date(part.createdAt).toLocaleDateString('it-IT')
   ])
   

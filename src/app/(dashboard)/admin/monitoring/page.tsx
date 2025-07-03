@@ -32,7 +32,6 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider,
   Stack,
 } from '@mui/material'
 import {
@@ -41,11 +40,9 @@ import {
   Speed,
   Timeline,
   People,
-  Schedule,
   TrendingUp,
   Error,
   Warning,
-  Info,
   CheckCircle,
   Refresh,
   Download,
@@ -348,7 +345,7 @@ export default function MonitoringPage() {
           </Typography>
           <Grid container spacing={3}>
             {metrics.map((metric) => (
-              <Grid item xs={12} sm={6} md={4} lg={2} key={metric.name}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }} key={metric.name}>
                 <Card variant="outlined">
                   <CardContent>
                     <Box className="flex items-center justify-between">
@@ -518,7 +515,7 @@ export default function MonitoringPage() {
                         </AccordionSummary>
                         <AccordionDetails>
                           <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <Typography variant="subtitle2" gutterBottom>
                                 Modulo
                               </Typography>
@@ -527,7 +524,7 @@ export default function MonitoringPage() {
                               </Typography>
                             </Grid>
                             {log.userId && (
-                              <Grid item xs={12} sm={6}>
+                              <Grid size={{ xs: 12, sm: 6 }}>
                                 <Typography variant="subtitle2" gutterBottom>
                                   User ID
                                 </Typography>
@@ -537,7 +534,7 @@ export default function MonitoringPage() {
                               </Grid>
                             )}
                             {log.stackTrace && (
-                              <Grid item xs={12}>
+                              <Grid size={{ xs: 12 }}>
                                 <Typography variant="subtitle2" gutterBottom>
                                   Stack Trace
                                 </Typography>
@@ -567,7 +564,7 @@ export default function MonitoringPage() {
             {/* Tab 3: Performance Details */}
             {activeTab === 2 && (
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -600,7 +597,7 @@ export default function MonitoringPage() {
                   </Card>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -633,7 +630,7 @@ export default function MonitoringPage() {
                   </Card>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Alert severity="info">
                     Performance monitoring attivo. I dati vengono aggiornati ogni 30 secondi.
                   </Alert>
@@ -644,7 +641,7 @@ export default function MonitoringPage() {
             {/* Tab 4: System Health */}
             {activeTab === 3 && (
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -692,7 +689,7 @@ export default function MonitoringPage() {
                   </Card>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -732,7 +729,7 @@ export default function MonitoringPage() {
                   </Card>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Alert severity="success">
                     Tutti i servizi critici sono operativi. Sistema in stato di salute ottimale.
                   </Alert>

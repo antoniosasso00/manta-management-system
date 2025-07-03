@@ -38,12 +38,30 @@ const transferInputSchema = z.object({
 
 type TransferInput = z.infer<typeof transferInputSchema>;
 
-// Definizione workflow produttivo sequenziale
+// Definizione workflow produttivo sequenziale aerospazio (parti composite)
 const WORKFLOW_SEQUENCE: WorkflowTransition[] = [
   {
+    from: 'HONEYCOMB',
+    to: 'CLEANROOM',
+    requiredStatus: 'HONEYCOMB_COMPLETED',
+    targetStatus: 'IN_CLEANROOM'
+  },
+  {
     from: 'CLEANROOM',
-    to: 'AUTOCLAVE',
+    to: 'CONTROLLO_NUMERICO',
     requiredStatus: 'CLEANROOM_COMPLETED',
+    targetStatus: 'IN_CONTROLLO_NUMERICO'
+  },
+  {
+    from: 'CONTROLLO_NUMERICO',
+    to: 'MONTAGGIO',
+    requiredStatus: 'CONTROLLO_NUMERICO_COMPLETED',
+    targetStatus: 'IN_MONTAGGIO'
+  },
+  {
+    from: 'MONTAGGIO',
+    to: 'AUTOCLAVE',
+    requiredStatus: 'MONTAGGIO_COMPLETED',
     targetStatus: 'IN_AUTOCLAVE'
   },
   {
@@ -54,24 +72,46 @@ const WORKFLOW_SEQUENCE: WorkflowTransition[] = [
   },
   {
     from: 'NDI',
-    to: 'RIFILATURA',
-    requiredStatus: 'COMPLETED', // NDI completa ODL
-    targetStatus: 'IN_RIFILATURA'
+    to: 'VERNICIATURA',
+    requiredStatus: 'NDI_COMPLETED',
+    targetStatus: 'IN_VERNICIATURA'
   },
   {
-    from: 'RIFILATURA',
-    to: null, // Fine workflow
-    requiredStatus: 'COMPLETED',
+    from: 'VERNICIATURA',
+    to: 'CONTROLLO_QUALITA',
+    requiredStatus: 'VERNICIATURA_COMPLETED',
+    targetStatus: 'IN_CONTROLLO_QUALITA'
+  },
+  {
+    from: 'CONTROLLO_QUALITA',
+    to: null, // Fine workflow aerospazio
+    requiredStatus: 'CONTROLLO_QUALITA_COMPLETED',
     targetStatus: 'COMPLETED'
   }
 ];
 
+// NOTA: MOTORI è un reparto separato NON integrato nel workflow aerospazio
+// Rimane disponibile come mockup per altre linee produttive
+
 export class WorkflowService {
+  /**
+   * Ottiene il workflow appropriato per il tipo di reparto
+   */
+  static getWorkflowForDepartment(departmentType: DepartmentType): WorkflowTransition[] {
+    // MOTORI è escluso dal workflow aerospazio - gestione separata se necessaria
+    if (departmentType === 'MOTORI') {
+      return []; // Nessun workflow automatico per motori
+    }
+    // Tutti gli altri reparti seguono workflow aerospazio sequenziale
+    return WORKFLOW_SEQUENCE;
+  }
+
   /**
    * Trova il prossimo reparto nella sequenza produttiva
    */
   static getNextDepartment(currentDepartmentType: DepartmentType): DepartmentType | null {
-    const transition = WORKFLOW_SEQUENCE.find(t => t.from === currentDepartmentType);
+    const workflow = this.getWorkflowForDepartment(currentDepartmentType);
+    const transition = workflow.find(t => t.from === currentDepartmentType);
     return transition?.to || null;
   }
 
@@ -79,7 +119,8 @@ export class WorkflowService {
    * Ottiene lo stato ODL richiesto per il passaggio
    */
   static getRequiredStatus(currentDepartmentType: DepartmentType): ODLStatus | null {
-    const transition = WORKFLOW_SEQUENCE.find(t => t.from === currentDepartmentType);
+    const workflow = this.getWorkflowForDepartment(currentDepartmentType);
+    const transition = workflow.find(t => t.from === currentDepartmentType);
     return transition?.requiredStatus || null;
   }
 
@@ -87,7 +128,8 @@ export class WorkflowService {
    * Ottiene lo stato target per il prossimo reparto
    */
   static getTargetStatus(currentDepartmentType: DepartmentType): ODLStatus | null {
-    const transition = WORKFLOW_SEQUENCE.find(t => t.from === currentDepartmentType);
+    const workflow = this.getWorkflowForDepartment(currentDepartmentType);
+    const transition = workflow.find(t => t.from === currentDepartmentType);
     return transition?.targetStatus || null;
   }
 

@@ -11,7 +11,6 @@ import {
   Analytics,
   Settings,
   CleaningServices,
-  LocalShipping,
   Science,
   Construction,
   Build,
@@ -19,9 +18,13 @@ import {
   LocalFireDepartment,
   Add,
   QrCode2,
-  Person,
-  BugReport,
   EventNote,
+  Hexagon,
+  Tune,
+  HomeRepairService,
+  Brush,
+  DirectionsCar,
+  VerifiedUser,
 } from '@mui/icons-material'
 
 export interface NavigationItem {
@@ -53,10 +56,28 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       divider: true,
       children: [
         {
+          id: 'production-honeycomb',
+          label: 'Honeycomb',
+          icon: Hexagon,
+          href: '/production/honeycomb',
+        },
+        {
           id: 'production-cleanroom',
           label: 'Clean Room',
           icon: CleaningServices,
           href: '/production/cleanroom',
+        },
+        {
+          id: 'production-controllo-numerico',
+          label: 'Controllo Numerico',
+          icon: Tune,
+          href: '/production/controllo-numerico',
+        },
+        {
+          id: 'production-montaggio',
+          label: 'Montaggio',
+          icon: HomeRepairService,
+          href: '/production/montaggio',
         },
         {
           id: 'autoclavi',
@@ -85,6 +106,24 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/production/ndi',
         },
         {
+          id: 'production-verniciatura',
+          label: 'Verniciatura',
+          icon: Brush,
+          href: '/production/verniciatura',
+        },
+        {
+          id: 'production-motori',
+          label: 'Motori',
+          icon: DirectionsCar,
+          href: '/production/motori',
+        },
+        {
+          id: 'production-controllo-qualita',
+          label: 'Controllo Qualità',
+          icon: VerifiedUser,
+          href: '/production/controllo-qualita',
+        },
+        {
           id: 'qr-scanner',
           label: 'Scanner QR',
           icon: QrCodeScanner,
@@ -102,7 +141,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       id: 'data-management',
       label: 'Gestione Dati',
       icon: Inventory,
-      href: '/data',
+      href: '/production/odl',
       children: [
         {
           id: 'odl-management',
@@ -150,6 +189,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/admin/departments',
         },
         {
+          id: 'admin-audit-direct',
+          label: 'Audit Logs',
+          icon: Analytics,
+          href: '/admin/audit',
+        },
+        {
           id: 'admin-monitoring',
           label: 'Monitoring & Logs',
           icon: Analytics,
@@ -176,49 +221,16 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           ],
         },
         {
+          id: 'admin-sync',
+          label: 'Sincronizzazione Gamma',
+          icon: EventNote,
+          href: '/admin/sync',
+        },
+        {
           id: 'admin-settings',
           label: 'Impostazioni Sistema',
           icon: Settings,
           href: '/admin/settings',
-        },
-      ],
-    },
-    {
-      id: 'testing-role-views',
-      label: 'Testing & Role Views',
-      icon: BugReport,
-      href: '/testing',
-      divider: true,
-      children: [
-        {
-          id: 'test-operator-dashboard',
-          label: 'Vista Operatore',
-          icon: Person,
-          href: '/my-department',
-        },
-        {
-          id: 'test-qr-scanner',
-          label: 'Scanner QR',
-          icon: QrCodeScanner,
-          href: '/qr-scanner',
-        },
-        {
-          id: 'test-production-overview',
-          label: 'Panoramica Produzione',
-          icon: Factory,
-          href: '/production',
-        },
-        {
-          id: 'test-department-odl',
-          label: 'ODL Reparto',
-          icon: ListAlt,
-          href: '/my-department/odl',
-        },
-        {
-          id: 'test-department-events',
-          label: 'Eventi Reparto',
-          icon: Analytics,
-          href: '/my-department/events',
         },
       ],
     },
@@ -251,16 +263,58 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       href: '/production',
       children: [
         {
+          id: 'production-honeycomb',
+          label: 'Honeycomb',
+          icon: Hexagon,
+          href: '/production/honeycomb',
+        },
+        {
           id: 'production-cleanroom',
           label: 'Clean Room',
           icon: CleaningServices,
           href: '/production/cleanroom',
         },
         {
-          id: 'production-autoclaves',
+          id: 'production-controllo-numerico',
+          label: 'Controllo Numerico',
+          icon: Tune,
+          href: '/production/controllo-numerico',
+        },
+        {
+          id: 'production-montaggio',
+          label: 'Montaggio',
+          icon: HomeRepairService,
+          href: '/production/montaggio',
+        },
+        {
+          id: 'autoclavi',
           label: 'Autoclavi',
-          icon: LocalShipping,
-          href: '/production/autoclaves',
+          icon: LocalFireDepartment,
+          href: '/autoclavi/batches',
+        },
+        {
+          id: 'production-ndi',
+          label: 'NDI',
+          icon: Science,
+          href: '/production/ndi',
+        },
+        {
+          id: 'production-verniciatura',
+          label: 'Verniciatura',
+          icon: Brush,
+          href: '/production/verniciatura',
+        },
+        {
+          id: 'production-motori',
+          label: 'Motori',
+          icon: DirectionsCar,
+          href: '/production/motori',
+        },
+        {
+          id: 'production-controllo-qualita',
+          label: 'Controllo Qualità',
+          icon: VerifiedUser,
+          href: '/production/controllo-qualita',
         },
         {
           id: 'qr-scanner',
@@ -274,7 +328,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       id: 'data-management',
       label: 'Gestione Dati',
       icon: Inventory,
-      href: '/data',
+      href: '/production/odl',
       children: [
         {
           id: 'odl-management',
@@ -343,54 +397,14 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
 
 // Configurazione per ruoli reparto specifici
 export const departmentNavigationExtensions: Record<string, NavigationItem[]> = {
-  // CAPO_REPARTO - Accesso completo al reparto
+  // CAPO_REPARTO - Accesso completo al reparto (placeholder - pagine non implementate)
   CAPO_REPARTO: [
-    {
-      id: 'department-management',
-      label: 'Gestione Reparto',
-      icon: Settings,
-      href: '/department/management',
-      divider: true,
-      children: [
-        {
-          id: 'department-staff',
-          label: 'Personale',
-          icon: People,
-          href: '/department/staff',
-        },
-        {
-          id: 'department-analytics',
-          label: 'Analytics Reparto',
-          icon: Analytics,
-          href: '/department/analytics',
-        },
-      ],
-    },
+    // TODO: Implementare pagine department management
   ],
 
-  // CAPO_TURNO - Gestione turno e operatori
+  // CAPO_TURNO - Gestione turno e operatori (placeholder - pagine non implementate)
   CAPO_TURNO: [
-    {
-      id: 'shift-management',
-      label: 'Gestione Turno',
-      icon: Schedule,
-      href: '/shift/management',
-      divider: true,
-      children: [
-        {
-          id: 'shift-operators',
-          label: 'Operatori Turno',
-          icon: People,
-          href: '/shift/operators',
-        },
-        {
-          id: 'shift-analytics',
-          label: 'Report Turno',
-          icon: Analytics,
-          href: '/shift/analytics',
-        },
-      ],
-    },
+    // TODO: Implementare pagine shift management
   ],
 
   // OPERATORE - Funzioni base operative

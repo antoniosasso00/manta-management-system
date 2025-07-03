@@ -10,6 +10,7 @@ import {
   MenuItem,
   Alert,
 } from '@mui/material'
+import { ConfirmActionDialog } from '@/components/atoms/ConfirmActionDialog'
 import { 
   Edit as EditIcon, 
   Delete as DeleteIcon, 
@@ -72,6 +73,10 @@ export function PartsTable({
   const [actionMenu, setActionMenu] = useState<{ anchorEl: HTMLElement; part: Part } | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    part: Part | null;
+  }>({ open: false, part: null })
   
   const permissions = usePermissions()
 
@@ -211,15 +216,19 @@ export function PartsTable({
       return
     }
 
-    if (!confirm(`Are you sure you want to delete part ${part.partNumber}?`)) {
-      return
-    }
+    setDeleteDialog({ open: true, part })
+    setActionMenu(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    const part = deleteDialog.part
+    if (!part) return
 
     try {
       setActionLoading(true)
       setError(null)
       await onDeletePart(part.id)
-      setActionMenu(null)
+      setDeleteDialog({ open: false, part: null })
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete part')
     } finally {
@@ -342,6 +351,18 @@ export function PartsTable({
           </MenuItem>
         )}
       </Menu>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmActionDialog
+        open={deleteDialog.open}
+        title="Conferma Eliminazione"
+        message={`Sei sicuro di voler eliminare il pezzo ${deleteDialog.part?.partNumber}? Questa azione non può essere annullata.`}
+        confirmText="Elimina"
+        cancelText="Annulla"
+        severity="error"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteDialog({ open: false, part: null })}
+      />
     </Box>
   )
 }

@@ -24,13 +24,11 @@ import {
   Error,
   CheckCircle,
   Warning,
-  Engineering,
   AccessTime
 } from '@mui/icons-material'
 import { 
   LinearProgress,
   Alert,
-  Skeleton,
   Stack
 } from '@mui/material'
 import { useRouter } from 'next/navigation'
@@ -48,6 +46,8 @@ interface AdminStats {
   avgCycleTime: number
   totalEvents: number
   errorRate: number
+  todayEvents: number
+  weeklyEvents: number
 }
 
 export default function AdminPage() {
@@ -64,10 +64,12 @@ export default function AdminPage() {
     productionEfficiency: 0,
     avgCycleTime: 0,
     totalEvents: 0,
-    errorRate: 0
+    errorRate: 0,
+    todayEvents: 0,
+    weeklyEvents: 0
   })
   
-  const [notifications, setNotifications] = useState<any[]>([])
+  const [notifications, setNotifications] = useState<unknown[]>([])
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
   // Real-time notifications loading
@@ -199,7 +201,7 @@ export default function AdminPage() {
           </Typography>
           <Grid container spacing={3}>
             {systemInfo.map((info, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
                 <Box className="flex items-center gap-2">
                   <info.icon color="primary" />
                   <Box>
@@ -224,7 +226,7 @@ export default function AdminPage() {
         </Typography>
         <Grid container spacing={3}>
           {/* ODL Status Overview */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box className="flex items-center justify-between mb-2">
@@ -252,7 +254,7 @@ export default function AdminPage() {
           </Grid>
 
           {/* Production Efficiency */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box className="flex items-center justify-between mb-2">
@@ -272,7 +274,7 @@ export default function AdminPage() {
           </Grid>
 
           {/* Average Cycle Time */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box className="flex items-center justify-between mb-2">
@@ -289,7 +291,7 @@ export default function AdminPage() {
           </Grid>
 
           {/* Error Rate */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box className="flex items-center justify-between mb-2">

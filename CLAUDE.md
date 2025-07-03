@@ -13,31 +13,49 @@ Built as a Next.js 15.3.4 application following Domain-Driven Design principles 
 ### Development
 ```bash
 npm run dev          # Start development server with Turbopack (http://localhost:3000)
+npm run dev:standard # Start development server without Turbopack (fallback)
+npm run dev -- -p 3001 # Force specific port (use when multiple Claude instances)
 npm run build        # Create production build  
 npm run start        # Start production server
 npm run lint         # Run ESLint checks
 npx tsc --noEmit     # Type check without emitting files
 ```
 
+### Git & Commit Automation
+```bash
+# Pre-commit checks (run before every commit)
+npm run lint && npx tsc --noEmit   # Quality checks
+git add . && git status            # Stage and review changes
+
+# Smart commit with automated checks
+function smart_commit() {
+  npm run lint && npx tsc --noEmit && git add . && git commit -m "$1"
+}
+
+# Usage: smart_commit "feat(auth): add password reset flow"
+# Format: type(scope): description
+# Types: feat, fix, refactor, docs, test, style, chore, perf, security
+```
+
 ### Database
 ```bash
-docker-compose up -d           # Start PostgreSQL and Redis for development
+docker compose up -d           # Start PostgreSQL and Redis for development
 npm run db:generate            # Generate Prisma client after schema changes
 npm run db:push                # Push schema changes to database (development)
 npm run db:migrate             # Create and run database migrations (production)
 npm run db:studio              # Open Prisma Studio GUI
 npm run db:seed                # Seed database with initial data
 npm run db:seed-complete       # Run complete seed for testing and validation
-docker-compose down            # Stop services
-docker-compose logs postgres   # View database logs
-docker-compose ps              # Check container status
-docker-compose restart postgres # Restart database container
+docker compose down            # Stop services
+docker compose logs postgres   # View database logs
+docker compose ps              # Check container status
+docker compose restart postgres # Restart database container
 ```
 
 ### Development Setup (First Time)
 ```bash
 npm install                    # Install dependencies
-docker-compose up -d           # Start PostgreSQL and Redis
+docker compose up -d           # Start PostgreSQL and Redis
 npm run db:push                # Setup database schema
 npm run dev                    # Start development server
 # Visit http://localhost:3000/register to create first user
@@ -45,15 +63,294 @@ npm run dev                    # Start development server
 
 ### Quick Start (Single Command)
 ```bash
-docker-compose up -d && npm run db:push && npm run dev
+docker compose up -d && npm run db:push && npm run dev
 # Then open http://localhost:3000 and go to /register
 ```
+
+## Git & Version Control
+
+### Commit Best Practices & Automated Workflow
+
+Per mantenere uno storico Git pulito e professionale, seguire questo workflow automatizzato:
+
+#### 1. **Pre-Commit Checklist Automatico**
+```bash
+# Workflow completo automatico prima di ogni commit
+npm run lint               # Fix automatico problemi ESLint
+npx tsc --noEmit          # Verifica TypeScript senza errori
+git add .                 # Stage dei file modificati automaticamente
+git status                # Controllo finale delle modifiche
+```
+
+#### 2. **Commit Message Standard (Conventional Commits)**
+Formato obbligatorio per il progetto MES Aerospazio:
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types disponibili:**
+- `feat`: Nuova funzionalità business (es. QR scanner, workflow automation)
+- `fix`: Correzione bug o errori
+- `refactor`: Ristrutturazione codice senza cambio funzionalità
+- `docs`: Documentazione (CLAUDE.md, README, commenti)
+- `test`: Aggiunta o modifica test
+- `style`: Formattazione, linting (ESLint, Prettier)
+- `chore`: Manutenzione (dependencies, build, configurazione)
+- `perf`: Ottimizzazioni performance
+- `security`: Correzioni sicurezza
+
+**Scopes suggeriti per MES Aerospazio:**
+- `auth`: Sistema autenticazione (NextAuth, JWT, password reset)
+- `qr`: Sistema QR Scanner (scanning, generazione, offline)
+- `odl`: Gestione ODL (Work Orders, workflow automation)
+- `production`: Tracking produzione, dashboard operatore
+- `departments`: Gestione reparti (Clean Room, Autoclavi, NDI)
+- `admin`: Funzionalità amministrazione utenti
+- `database`: Schema Prisma, migrazioni, seed
+- `ui`: Componenti UI (Atomic Design, Material-UI)
+- `api`: API routes, validazione Zod
+- `workflow`: Sistema trasferimento automatico tra reparti
+
+#### 3. **Esempi Commit Messages per il Progetto**
+```bash
+# Nuove funzionalità
+feat(qr): implementa scanning offline con sync automatico
+feat(workflow): aggiunge trasferimento automatico ODL tra reparti
+feat(auth): implementa sistema password reset con email
+
+# Bug fixes
+fix(production): corregge calcolo KPI per turnisti Clean Room
+fix(database): risolve foreign key constraint su AutoclaveLoad
+fix(ui): corregge responsive design dashboard operatore mobile
+
+# Refactoring
+refactor(api): migra a service layer pattern per tutti gli endpoint
+refactor(components): applica Atomic Design a navbar e sidebar
+refactor(auth): unifica logica autenticazione NextAuth v5
+
+# Documentazione
+docs(claude): aggiorna workflow Git e commit best practices
+docs(api): aggiunge documentazione endpoint /api/production
+docs(database): documenta schema estensioni department-specific
+
+# Chore
+chore(deps): aggiorna Next.js 15.3.4 e Material-UI v7
+chore(lint): applica nuove regole ESLint 9 con flat config
+chore(docker): ottimizza container PostgreSQL per development
+```
+
+#### 4. **Workflow Automatico Completo**
+```bash
+# Comando singolo per commit pulito e sicuro
+function commit_auto() {
+  echo "🔍 Running pre-commit checks..."
+  
+  # 1. Lint automatico con fix
+  npm run lint
+  if [ $? -ne 0 ]; then
+    echo "❌ ESLint errors found. Please fix manually."
+    return 1
+  fi
+  
+  # 2. TypeScript check
+  npx tsc --noEmit
+  if [ $? -ne 0 ]; then
+    echo "❌ TypeScript errors found. Please fix before commit."
+    return 1
+  fi
+  
+  # 3. Check branch status
+  git status --porcelain
+  
+  # 4. Auto-stage files
+  git add .
+  
+  # 5. Show diff summary
+  echo "📋 Changes to be committed:"
+  git diff --cached --stat
+  
+  # 6. Commit with message
+  echo "✅ Ready to commit. Use: git commit -m 'type(scope): description'"
+}
+
+# Aggiungere al .bashrc/.zshrc per uso frequente
+alias pre-commit='commit_auto'
+```
+
+#### 5. **Branch Strategy & Naming**
+```bash
+# Branch naming convention
+feature/auth-password-reset       # Nuove funzionalità
+fix/qr-scanner-offline-sync      # Bug fixes  
+refactor/atomic-design-migration  # Refactoring
+docs/claude-git-workflow         # Documentazione
+chore/eslint-upgrade             # Manutenzione
+
+# Workflow branches
+main                             # Production ready
+develop                          # Integration branch
+feature/*                        # Feature branches da develop
+hotfix/*                         # Fix urgenti da main
+```
+
+#### 6. **Automated Commit con Validazione**
+```bash
+# Script avanzato per commit automatici
+function smart_commit() {
+  local commit_message="$1"
+  
+  if [ -z "$commit_message" ]; then
+    echo "Usage: smart_commit 'feat(scope): description'"
+    return 1
+  fi
+  
+  # Pre-commit validation
+  echo "🚀 Starting automated commit process..."
+  
+  # 1. Clean build
+  echo "🧹 Cleaning build artifacts..."
+  rm -rf .next
+  
+  # 2. Lint with auto-fix
+  echo "🔧 Running ESLint with auto-fix..."
+  npm run lint
+  
+  # 3. TypeScript validation
+  echo "📘 Validating TypeScript..."
+  npx tsc --noEmit
+  
+  # 4. Run tests if available
+  if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
+    echo "🧪 Running tests..."
+    npm test
+  fi
+  
+  # 5. Stage and commit
+  echo "📦 Staging changes..."
+  git add .
+  
+  echo "💾 Creating commit: $commit_message"
+  git commit -m "$commit_message"
+  
+  echo "✅ Commit completed successfully!"
+  git log --oneline -1
+}
+
+# Usage examples:
+# smart_commit "feat(qr): implementa modalità offline scanner"
+# smart_commit "fix(auth): corregge validazione password reset"
+# smart_commit "docs(claude): aggiorna best practices Git"
+```
+
+#### 7. **Pre-Push Validation**
+```bash
+# Validazione finale prima del push
+function safe_push() {
+  local branch=${1:-$(git branch --show-current)}
+  
+  echo "🚀 Preparing to push branch: $branch"
+  
+  # Final checks
+  git status
+  npm run build  # Ensure production build works
+  
+  echo "📡 Pushing to origin/$branch..."
+  git push origin "$branch"
+  
+  echo "✅ Push completed! 🎉"
+}
+```
+
+## 🔧 MULTI-CLAUDE DEVELOPMENT WORKFLOW
+
+### Per lavorare con più istanze Claude Code simultaneamente:
+
+#### 1. **Assegnazione Porte per Istanza**
+```bash
+# Claude Instance 1 (Primary) - Porta 3000
+npm run dev
+
+# Claude Instance 2 (Secondary) - Porta 3001  
+npm run dev -- -p 3001
+
+# Claude Instance 3 (Tertiary) - Porta 3002
+npm run dev -- -p 3002
+```
+
+#### 2. **Controllo Stato Servizi**
+```bash
+# Verifica quali porte sono in uso
+ss -tlnp | grep :300[0-9]
+
+# Verifica processi Next.js attivi
+ps aux | grep -E "(next|node)" | grep -v grep
+
+# Ferma tutti i processi Next.js se necessario
+pkill -f "next dev" || pkill -f "next"
+```
+
+#### 3. **Gestione Cache e Conflitti**
+```bash
+# Pulizia cache quando si hanno conflitti
+rm -rf .next && rm -rf node_modules/.cache
+
+# Reset completo database (solo se necessario)
+npm run db:push --force-reset
+```
+
+#### 4. **Strategia di Lavoro Multi-Claude**
+- **Claude 1**: Sviluppo frontend e UI (porta 3000)
+- **Claude 2**: Sviluppo backend e API (porta 3001) 
+- **Claude 3**: Database e testing (porta 3002)
+
+#### 5. **Comandi Sicuri per Coordinamento**
+```bash
+# Prima di iniziare, verifica stato
+docker compose ps                 # Database containers
+ss -tlnp | grep :300[0-9]       # Porte in uso
+git status                       # Modifiche pending
+
+# Avvia su porta specifica
+PORT=3001 npm run dev            # Alternativa per forzare porta
+npm run dev -- -p 3001          # Metodo preferito
+
+# Termina pulitamente
+# Usa sempre Ctrl+C nel terminale invece di kill forzato
+```
+
+### 6. **Risoluzione Problemi Comuni**
+```bash
+# Errore "Port in use"
+npm run dev -- -p 3001
+
+# Errore "ENOENT manifest files"  
+rm -rf .next && npm run dev
+
+# Errore "Database connection"
+docker compose restart postgres
+
+# Errore "Turbopack build issues"
+npm run dev:standard
+```
+
+### 7. **Best Practices Multi-Claude**
+- ✅ **Sempre specifica porta**: `npm run dev -- -p 300X`
+- ✅ **Controlla stato prima**: `ss -tlnp | grep :300[0-9]`
+- ✅ **Usa Ctrl+C per terminare**: mai `kill -9`
+- ✅ **Pulisci cache in caso di errori**: `rm -rf .next`
+- ✅ **Coordina modifiche database**: una sola istanza per migrations
+- ❌ **Non usare stessa porta**: porta a conflitti manifest
+- ❌ **Non killare processi brutalmente**: corrompe cache
 
 ### Troubleshooting Commands
 ```bash
 # Database connection issues
-docker-compose restart postgres
-docker-compose logs -f postgres
+docker compose restart postgres
+docker compose logs -f postgres
 
 # Schema sync issues  
 npm run db:generate
@@ -75,9 +372,9 @@ NODE_ENV=production npm run build
 ### Microservices Development
 ```bash
 # Note: Python microservices not yet implemented in current version
-# docker-compose up optimization-service  # Start autoclave nesting service (planned)
-# docker-compose up assignment-service    # Start ODL assignment service (planned)
-# docker-compose logs optimization-service # Monitor service logs (planned)
+# docker compose up optimization-service  # Start autoclave nesting service (planned)
+# docker compose up assignment-service    # Start ODL assignment service (planned)
+# docker compose logs optimization-service # Monitor service logs (planned)
 ```
 
 ## Current Development Status
@@ -371,16 +668,54 @@ Operators use personal smartphones for QR scanning:
 - **Production**: On-premise server deployment planned
 
 ### Development Workflow Tips
-- **Database Changes**: Always use `npm run db:generate` after schema modifications
-- **Testing Data**: Always run `npm run db:seed-complete` after implementing new features to validate functionality
-- **Authentication Testing**: Use `/register` to create users, admin panel at `/admin/users`
-- **API Testing**: Health check available at `/api/health`
-- **Component Development**: Follow atomic design pattern in `src/components/`
-- **Type Safety**: All domains have Zod schemas for validation
-- **Error Handling**: Authentication errors logged, email service configured
-- **Code Quality**: Run `npm run lint` before commits - ESLint enforces TypeScript strict mode
-- **Security**: Next.js config includes comprehensive security headers and CSP policies
-- **Production**: Standalone output mode configured for Docker deployment
+
+#### 🔄 **Pre-Commit Workflow (OBBLIGATORIO)**
+```bash
+# Sempre eseguire prima di ogni commit
+npm run lint               # Auto-fix ESLint errors
+npx tsc --noEmit          # Validate TypeScript
+npm run db:seed-complete   # Test dopo modifiche database
+```
+
+#### 🗃️ **Database Development Workflow**
+- **Schema Changes**: `npm run db:generate` dopo modifiche schema → `npm run db:push` per development
+- **Testing Data**: **SEMPRE** `npm run db:seed-complete` dopo nuove features per validare funzionalità
+- **Production Migrations**: `npm run db:migrate` per production-ready migrations
+- **Data Validation**: Test UI completo dopo seed per verificare integrazione
+
+#### 🔐 **Authentication & Security Testing**
+- **User Creation**: `/register` per nuovi utenti, admin panel `/admin/users` per gestione
+- **Multi-Role Testing**: Use seed credentials (admin, supervisor, operator) per test completi
+- **API Testing**: Health check `/api/health`, monitor authentication in browser dev tools
+- **Security Headers**: Verificare CSP policies in Next.js config prima deploy
+
+#### 🧪 **Component Development Standards**
+- **Atomic Design**: SEMPRE seguire pattern atoms → molecules → organisms → templates in `src/components/`
+- **Material-UI v7**: Usare SOLO sintassi `<Grid size={{ xs: 12, sm: 6 }}>` - old syntax deprecata
+- **Mobile-First**: Tutti componenti 44px minimum touch targets per uso smartphone industriale
+- **Type Safety**: Zod schemas obbligatori per all domains, TypeScript strict mode
+
+#### 📊 **Production Readiness Checklist**
+```bash
+# Prima di ogni deploy/PR importante
+npm run build              # Verify production build
+npm run lint              # Code quality check
+npx tsc --noEmit         # TypeScript validation
+docker compose up -d      # Test with real database
+npm run db:seed-complete  # Full integration test
+```
+
+#### 🚀 **Git Workflow Integration**
+- **Branch Creation**: Sempre da `develop`, naming: `feature/scope-description`
+- **Commit Messages**: Format obbligatorio `type(scope): description` (vedi sezione Git & Version Control)
+- **Pre-Push**: Verificare `npm run build` success prima push
+- **Code Review**: Include screenshot per UI changes, database migration notes
+
+### Service Layer Architecture (CRITICAL)
+- **All services are STATIC**: Services in `src/domains/*/services/` use static methods only
+- **Example**: `PartService.findMany()` NOT `new PartService().findMany()`
+- **Pattern**: `export class ServiceName { static async methodName() {} }`
+- **Common Error**: Using instance methods breaks API routes with "is not a function" errors
 
 ### Seed Management & Testing Protocol
 - **Complete Seed File**: `prisma/seed-complete.ts` contains comprehensive test data for all domains
@@ -393,6 +728,15 @@ Operators use personal smartphones for QR scanning:
   - Operator: `op1.cleanroom@mantaaero.com / password123`
 
 ### Critical Architecture Decisions
+
+**Material-UI Grid v7 Breaking Changes** (IMPORTANT):
+- **DEPRECATO**: `<Grid item xs={12} sm={6} md={4}>` sintassi NON supportata
+- **CORRETTO**: `<Grid size={{ xs: 12, sm: 6, md: 4 }}>` nuova sintassi obbligatoria  
+- **Container**: `<Grid container spacing={3}>` rimane invariato
+- **Props rimosse**: `item`, `xs`, `sm`, `md`, `lg`, `xl` non esistono più
+- **Unificata**: Tutte le dimensioni responsive ora in `size` prop
+- **Migrazione**: Converti SEMPRE `item xs={...}` → `size={{ xs: ... }}`
+- **TypeScript Error**: Compilation fails if old syntax is used
 
 **Hybrid Monolith + Microservices Strategy**:
 - **Core Application**: Next.js monolith handles all UI, authentication, CRUD operations, and business logic
@@ -573,3 +917,17 @@ export function useDepartmentConfig(partId: string, department: DepartmentType) 
 ### Project Documentation
 - Aggiorna i requisiti e i documenti quando vengono definite nuove funzionalità. 
 - Interrogami ogni qual volta chiedo implementazione di funzionalità non previste precedentemente al fine di implementarle secondo linee guida corrette
+
+## Production Deployment & Monitoring
+
+### Environment Configuration
+- **Development**: Docker Compose with PostgreSQL + Redis
+- **Production**: Standalone Next.js build with Docker containers
+- **Environment Variables**: See `.env.example` for required configuration
+- **Security Headers**: Comprehensive CSP and OWASP headers configured in `next.config.ts`
+
+### Health Monitoring
+- **Health Check Endpoint**: `/api/health` for container orchestration
+- **Database Connection**: Prisma client with connection pooling
+- **Background Jobs**: BullMQ with Redis for async operations
+- **Logging**: Structured logging with request tracing for production debugging

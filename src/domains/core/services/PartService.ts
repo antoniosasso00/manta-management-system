@@ -5,7 +5,7 @@ import { SyncStatus } from '@prisma/client'
 
 export class PartService {
   
-  async create(input: CreatePartInput): Promise<Part> {
+  static async create(input: CreatePartInput): Promise<Part> {
     // Check if part number already exists
     const existing = await prisma.part.findUnique({
       where: { partNumber: input.partNumber }
@@ -30,7 +30,7 @@ export class PartService {
     return Part.fromPrisma(data)
   }
 
-  async findById(id: string): Promise<Part | null> {
+  static async findById(id: string): Promise<Part | null> {
     const data = await prisma.part.findUnique({
       where: { id },
       include: {
@@ -44,7 +44,7 @@ export class PartService {
     return data ? Part.fromPrisma(data) : null
   }
 
-  async findByPartNumber(partNumber: string): Promise<Part | null> {
+  static async findByPartNumber(partNumber: string): Promise<Part | null> {
     const data = await prisma.part.findUnique({
       where: { partNumber },
       include: {
@@ -58,7 +58,7 @@ export class PartService {
     return data ? Part.fromPrisma(data) : null
   }
 
-  async findMany(query: PartQueryInput): Promise<{
+  static async findMany(query: PartQueryInput): Promise<{
     parts: Part[]
     total: number
     page: number
@@ -102,7 +102,7 @@ export class PartService {
     }
   }
 
-  async update(id: string, input: UpdatePartInput): Promise<Part> {
+  static async update(id: string, input: UpdatePartInput): Promise<Part> {
     const existing = await prisma.part.findUnique({
       where: { id }
     })
@@ -137,7 +137,7 @@ export class PartService {
     return Part.fromPrisma(data)
   }
 
-  async delete(id: string): Promise<void> {
+  static async delete(id: string): Promise<void> {
     // Check if part has ODLs
     const odlCount = await prisma.oDL.count({
       where: { partId: id }
@@ -152,7 +152,7 @@ export class PartService {
     })
   }
 
-  async syncFromGamma(parts: GammaSyncPartInput[]): Promise<{
+  static async syncFromGamma(parts: GammaSyncPartInput[]): Promise<{
     created: number
     updated: number
     skipped: number
@@ -209,7 +209,7 @@ export class PartService {
     return { created, updated, skipped, errors }
   }
 
-  async getPartsWithoutSpecs(): Promise<Part[]> {
+  static async getPartsWithoutSpecs(): Promise<Part[]> {
     const data = await prisma.part.findMany({
       where: {
         AND: [
@@ -226,7 +226,7 @@ export class PartService {
     return data.map(Part.fromPrisma)
   }
 
-  async getPartsByGammaSync(syncStatus?: SyncStatus): Promise<Part[]> {
+  static async getPartsByGammaSync(syncStatus?: SyncStatus): Promise<Part[]> {
     const where = syncStatus ? { syncStatus } : { gammaId: { not: null } }
     
     const data = await prisma.part.findMany({

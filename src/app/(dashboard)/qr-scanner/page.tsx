@@ -32,7 +32,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 
 // QR Scanner con @zxing/browser
-import { BrowserMultiFormatReader } from '@zxing/library';
+import { BrowserMultiFormatReader } from '@zxing/browser';
 
 interface QRData {
   type: string;
@@ -96,19 +96,22 @@ export default function QRScannerPage() {
 
   // Timer per ODL attivo
   useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    
     if (activeTimer) {
-      timerRef.current = setInterval(() => {
+      intervalId = setInterval(() => {
         setElapsedTime(Date.now() - activeTimer.startTime);
       }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      timerRef.current = intervalId;
     }
 
     return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
   }, [activeTimer]);
@@ -386,18 +389,13 @@ export default function QRScannerPage() {
 
   return (
     <Box className="p-4 space-y-4">
-      <Box className="flex items-center justify-between">
-        <Typography variant="h4" className="flex items-center gap-2">
-          <QrCodeScanner />
-          Scanner QR ODL
-        </Typography>
-        
-        <Chip 
-          icon={isOnline ? <Cloud /> : <CloudOff />}
-          label={isOnline ? 'Online' : 'Offline'}
-          color={isOnline ? 'success' : 'warning'}
-        />
-      </Box>
+        <Box className="flex items-center justify-between">
+          <Chip 
+            icon={isOnline ? <Cloud /> : <CloudOff />}
+            label={isOnline ? 'Online' : 'Offline'}
+            color={isOnline ? 'success' : 'warning'}
+          />
+        </Box>
 
       {/* Timer Attivo */}
       {activeTimer && (

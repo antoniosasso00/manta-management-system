@@ -1,132 +1,157 @@
-import { Container, Typography, Box, Paper, Card, CardContent } from '@mui/material'
+import { Container, Typography, Box, Paper, Card, CardContent, Button, Grid } from '@mui/material'
 import { 
-  CheckCircle as CheckIcon, 
-  Warning as WarningIcon,
-  Security as SecurityIcon,
-  Storage as DatabaseIcon,
-  QrCode as QrCodeIcon,
-  Palette as PaletteIcon,
+  Dashboard,
+  Factory,
+  QrCodeScanner,
+  Assignment,
+  People,
+  Settings,
+  BarChart
 } from '@mui/icons-material'
-import { DashboardLayout } from '@/components/templates/DashboardLayout'
 import { auth } from '@/lib/auth'
 
 export default async function Home() {
   const session = await auth()
 
-  const systemStatus = [
-    { name: 'Autenticazione Completa', status: 'success', icon: SecurityIcon, description: 'Login, registrazione, reset password, gestione ruoli' },
-    { name: 'Database Schema', status: 'warning', icon: DatabaseIcon, description: 'Esegui: docker-compose up -d && npx prisma db push' },
-    { name: 'QR Code Scanner', status: 'success', icon: QrCodeIcon, description: 'Pronto per scansione (@zxing/browser)' },
-    { name: 'Material UI v7', status: 'success', icon: PaletteIcon, description: 'Tema configurato con dark mode' },
+  const quickActions = [
+    {
+      title: 'Il Mio Reparto',
+      description: 'Dashboard operatore con KPI e gestione ODL',
+      icon: Dashboard,
+      href: '/my-department',
+      color: 'primary'
+    },
+    {
+      title: 'Produzione Overview',
+      description: 'Monitoraggio completo della produzione',
+      icon: Factory,
+      href: '/production',
+      color: 'success'
+    },
+    {
+      title: 'Scanner QR',
+      description: 'Scansiona codici QR per tracciamento',
+      icon: QrCodeScanner,
+      href: '/qr-scanner',
+      color: 'info'
+    },
+    {
+      title: 'Gestione ODL',
+      description: 'Visualizza e gestisci ordini di lavoro',
+      icon: Assignment,
+      href: '/production/odl',
+      color: 'warning'
+    }
   ]
 
+  const adminActions = [
+    {
+      title: 'Gestione Utenti',
+      description: 'Amministrazione utenti e ruoli',
+      icon: People,
+      href: '/admin/users',
+      color: 'error'
+    },
+    {
+      title: 'Monitoraggio',
+      description: 'Audit e performance del sistema',
+      icon: BarChart,
+      href: '/admin/monitoring',
+      color: 'secondary'
+    },
+    {
+      title: 'Impostazioni',
+      description: 'Configurazione sistema',
+      icon: Settings,
+      href: '/admin/settings',
+      color: 'info'
+    }
+  ]
+
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const displayActions = isAdmin ? [...quickActions, ...adminActions] : quickActions
+
   return (
-    <DashboardLayout title="Dashboard">
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* Welcome Card */}
+          <Paper elevation={3} sx={{ p: 4, textAlign: 'center', bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+            <Typography variant="h4" component="h2" gutterBottom>
+              Benvenuto in Manta Group MES
+            </Typography>
+            <Typography variant="h6" sx={{ opacity: 0.9 }}>
+              Ciao, {session?.user?.name || 'Utente'}! 
+              Ruolo: <strong>{session?.user?.role}</strong>
+            </Typography>
+          </Paper>
+
+          {/* Quick Actions */}
           <Box>
-            <Paper elevation={3} sx={{ p: 4, textAlign: 'center', bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-              <Typography variant="h4" component="h2" gutterBottom>
-                Benvenuto in Manta Group MES
-              </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                Ciao, {session?.user?.name || 'Utente'}! 
-                Ruolo: <strong>{session?.user?.role}</strong>
-              </Typography>
-            </Paper>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+              Accesso Rapido
+            </Typography>
+            <Grid container spacing={3}>
+              {displayActions.map((action, index) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
+                  <Card 
+                    elevation={2} 
+                    sx={{ 
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 4
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <Box display="flex" alignItems="center" mb={2}>
+                        <action.icon 
+                          sx={{ 
+                            mr: 2, 
+                            color: `${action.color}.main`,
+                            fontSize: 32
+                          }} 
+                        />
+                      </Box>
+                      <Typography variant="h6" gutterBottom>
+                        {action.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1, mb: 2 }}>
+                        {action.description}
+                      </Typography>
+                      <Button 
+                        variant="contained" 
+                        color={action.color as any}
+                        href={action.href}
+                        fullWidth
+                      >
+                        Apri
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
           </Box>
 
           {/* System Status */}
-          <Box>
-            <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-              Stato del Sistema
+          <Paper elevation={2} sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Sistema Operativo
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
-              {systemStatus.map((item, index) => (
-                <Box key={index}>
-                  <Card elevation={2} sx={{ height: '100%' }}>
-                    <CardContent>
-                      <Box display="flex" alignItems="center" mb={2}>
-                        <item.icon 
-                          sx={{ 
-                            mr: 2, 
-                            color: item.status === 'success' ? 'success.main' : 'warning.main' 
-                          }} 
-                        />
-                        {item.status === 'success' ? (
-                          <CheckIcon color="success" />
-                        ) : (
-                          <WarningIcon color="warning" />
-                        )}
-                      </Box>
-                      <Typography variant="h6" gutterBottom>
-                        {item.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {item.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
-          {/* Quick Actions and System Architecture */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 4 }}>
-            {/* Quick Actions */}
-            <Box>
-              <Paper elevation={2} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Prossimi Passi
-                </Typography>
-                <Box component="ol" sx={{ pl: 2 }}>
-                  <Typography component="li" variant="body2" paragraph>
-                    Avvia database: <code>docker-compose up -d</code>
-                  </Typography>
-                  <Typography component="li" variant="body2" paragraph>
-                    Setup database: <code>npx prisma db push</code>
-                  </Typography>
-                  <Typography component="li" variant="body2" paragraph>
-                    Crea reparti e ODL di test
-                  </Typography>
-                  <Typography component="li" variant="body2" paragraph>
-                    Implementa moduli Clean Room e Autoclavi
-                  </Typography>
-                  <Typography component="li" variant="body2" paragraph>
-                    Configura microservizi Python per ottimizzazione
-                  </Typography>
-                </Box>
-              </Paper>
-            </Box>
-
-            {/* System Architecture */}
-            <Box>
-              <Paper elevation={2} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Architettura Sistema
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  <strong>Frontend:</strong> Next.js 15.3.4 + Material-UI v7
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  <strong>Backend:</strong> Next.js API Routes + Python Microservizi
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  <strong>Database:</strong> PostgreSQL + Prisma ORM
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  <strong>Auth:</strong> NextAuth.js v5 con JWT e ruoli
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  <strong>Sicurezza:</strong> Rate limiting, timeout sessioni, validazione Zod
-                </Typography>
-              </Paper>
-            </Box>
-          </Box>
+            <Typography variant="body2" color="success.main" paragraph>
+              ✅ Sistema MES attivo e funzionante
+            </Typography>
+            <Typography variant="body2" paragraph>
+              <strong>Funzionalità disponibili:</strong> Autenticazione completa, QR Scanner, Dashboard operatore, Monitoraggio produzione, Gestione ODL
+            </Typography>
+            <Typography variant="body2" paragraph>
+              <strong>Architettura:</strong> Next.js 15.3.4 + Material-UI v7 + PostgreSQL + Prisma ORM
+            </Typography>
+          </Paper>
         </Box>
-      </Container>
-    </DashboardLayout>
+    </Container>
   )
 }

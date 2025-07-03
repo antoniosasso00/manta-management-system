@@ -151,7 +151,7 @@ export function NavigationSidebar({
       </Box>
 
       {/* Info reparto se presente */}
-      {!collapsed && user.departmentRole && user.role !== UserRole.ADMIN && (
+      {!collapsed && user.departmentRole && user.role !== USER_ROLES.ADMIN && (
         <Box sx={{ px: 2, py: 1 }}>
           <Chip
             label={ROLE_DISPLAY_NAMES[user.departmentRole]}
@@ -164,7 +164,7 @@ export function NavigationSidebar({
       )}
       
       {/* Dropdown Impersona Ruolo per Admin */}
-      {!collapsed && user.role === UserRole.ADMIN && (
+      {!collapsed && user.role === USER_ROLES.ADMIN && (
         <Box sx={{ px: 2, py: 1 }}>
           <FormControl fullWidth size="small">
             <InputLabel id="role-select-label">
@@ -182,11 +182,11 @@ export function NavigationSidebar({
               <MenuItem value="">
                 <em>Vista Admin (Default)</em>
               </MenuItem>
-              <MenuItem value={UserRole.SUPERVISOR}>
-                {ROLE_DISPLAY_NAMES[UserRole.SUPERVISOR]}
+              <MenuItem value={USER_ROLES.SUPERVISOR}>
+                {ROLE_DISPLAY_NAMES[USER_ROLES.SUPERVISOR]}
               </MenuItem>
-              <MenuItem value={UserRole.OPERATOR}>
-                {ROLE_DISPLAY_NAMES[UserRole.OPERATOR]}
+              <MenuItem value={USER_ROLES.OPERATOR}>
+                {ROLE_DISPLAY_NAMES[USER_ROLES.OPERATOR]}
               </MenuItem>
             </Select>
           </FormControl>

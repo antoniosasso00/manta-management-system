@@ -14,6 +14,8 @@ export const DEPARTMENT_ROLES = {
   OPERATORE: 'OPERATORE',
 } as const
 
+export type DepartmentRole = typeof DEPARTMENT_ROLES[keyof typeof DEPARTMENT_ROLES]
+
 // Role display names (Italian)
 export const ROLE_DISPLAY_NAMES = {
   // System roles
@@ -30,12 +32,34 @@ export const ROLE_DISPLAY_NAMES = {
 // ODL Status
 export const ODL_STATUS = {
   CREATED: 'CREATED',
+  // Honeycomb processing
+  IN_HONEYCOMB: 'IN_HONEYCOMB',
+  HONEYCOMB_COMPLETED: 'HONEYCOMB_COMPLETED',
+  // Clean room processing
   IN_CLEANROOM: 'IN_CLEANROOM',
   CLEANROOM_COMPLETED: 'CLEANROOM_COMPLETED',
+  // CNC processing
+  IN_CONTROLLO_NUMERICO: 'IN_CONTROLLO_NUMERICO',
+  CONTROLLO_NUMERICO_COMPLETED: 'CONTROLLO_NUMERICO_COMPLETED',
+  // Assembly processing
+  IN_MONTAGGIO: 'IN_MONTAGGIO',
+  MONTAGGIO_COMPLETED: 'MONTAGGIO_COMPLETED',
+  // Autoclave processing
   IN_AUTOCLAVE: 'IN_AUTOCLAVE',
   AUTOCLAVE_COMPLETED: 'AUTOCLAVE_COMPLETED',
+  // NDI processing
   IN_NDI: 'IN_NDI',
-  IN_RIFILATURA: 'IN_RIFILATURA',
+  NDI_COMPLETED: 'NDI_COMPLETED',
+  // Coating processing
+  IN_VERNICIATURA: 'IN_VERNICIATURA',
+  VERNICIATURA_COMPLETED: 'VERNICIATURA_COMPLETED',
+  // Motor processing
+  IN_MOTORI: 'IN_MOTORI',
+  MOTORI_COMPLETED: 'MOTORI_COMPLETED',
+  // Quality control
+  IN_CONTROLLO_QUALITA: 'IN_CONTROLLO_QUALITA',
+  CONTROLLO_QUALITA_COMPLETED: 'CONTROLLO_QUALITA_COMPLETED',
+  // Final states
   COMPLETED: 'COMPLETED',
   ON_HOLD: 'ON_HOLD',
   CANCELLED: 'CANCELLED',
@@ -49,11 +73,44 @@ export const PRODUCTION_SHIFTS = {
 
 // Department types
 export const DEPARTMENT_TYPES = {
+  HONEYCOMB: 'HONEYCOMB',
   CLEANROOM: 'CLEANROOM',
+  CONTROLLO_NUMERICO: 'CONTROLLO_NUMERICO',
+  MONTAGGIO: 'MONTAGGIO',
   AUTOCLAVE: 'AUTOCLAVE',
   NDI: 'NDI',
-  RIFILATURA: 'RIFILATURA',
+  VERNICIATURA: 'VERNICIATURA',
+  MOTORI: 'MOTORI',
+  CONTROLLO_QUALITA: 'CONTROLLO_QUALITA',
   OTHER: 'OTHER',
+} as const
+
+// Department display names (Italian)
+export const DEPARTMENT_DISPLAY_NAMES = {
+  HONEYCOMB: 'Honeycomb',
+  CLEANROOM: 'Clean Room',
+  CONTROLLO_NUMERICO: 'Controllo Numerico',
+  MONTAGGIO: 'Montaggio',
+  AUTOCLAVE: 'Autoclavi',
+  NDI: 'NDI',
+  VERNICIATURA: 'Verniciatura',
+  MOTORI: 'Motori',
+  CONTROLLO_QUALITA: 'Controllo Qualità',
+  OTHER: 'Altro',
+} as const
+
+// Department codes (Short)
+export const DEPARTMENT_CODES = {
+  HONEYCOMB: 'HC',
+  CLEANROOM: 'CR',
+  CONTROLLO_NUMERICO: 'CN',
+  MONTAGGIO: 'RM',
+  AUTOCLAVE: 'AC',
+  NDI: 'ND',
+  VERNICIATURA: 'VR',
+  MOTORI: 'MT',
+  CONTROLLO_QUALITA: 'CQ',
+  OTHER: 'OT',
 } as const
 
 // Event types
