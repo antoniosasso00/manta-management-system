@@ -51,9 +51,46 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
     {
       id: 'production',
       label: 'Produzione',
-      icon: Engineering,
+      icon: Factory,
       href: '/production',
-      divider: true,
+      children: [
+        {
+          id: 'production-overview',
+          label: 'Overview Produzione',
+          icon: Analytics,
+          href: '/production',
+        },
+        {
+          id: 'my-department',
+          label: 'Il Mio Reparto',
+          icon: Factory,
+          href: '/my-department',
+        },
+        {
+          id: 'odl-management',
+          label: 'Gestione ODL',
+          icon: ListAlt,
+          href: '/production/odl',
+        },
+        {
+          id: 'qr-scanner',
+          label: 'Scanner QR',
+          icon: QrCodeScanner,
+          href: '/qr-scanner',
+        },
+        {
+          id: 'qr-labels',
+          label: 'Stampa Etichette QR',
+          icon: QrCode2,
+          href: '/qr-labels',
+        },
+      ],
+    },
+    {
+      id: 'departments',
+      label: 'Reparti',
+      icon: Engineering,
+      href: '#',
       children: [
         {
           id: 'production-honeycomb',
@@ -80,26 +117,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/production/montaggio',
         },
         {
-          id: 'autoclavi',
-          label: 'Autoclavi',
-          icon: LocalFireDepartment,
-          href: '/autoclavi/batches',
-          children: [
-            {
-              id: 'autoclavi-batches',
-              label: 'Gestione Batch',
-              icon: ListAlt,
-              href: '/autoclavi/batches',
-            },
-            {
-              id: 'autoclavi-create-batch',
-              label: 'Nuovo Batch',
-              icon: Add,
-              href: '/autoclavi/create-batch',
-            },
-          ],
-        },
-        {
           id: 'production-ndi',
           label: 'NDI',
           icon: Science,
@@ -123,32 +140,35 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           icon: VerifiedUser,
           href: '/production/controllo-qualita',
         },
+      ],
+    },
+    {
+      id: 'autoclavi',
+      label: 'Autoclavi',
+      icon: LocalFireDepartment,
+      href: '/autoclavi/batches',
+      children: [
         {
-          id: 'qr-scanner',
-          label: 'Scanner QR',
-          icon: QrCodeScanner,
-          href: '/qr-scanner',
+          id: 'autoclavi-batches',
+          label: 'Gestione Batch',
+          icon: ListAlt,
+          href: '/autoclavi/batches',
         },
         {
-          id: 'qr-labels',
-          label: 'Stampa QR',
-          icon: QrCode2,
-          href: '/qr-labels',
+          id: 'autoclavi-create-batch',
+          label: 'Nuovo Batch',
+          icon: Add,
+          href: '/autoclavi/create-batch',
         },
       ],
     },
     {
       id: 'data-management',
-      label: 'Gestione Dati',
+      label: 'Dati Master',
       icon: Inventory,
-      href: '/production/odl',
+      href: '#',
+      divider: true,
       children: [
-        {
-          id: 'odl-management',
-          label: 'ODL',
-          icon: ListAlt,
-          href: '/production/odl',
-        },
         {
           id: 'parts-management',
           label: 'Articoli/Parti',
@@ -162,6 +182,18 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/tools',
         },
       ],
+    },
+    {
+      id: 'planning',
+      label: 'Pianificazione',
+      icon: Schedule,
+      href: '/planning',
+    },
+    {
+      id: 'reports',
+      label: 'Report',
+      icon: Assessment,
+      href: '/reports',
     },
     {
       id: 'admin',
@@ -189,41 +221,15 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/admin/departments',
         },
         {
-          id: 'admin-audit-direct',
+          id: 'admin-audit',
           label: 'Audit Logs',
-          icon: Analytics,
+          icon: EventNote,
           href: '/admin/audit',
-        },
-        {
-          id: 'admin-monitoring',
-          label: 'Monitoring & Logs',
-          icon: Analytics,
-          href: '/admin/monitoring',
-          children: [
-            {
-              id: 'admin-audit',
-              label: 'Audit Logs',
-              icon: Analytics,
-              href: '/admin/monitoring/audit',
-            },
-            {
-              id: 'admin-errors',
-              label: 'Error Tracking',
-              icon: Analytics,
-              href: '/admin/monitoring/errors',
-            },
-            {
-              id: 'admin-performance',
-              label: 'Performance Metrics',
-              icon: Analytics,
-              href: '/admin/monitoring/performance',
-            },
-          ],
         },
         {
           id: 'admin-sync',
           label: 'Sincronizzazione Gamma',
-          icon: EventNote,
+          icon: Engineering,
           href: '/admin/sync',
         },
         {
@@ -233,18 +239,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/admin/settings',
         },
       ],
-    },
-    {
-      id: 'planning',
-      label: 'Pianificazione',
-      icon: Schedule,
-      href: '/planning',
-    },
-    {
-      id: 'reports',
-      label: 'Report',
-      icon: Assessment,
-      href: '/reports',
     },
   ],
 
@@ -259,8 +253,40 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
     {
       id: 'production',
       label: 'Produzione',
-      icon: Engineering,
+      icon: Factory,
       href: '/production',
+      children: [
+        {
+          id: 'production-overview',
+          label: 'Overview Produzione',
+          icon: Analytics,
+          href: '/production',
+        },
+        {
+          id: 'my-department',
+          label: 'Il Mio Reparto',
+          icon: Factory,
+          href: '/my-department',
+        },
+        {
+          id: 'odl-management',
+          label: 'Gestione ODL',
+          icon: ListAlt,
+          href: '/production/odl',
+        },
+        {
+          id: 'qr-scanner',
+          label: 'Scanner QR',
+          icon: QrCodeScanner,
+          href: '/qr-scanner',
+        },
+      ],
+    },
+    {
+      id: 'departments',
+      label: 'Reparti',
+      icon: Engineering,
+      href: '#',
       children: [
         {
           id: 'production-honeycomb',
@@ -287,12 +313,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/production/montaggio',
         },
         {
-          id: 'autoclavi',
-          label: 'Autoclavi',
-          icon: LocalFireDepartment,
-          href: '/autoclavi/batches',
-        },
-        {
           id: 'production-ndi',
           label: 'NDI',
           icon: Science,
@@ -316,26 +336,21 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           icon: VerifiedUser,
           href: '/production/controllo-qualita',
         },
-        {
-          id: 'qr-scanner',
-          label: 'Scanner QR',
-          icon: QrCodeScanner,
-          href: '/qr-scanner',
-        },
       ],
     },
     {
+      id: 'autoclavi',
+      label: 'Autoclavi',
+      icon: LocalFireDepartment,
+      href: '/autoclavi/batches',
+    },
+    {
       id: 'data-management',
-      label: 'Gestione Dati',
+      label: 'Dati Master',
       icon: Inventory,
-      href: '/production/odl',
+      href: '#',
+      divider: true,
       children: [
-        {
-          id: 'odl-management',
-          label: 'ODL',
-          icon: ListAlt,
-          href: '/production/odl',
-        },
         {
           id: 'parts-management',
           label: 'Articoli/Parti',
@@ -371,26 +386,18 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       label: 'Il Mio Reparto',
       icon: Factory,
       href: '/my-department',
-      children: [
-        {
-          id: 'my-odl',
-          label: 'ODL Attivi',
-          icon: ListAlt,
-          href: '/my-department/odl',
-        },
-        {
-          id: 'qr-scanner',
-          label: 'Scanner QR',
-          icon: QrCodeScanner,
-          href: '/qr-scanner',
-        },
-        {
-          id: 'my-events',
-          label: 'I Miei Eventi',
-          icon: Analytics,
-          href: '/my-department/events',
-        },
-      ],
+    },
+    {
+      id: 'qr-scanner',
+      label: 'Scanner QR',
+      icon: QrCodeScanner,
+      href: '/qr-scanner',
+    },
+    {
+      id: 'production-overview',
+      label: 'Overview Produzione',
+      icon: Analytics,
+      href: '/production',
     },
   ],
 }
