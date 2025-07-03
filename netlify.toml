@@ -1,13 +1,19 @@
 [build]
   command = "npm run build"
+  publish = ".next"
 
 [build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
   NEXT_TELEMETRY_DISABLED = "1"
   SKIP_ENV_VALIDATION = "1"
 
 # Next.js plugin per deployment automatico
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
 
 # Redirect principali per compatibility
 [[redirects]]
@@ -28,3 +34,14 @@
 
 [context.branch-deploy]
   environment = { NODE_ENV = "production" }
+
+# Headers di sicurezza per applicazione industriale
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
