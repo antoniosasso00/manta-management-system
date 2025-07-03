@@ -1,10 +1,13 @@
 [build]
   command = "npm run build"
-  publish = ".next"
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
   SKIP_ENV_VALIDATION = "1"
+
+# Next.js plugin per deployment automatico
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [context.production]
   environment = { NODE_ENV = "production" }
