@@ -1,7 +1,27 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import QRCode from 'qrcode'
+import { QRGenerator } from '../src/utils/qr-validation'
 
 const prisma = new PrismaClient()
+
+// Helper function to generate real QR codes for ODLs
+async function generateRealQRCode(odlNumber: string, partNumber: string, priority?: string): Promise<string> {
+  try {
+    const qrData = QRGenerator.generateODLQR({
+      id: odlNumber,
+      partNumber: partNumber,
+      priority: priority as any
+    });
+    
+    const qrCodeSVG = await QRCode.toString(QRGenerator.toQRString(qrData), { type: 'svg' });
+    return qrCodeSVG;
+  } catch (error) {
+    console.error(`Error generating QR for ${odlNumber}:`, error);
+    // Fallback to text if QR generation fails
+    return `QR-${odlNumber}`;
+  }
+}
 
 async function main() {
   console.log('🌱 Inizializzazione seed completo ESTESO...')
@@ -927,29 +947,74 @@ async function main() {
   const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
   
-  const odls = await Promise.all([
+  // Generate QR codes for ODLs (sequential to avoid race conditions)
+  console.log('🔳 Generando QR codes reali...')
+  
+  const odlsData = [
     // === ODL IN CLEANROOM (attivi) ===
-    prisma.oDL.create({
+    {
+      odlNumber: 'ODL-24-001',
+      partId: parts[0].id, // A320 ala superiore
+      partNumber: parts[0].partNumber,
+      quantity: 2,
+      priority: 'HIGH',
+      status: 'IN_CLEANROOM',
+      gammaId: 'GM-ODL-001',
+      curingCycleId: curingCycles[0].id,
+      length: 2400, width: 800, height: 25, vacuumLines: 2,
+    },
+    {
+      odlNumber: 'ODL-24-002',
+      partId: parts[2].id, // A320 nervatura
+      partNumber: parts[2].partNumber,
+      quantity: 4,
+      priority: 'NORMAL',
+      status: 'IN_CLEANROOM',
+      gammaId: 'GM-ODL-002',
+      curingCycleId: curingCycles[1].id,
+      length: 1800, width: 300, height: 80, vacuumLines: 1,
+    },
+    {
+      odlNumber: 'ODL-24-003',
+      partId: parts[11].id, // Radome
+      partNumber: parts[11].partNumber,
+      quantity: 1,
+      priority: 'URGENT',
+      status: 'IN_CLEANROOM',
+      gammaId: 'GM-ODL-003',
+      curingCycleId: curingCycles[4].id,
+      length: 800, width: 800, height: 200, vacuumLines: 1,
+    }
+  ]
+
+  // Generate real QR codes and create ODLs
+  const odls = []
+  for (const odlData of odlsData) {
+    const qrCode = await generateRealQRCode(odlData.odlNumber, odlData.partNumber, odlData.priority)
+    
+    const odl = await prisma.oDL.create({
       data: {
-        odlNumber: 'ODL-24-001',
-        partId: parts[0].id, // A320 ala superiore
-        quantity: 2,
-        priority: 'HIGH',
-        status: 'IN_CLEANROOM',
-        qrCode: 'QR-ODL-24-001',
-        gammaId: 'GM-ODL-001',
-        curingCycleId: curingCycles[0].id,
-        length: 2400, width: 800, height: 25, vacuumLines: 2,
+        ...odlData,
+        qrCode: qrCode,
+        partNumber: undefined // Remove this helper field
       },
-    }),
+    })
+    
+    odls.push(odl)
+    console.log(`✅ Created ODL ${odlData.odlNumber} with real QR code`)
+  }
+
+  // Quick fix: for now let's create a few more ODLs with simple QR text to complete the seed
+  // (We'll generate real QR codes for the first 3 ODLs as a proof of concept)
+  const remainingOdls = await Promise.all([
     prisma.oDL.create({
       data: {
-        odlNumber: 'ODL-24-002',
-        partId: parts[2].id, // A320 nervatura
+        odlNumber: 'ODL-24-004',
+        partId: parts[1].id, // A320 ala inferiore
         quantity: 4,
         priority: 'NORMAL',
-        status: 'IN_CLEANROOM',
-        qrCode: 'QR-ODL-24-002',
+        status: 'CLEANROOM_COMPLETED',
+        qrCode: 'QR-ODL-24-004',
         gammaId: 'GM-ODL-002',
         curingCycleId: curingCycles[1].id,
         length: 1800, width: 300, height: 80, vacuumLines: 1,
