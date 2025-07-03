@@ -23,6 +23,7 @@ import {
   PersonSearch,
 } from '@mui/icons-material'
 import { NavigationItem } from '@/components/molecules/NavigationItem'
+import { Logo } from '@/components/atoms/Logo'
 import { getNavigationForUser } from '@/config/navigationConfig'
 import { useAuth } from '@/hooks/useAuth'
 import { ROLE_DISPLAY_NAMES, USER_ROLES } from '@/utils/constants'
@@ -95,6 +96,24 @@ export function NavigationSidebar({
         borderRight: `1px solid ${theme.palette.divider}`,
       }}
     >
+      {/* Logo Section */}
+      <Box
+        sx={{
+          p: collapsed ? 1 : 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          minHeight: 56,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Logo 
+          size={collapsed ? 'small' : 'medium'} 
+          showText={!collapsed} 
+          variant={collapsed ? 'icon' : 'full'}
+        />
+      </Box>
+
       {/* Header con info utente */}
       <Box
         sx={{

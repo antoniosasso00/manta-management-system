@@ -13,7 +13,7 @@ import {
   Paper,
 } from '@mui/material'
 import Link from 'next/link'
-import { Button, Input } from '@/components/atoms'
+import { Button, Input, Logo } from '@/components/atoms'
 import { registerSchema, RegisterInput } from '@/domains/user/schemas/auth.schema'
 
 export default function RegisterPage() {
@@ -71,11 +71,11 @@ export default function RegisterPage() {
         }}
       >
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Logo size="large" showText={true} />
+          </Box>
+          <Typography component="h1" variant="h5" align="center" gutterBottom>
             Create Account
-          </Typography>
-          <Typography variant="h6" align="center" color="text.secondary" gutterBottom>
-            Manta Group MES
           </Typography>
 
           {error && (

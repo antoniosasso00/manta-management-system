@@ -8,13 +8,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
   Container,
-  Typography,
   Alert,
   Link as MuiLink,
   Paper,
 } from '@mui/material'
 import Link from 'next/link'
-import { Button, Input } from '@/components/atoms'
+import { Button, Input, Logo } from '@/components/atoms'
 import { loginSchema, LoginInput } from '@/domains/user/schemas/auth.schema'
 
 function LoginForm() {
@@ -82,12 +81,9 @@ function LoginForm() {
         }}
       >
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Manta Group
-          </Typography>
-          <Typography variant="h6" align="center" color="text.secondary" gutterBottom>
-            Manufacturing Execution System
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Logo size="large" showText={true} />
+          </Box>
 
           {reasonMessage && (
             <Alert severity={reasonMessage.type} sx={{ mb: 2 }}>
