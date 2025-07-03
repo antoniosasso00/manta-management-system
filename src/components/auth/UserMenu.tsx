@@ -17,6 +17,7 @@ import {
   Lock as LockIcon,
   Logout as LogoutIcon,
   AdminPanelSettings as AdminIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material'
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -153,6 +154,14 @@ export function UserMenu() {
             <LockIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Cambia Password</ListItemText>
+        </MenuItem>
+
+        {/* Settings */}
+        <MenuItem onClick={() => handleMenuAction(() => router.push('/settings'))}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Impostazioni</ListItemText>
         </MenuItem>
 
         {/* Admin Panel */}

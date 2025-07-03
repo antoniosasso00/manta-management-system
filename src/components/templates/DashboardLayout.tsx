@@ -252,6 +252,7 @@ function formatPathLabel(path: string): string {
     'my-department': 'Il Mio Reparto',
     'qr-scanner': 'Scanner QR',
     'events': 'Eventi',
+    'settings': 'Impostazioni',
   }
 
   if (specialLabels[path]) {
