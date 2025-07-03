@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { QualityInspectionService } from '@/domains/quality/services/QualityInspectionService'
 import { QualityInspectionCompleteSchema } from '@/domains/quality/schemas/qualitySchemas'
 
@@ -12,7 +11,7 @@ interface Params {
 
 export async function POST(request: NextRequest, { params }: Params) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
     }
