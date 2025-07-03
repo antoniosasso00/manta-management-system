@@ -9,6 +9,17 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Redirect principali per compatibility
+[[redirects]]
+  from = "/auth/login"
+  to = "/login"
+  status = 301
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/:splat"
+  status = 301
+
 [context.production]
   environment = { NODE_ENV = "production" }
 
