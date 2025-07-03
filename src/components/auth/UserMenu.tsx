@@ -140,7 +140,7 @@ export function UserMenu() {
         <Divider />
 
         {/* Profile */}
-        <MenuItem onClick={() => handleMenuAction(() => router.push('/profile'))}>
+        <MenuItem onClick={() => handleMenuAction(() => router.push('/auth/profile'))}>
           <ListItemIcon>
             <PersonIcon fontSize="small" />
           </ListItemIcon>
@@ -148,7 +148,7 @@ export function UserMenu() {
         </MenuItem>
 
         {/* Change Password */}
-        <MenuItem onClick={() => handleMenuAction(() => router.push('/change-password'))}>
+        <MenuItem onClick={() => handleMenuAction(() => router.push('/auth/change-password'))}>
           <ListItemIcon>
             <LockIcon fontSize="small" />
           </ListItemIcon>
@@ -170,7 +170,7 @@ export function UserMenu() {
 
         {/* Logout */}
         <MenuItem 
-          onClick={() => handleMenuAction(() => signOut({ callbackUrl: '/login' }))}
+          onClick={() => handleMenuAction(() => signOut({ callbackUrl: '/auth/login' }))}
           sx={{ color: 'error.main' }}
         >
           <ListItemIcon>

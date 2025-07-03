@@ -46,7 +46,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       id: 'dashboard',
       label: 'Dashboard',
       icon: Dashboard,
-      href: '/',
+      href: '/dashboard',
     },
     {
       id: 'production',
@@ -254,7 +254,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       id: 'dashboard',
       label: 'Dashboard',
       icon: Dashboard,
-      href: '/',
+      href: '/dashboard',
     },
     {
       id: 'production',
@@ -364,7 +364,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       id: 'dashboard',
       label: 'Dashboard',
       icon: Dashboard,
-      href: '/',
+      href: '/dashboard',
     },
     {
       id: 'my-department',

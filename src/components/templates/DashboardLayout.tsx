@@ -127,7 +127,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               <Link 
                 component={NextLink} 
-                href="/" 
+                href="/dashboard" 
                 color="inherit" 
                 underline="none"
                 sx={{ fontWeight: 'bold' }}
@@ -205,10 +205,10 @@ function generateBreadcrumbs(pathname: string): Array<{ label: string; href?: st
   const paths = pathname.split('/').filter(Boolean)
   
   if (paths.length === 0) {
-    return [{ label: 'Dashboard', href: '/' }]
+    return [{ label: 'Dashboard', href: '/dashboard' }]
   }
 
-  const breadcrumbs: Array<{ label: string; href?: string }> = [{ label: 'Dashboard', href: '/' }]
+  const breadcrumbs: Array<{ label: string; href?: string }> = [{ label: 'Dashboard', href: '/dashboard' }]
   
   let currentPath = ''
   
