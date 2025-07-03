@@ -3,7 +3,7 @@ import { promisify } from 'util'
 import fs from 'fs'
 import path from 'path'
 import { Queue } from 'bullmq'
-import { createClient } from 'redis'
+import Redis from 'ioredis'
 
 const execAsync = promisify(exec)
 
@@ -23,15 +23,12 @@ interface BackupResult {
 
 export class BackupService {
   private static backupQueue: Queue | null = null
-  private static redisClient: any = null
+  private static redisClient: Redis | null = null
 
   static async initializeQueue() {
     if (!this.backupQueue) {
       try {
-        this.redisClient = createClient({
-          url: process.env.REDIS_URL || 'redis://localhost:6379',
-        })
-        await this.redisClient.connect()
+        this.redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
 
         this.backupQueue = new Queue('backup-queue', {
           connection: this.redisClient,
