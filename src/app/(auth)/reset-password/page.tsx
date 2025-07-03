@@ -1,6 +1,11 @@
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm'
 import { Container, Typography, Paper, Box, Link } from '@mui/material'
 import NextLink from 'next/link'
+import { Suspense } from 'react'
+
+function ResetPasswordFormWrapper() {
+  return <ResetPasswordForm />
+}
 
 export default function ResetPasswordPage() {
   return (
@@ -15,7 +20,9 @@ export default function ResetPasswordPage() {
       </Box>
 
       <Paper elevation={3} sx={{ p: 4 }}>
-        <ResetPasswordForm />
+        <Suspense fallback={<div>Loading...</div>}>
+          <ResetPasswordFormWrapper />
+        </Suspense>
         
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Link component={NextLink} href="/login" variant="body2">

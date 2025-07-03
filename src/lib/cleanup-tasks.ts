@@ -9,8 +9,8 @@ export class CleanupTasks {
   private intervals: NodeJS.Timeout[] = []
 
   constructor() {
-    // Auto-start cleanup tasks in production
-    if (process.env.NODE_ENV === 'production') {
+    // Auto-start cleanup tasks in production only when database is available
+    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
       this.start()
     }
   }
@@ -57,6 +57,11 @@ export class CleanupTasks {
    * Clean expired password reset tokens
    */
   async cleanExpiredPasswordResetTokens(): Promise<void> {
+    // Skip cleanup if no database connection (e.g., during build)
+    if (!process.env.DATABASE_URL) {
+      return
+    }
+
     try {
       const result = await prisma.passwordResetToken.deleteMany({
         where: {
@@ -77,6 +82,11 @@ export class CleanupTasks {
    * Clean expired NextAuth sessions
    */
   async cleanExpiredSessions(): Promise<void> {
+    // Skip cleanup if no database connection (e.g., during build)
+    if (!process.env.DATABASE_URL) {
+      return
+    }
+
     try {
       const result = await prisma.session.deleteMany({
         where: {

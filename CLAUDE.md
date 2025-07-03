@@ -197,9 +197,9 @@ feature/*                        # Feature branches da develop
 hotfix/*                         # Fix urgenti da main
 ```
 
-#### 6. **Automated Commit con Validazione**
+#### 6. **Automated Commit con Validazione e Dettagli**
 ```bash
-# Script avanzato per commit automatici
+# Script avanzato per commit automatici con messaggi dettagliati
 function smart_commit() {
   local commit_message="$1"
   
@@ -240,10 +240,153 @@ function smart_commit() {
   git log --oneline -1
 }
 
-# Usage examples:
-# smart_commit "feat(qr): implementa modalità offline scanner"
-# smart_commit "fix(auth): corregge validazione password reset"
-# smart_commit "docs(claude): aggiorna best practices Git"
+# Template per commit dettagliati (utilizzare con HEREDOC)
+function detailed_commit() {
+  local type="$1"
+  local scope="$2" 
+  local title="$3"
+  local description="$4"
+  
+  git commit -m "$(cat <<EOF
+$type($scope): $title
+
+$description
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+}
+
+# Esempi specifici per MES Aerospazio:
+# detailed_commit "refactor" "navigation" "riorganizza menu seguendo best practice MES" "- Ristruttura seguendo standard ISA-95\n- Elimina duplicati e ottimizza workflow\n- Applica progressive disclosure"
+# detailed_commit "feat" "qr" "implementa modalità offline scanner" "- LocalStorage per sync automatico\n- Timer persistence cross-page\n- Workflow integration completo"
+# detailed_commit "fix" "auth" "corregge validazione password reset" "- Migliora validazione email format\n- Fix expire token handling\n- UX improvements nel flow"
+```
+
+#### 6.1. **Claude Code Commit Guidelines (OBBLIGATORI)**
+
+**Per TUTTI i commit gestiti da Claude Code:**
+
+1. **Pre-Commit Workflow Automatico:**
+```bash
+# SEMPRE eseguire prima di ogni commit
+git status                   # Verifica modifiche
+git diff [files]            # Review delle modifiche
+git log --oneline -5         # Controllo stile commit esistenti
+npm run lint                 # Fix automatico errori
+npx tsc --noEmit            # Validazione TypeScript
+```
+
+2. **Template Commit Dettagliato OBBLIGATORIO:**
+```bash
+git commit -m "$(cat <<'EOF'
+<type>(<scope>): <title breve ma descrittivo>
+
+<descrizione dettagliata multi-riga che spiega>:
+- Cosa è stato modificato specificamente
+- Perché è stato fatto (business rationale)  
+- Come impatta il sistema (technical details)
+- Standard/best practice seguiti se applicabili
+- Breaking changes se presenti
+
+<note aggiuntive se necessarie>
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+3. **Commit Categories per MES Aerospazio:**
+- **refactor**: Riorganizzazione codice/architettura (es. navigation, components)
+- **feat**: Nuove funzionalità business (es. QR scanner, workflow automation, dashboard)
+- **fix**: Correzioni bug/errori (es. validation, routing, UI)  
+- **perf**: Ottimizzazioni performance (es. query optimization, bundle size)
+- **security**: Correzioni sicurezza (es. authentication, validation, headers)
+- **style**: Formattazione UI/UX (es. responsive, icons, spacing)
+- **docs**: Documentazione (es. CLAUDE.md, README, API docs)
+- **build**: Configurazione build/deploy (es. Next.js config, Docker, CI/CD)
+
+4. **Scope Specifici MES:**
+- **navigation**: Menu/routing/sidebar
+- **auth**: Sistema autenticazione  
+- **qr**: Sistema QR scanner
+- **production**: Dashboard/overview produzione
+- **workflow**: Trasferimenti automatici ODL
+- **database**: Schema Prisma/migrations
+- **ui**: Componenti UI/Atomic Design
+- **api**: API routes/endpoints
+
+5. **Claude Code Commit Automation Workflow:**
+```bash
+# Processo automatico completo Claude Code
+function claude_commit_and_push() {
+  echo "🤖 Claude Code Automated Commit Process Started"
+  
+  # 1. Pre-commit checks
+  git status
+  git diff --stat
+  git log --oneline -3
+  
+  # 2. Quality checks
+  npm run lint && npx tsc --noEmit
+  
+  # 3. Commit con template dettagliato 
+  # (Utilizzare sempre HEREDOC per messaggi multi-riga)
+  git add .
+  git commit -m "$(cat <<'EOF'
+<type>(<scope>): <title>
+
+<detailed description>
+- Specific changes made
+- Business/technical rationale
+- Impact on system
+- Standards followed
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+  
+  # 4. Post-commit validation
+  git log --oneline -1
+  git status
+  
+  # 5. Push to remote (se richiesto esplicitamente)
+  # git push origin $(git branch --show-current)
+  
+  echo "✅ Claude Code Commit Process Completed"
+}
+```
+
+**ESEMPIO REALE del commit navigation appena eseguito:**
+```bash
+git commit -m "$(cat <<'EOF'
+refactor(navigation): riorganizza menu seguendo best practice MES e standard ISA-95
+
+- Ristruttura navigationConfig.ts seguendo standard industriali per sistemi MES
+- Raggruppa funzionalità correlate: Produzione → Reparti → Autoclavi → Dati Master → Admin
+- Elimina duplicati (Audit Logs era presente 2 volte nel menu admin)
+- Semplifica navigazione per ruolo: ADMIN completo, SUPERVISOR ottimizzato, OPERATOR essenziale
+- Migliora icone per chiarezza semantica (Factory per Produzione, EventNote per Audit)
+- Applica progressive disclosure riducendo livelli di navigazione
+- Centralizza funzioni operative sotto "Produzione" (Overview, ODL, Scanner, Stampa)
+- Separa reparti specifici in sezione dedicata per workflow più chiaro
+- Ottimizza workflow per operatori industriali con smartphone
+- Mantiene solo funzionalità effettivamente implementate nel sistema
+
+Basato su ricerca best practice UI/UX per Manufacturing Execution Systems
+e standard ISA-95 per organizzazione funzionale dei sistemi produttivi.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
 ```
 
 #### 7. **Pre-Push Validation**

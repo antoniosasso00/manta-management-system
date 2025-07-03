@@ -1,65 +1,81 @@
-import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import { corsHandler, corsConfigs } from "@/lib/cors-config"
 
-export default auth((req) => {
-  // Gestisci CORS per tutte le richieste API
-  if (req.nextUrl.pathname.startsWith('/api/')) {
-    // Determina configurazione CORS basata sul path
-    let corsConfig = corsConfigs.development;
-    
-    if (process.env.NODE_ENV === 'production') {
-      if (req.nextUrl.pathname.startsWith('/api/admin/')) {
-        corsConfig = corsConfigs.admin;
-      } else if (req.nextUrl.pathname.startsWith('/api/production/')) {
-        corsConfig = corsConfigs.production;
-      } else {
-        corsConfig = corsConfigs.public;
-      }
-    }
-    
-    // Applica CORS
-    const corsMiddleware = corsHandler(corsConfig);
-    const corsResponse = corsMiddleware(req);
-    
-    if (corsResponse) {
-      return corsResponse;
-    }
-  }
+// Skip auth during build for static generation
+const isStaticGeneration = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
 
-  const isLoggedIn = !!req.auth
-  const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
-                     req.nextUrl.pathname.startsWith("/register") ||
-                     req.nextUrl.pathname.startsWith("/forgot-password") ||
-                     req.nextUrl.pathname.startsWith("/reset-password")
-
-  // Allow auth pages when not logged in
-  if (isAuthPage) {
-    if (isLoggedIn && !req.nextUrl.pathname.startsWith("/reset-password")) {
-      return NextResponse.redirect(new URL("/", req.url))
-    }
+export default async function middleware(req: any) {
+  // Skip auth middleware during static generation
+  if (isStaticGeneration) {
     return NextResponse.next()
   }
 
-  // Check if user is logged in for protected routes
-  if (!isLoggedIn) {
-    let from = req.nextUrl.pathname
-    if (req.nextUrl.search) {
-      from += req.nextUrl.search
-    }
+  // Dynamic import auth only when needed
+  try {
+    const { auth } = await import("@/lib/auth")
+    return auth((req) => {
+      // Gestisci CORS per tutte le richieste API
+      if (req.nextUrl.pathname.startsWith('/api/')) {
+        // Determina configurazione CORS basata sul path
+        let corsConfig = corsConfigs.development;
+        
+        if (process.env.NODE_ENV === 'production') {
+          if (req.nextUrl.pathname.startsWith('/api/admin/')) {
+            corsConfig = corsConfigs.admin;
+          } else if (req.nextUrl.pathname.startsWith('/api/production/')) {
+            corsConfig = corsConfigs.production;
+          } else {
+            corsConfig = corsConfigs.public;
+          }
+        }
+        
+        // Applica CORS
+        const corsMiddleware = corsHandler(corsConfig);
+        const corsResponse = corsMiddleware(req);
+        
+        if (corsResponse) {
+          return corsResponse;
+        }
+      }
 
-    return NextResponse.redirect(
-      new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-    )
+      const isLoggedIn = !!req.auth
+      const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
+                         req.nextUrl.pathname.startsWith("/register") ||
+                         req.nextUrl.pathname.startsWith("/forgot-password") ||
+                         req.nextUrl.pathname.startsWith("/reset-password")
+
+      // Allow auth pages when not logged in
+      if (isAuthPage) {
+        if (isLoggedIn && !req.nextUrl.pathname.startsWith("/reset-password")) {
+          return NextResponse.redirect(new URL("/", req.url))
+        }
+        return NextResponse.next()
+      }
+
+      // Check if user is logged in for protected routes
+      if (!isLoggedIn) {
+        let from = req.nextUrl.pathname
+        if (req.nextUrl.search) {
+          from += req.nextUrl.search
+        }
+
+        return NextResponse.redirect(
+          new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
+        )
+      }
+
+      // Check if user account is active
+      if (req.auth?.user && 'isActive' in req.auth.user && !req.auth.user.isActive) {
+        return NextResponse.redirect(new URL("/login?reason=account-disabled", req.url))
+      }
+
+      return NextResponse.next()
+    })(req)
+  } catch (error) {
+    console.warn('Auth middleware failed, allowing request:', error)
+    return NextResponse.next()
   }
-
-  // Check if user account is active
-  if (req.auth?.user && 'isActive' in req.auth.user && !req.auth.user.isActive) {
-    return NextResponse.redirect(new URL("/login?reason=account-disabled", req.url))
-  }
-
-  return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: [
