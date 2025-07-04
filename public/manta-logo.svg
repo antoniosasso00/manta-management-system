@@ -1,6 +1,7 @@
-<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="192" height="192" rx="24" fill="#1976d2"/>
-<text x="96" y="96" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold">MG</text>
-<text x="96" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Arial, sans-serif" font-size="12">MANTA</text>
-<text x="96" y="135" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Arial, sans-serif" font-size="12">GROUP</text>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="110px" height="110px" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g><path style="opacity:0.93" fill="#0978be" d="M 34.5,4.5 C 41.1717,6.67528 47.1717,10.1753 52.5,15C 41.7359,22.1319 31.2359,29.6319 21,37.5C 20.8326,50.1798 20.3326,62.8465 19.5,75.5C 14.9924,72.7467 10.6591,69.7467 6.5,66.5C 5.16667,52.5 5.16667,38.5 6.5,24.5C 16.1533,18.1642 25.4867,11.4975 34.5,4.5 Z"/></g>
+<g><path style="opacity:0.912" fill="#0978be" d="M 70.5,4.5 C 71.8734,4.34332 73.2068,4.50999 74.5,5C 84,11.8333 93.5,18.6667 103,25.5C 103.667,38.8333 103.667,52.1667 103,65.5C 98.1733,69.5188 93.0066,72.8522 87.5,75.5C 87.6666,62.4957 87.4999,49.4957 87,36.5C 82.5,33.3333 78,30.1667 73.5,27C 72.5,26.3333 71.5,26.3333 70.5,27C 59.7359,34.1319 49.2359,41.6319 39,49.5C 38.833,68.8419 38.333,88.1753 37.5,107.5C 32.8333,104.167 28.1667,100.833 23.5,97.5C 22.3336,77.5083 22.1669,57.5083 23,37.5C 39.1613,26.8474 54.9947,15.8474 70.5,4.5 Z"/></g>
+<g><path style="opacity:0.943" fill="#0978be" d="M 70.5,28.5 C 75.6684,30.8097 80.5018,33.8097 85,37.5C 85.6667,57.5 85.6667,77.5 85,97.5C 80.3591,100.641 75.8591,103.974 71.5,107.5C 70.667,88.1753 70.167,68.8419 70,49.5C 65.3591,46.3595 60.8591,43.0261 56.5,39.5C 61.1969,35.8247 65.8636,32.1581 70.5,28.5 Z"/></g>
 </svg>

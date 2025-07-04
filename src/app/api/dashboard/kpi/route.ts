@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       prisma.oDL.count({
         where: {
           status: {
-            in: [ODLStatus.IN_PROGRESS, ODLStatus.CLEAN_ROOM, ODLStatus.AUTOCLAVI, ODLStatus.NDI]
+            in: [ODLStatus.IN_CLEANROOM, ODLStatus.IN_AUTOCLAVE, ODLStatus.IN_NDI, ODLStatus.IN_HONEYCOMB, ODLStatus.IN_CONTROLLO_NUMERICO, ODLStatus.IN_MONTAGGIO, ODLStatus.IN_VERNICIATURA, ODLStatus.IN_MOTORI, ODLStatus.IN_CONTROLLO_QUALITA]
           }
         }
       }),
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         include: {
           odl: {
             select: {
-              progressivo: true,
+              odlNumber: true,
               part: {
                 select: {
                   partNumber: true,
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
       where: {
         OR: [
           {
-            priority: 'CRITICA',
+            priority: 'URGENT',
             status: { not: ODLStatus.COMPLETED }
           },
           {
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
       take: 5,
       select: {
         id: true,
-        progressivo: true,
+        odlNumber: true,
         priority: true,
         status: true,
         createdAt: true,
@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
         timestamp: event.timestamp,
         description: event.description,
         odl: event.odl ? {
-          progressivo: event.odl.progressivo,
+          odlNumber: event.odl.odlNumber,
           partNumber: event.odl.part.partNumber,
           description: event.odl.part.description
         } : null,
@@ -216,11 +216,11 @@ export async function GET(request: NextRequest) {
       })),
       notifications: priorityNotifications.map(odl => ({
         id: odl.id,
-        type: odl.priority === 'CRITICA' ? 'CRITICAL_PRIORITY' : 'DELAYED_ODL',
-        title: odl.priority === 'CRITICA' 
-          ? `ODL Critico: ${odl.progressivo}`
-          : `ODL in Ritardo: ${odl.progressivo}`,
-        message: odl.priority === 'CRITICA'
+        type: odl.priority === 'URGENT' ? 'CRITICAL_PRIORITY' : 'DELAYED_ODL',
+        title: odl.priority === 'URGENT' 
+          ? `ODL Critico: ${odl.odlNumber}`
+          : `ODL in Ritardo: ${odl.odlNumber}`,
+        message: odl.priority === 'URGENT'
           ? `${odl.part.partNumber} - ${odl.part.description}`
           : `Creato il ${odl.createdAt.toLocaleDateString('it-IT')} - Status: ${odl.status}`,
         priority: odl.priority,
