@@ -1,38 +1,24 @@
 import { NextResponse } from "next/server"
-import { corsHandler, corsConfigs } from "@/lib/cors-config"
 
 // Skip auth during build for static generation
 const isStaticGeneration = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
 
-// Skip middleware completely during Netlify build
-const isNetlifyBuild = process.env.NETLIFY === 'true' && process.env.CONTEXT === 'production'
+// Skip middleware completely during Netlify build or edge runtime
+const isNetlifyOrEdge = process.env.NETLIFY === 'true' || process.env.VERCEL_ENV === 'production'
 
 export default async function middleware(req: any) {
-  // Skip auth middleware during static generation or Netlify build
-  if (isStaticGeneration || isNetlifyBuild) {
+  // Skip auth middleware during static generation, Netlify, or edge runtime
+  if (isStaticGeneration || isNetlifyOrEdge) {
     return NextResponse.next()
   }
 
-  // Dynamic import auth only when needed
+  // Dynamic import auth and CORS only when needed (non-edge runtime)
   try {
-    // If no DATABASE_URL, skip auth but allow CORS
-    if (!process.env.DATABASE_URL) {
-      console.warn('DATABASE_URL not available, skipping auth')
-      
-      // Still handle CORS for API routes
-      if (req.nextUrl.pathname.startsWith('/api/')) {
-        const corsConfig = corsConfigs.public;
-        const corsMiddleware = corsHandler(corsConfig);
-        const corsResponse = corsMiddleware(req);
-        if (corsResponse) {
-          return corsResponse;
-        }
-      }
-      
-      return NextResponse.next()
-    }
+    const [{ auth }, { corsHandler, corsConfigs }] = await Promise.all([
+      import("@/lib/auth"),
+      import("@/lib/cors-config")
+    ])
     
-    const { auth } = await import("@/lib/auth")
     return auth((req) => {
       // Gestisci CORS per tutte le richieste API
       if (req.nextUrl.pathname.startsWith('/api/')) {
