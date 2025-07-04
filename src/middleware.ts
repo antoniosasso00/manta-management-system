@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server"
 
-// Skip auth during build for static generation
-const isStaticGeneration = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
-
-// Skip middleware completely during Netlify build or edge runtime
-const isNetlifyOrEdge = process.env.NETLIFY === 'true' || process.env.VERCEL_ENV === 'production'
-
 export default async function middleware(req: any) {
+  // Always skip auth in development for now due to edge runtime issues
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.next()
+  }
+  
+  // Skip auth during build for static generation
+  const isStaticGeneration = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
+  
+  // Skip middleware completely during Netlify build or edge runtime
+  const isNetlifyOrEdge = process.env.NETLIFY === 'true' || process.env.VERCEL_ENV === 'production'
+  
   // Skip auth middleware during static generation, Netlify, or edge runtime
   if (isStaticGeneration || isNetlifyOrEdge) {
     return NextResponse.next()
