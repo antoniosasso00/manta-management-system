@@ -51,6 +51,7 @@ import {
 import { format, subDays, differenceInDays } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useAuth } from '@/hooks/useAuth'
+import { useUserStats } from '@/hooks/useRealTimeUpdates'
 import Link from 'next/link'
 
 interface UserStats {
@@ -75,6 +76,7 @@ interface RecentActivity {
 
 export default function ProfilePage() {
   const { user } = useAuth()
+  const { data: statsData, loading: statsLoading, error: statsError, realTime } = useUserStats()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editPhotoDialog, setEditPhotoDialog] = useState(false)
@@ -85,7 +87,12 @@ export default function ProfilePage() {
     bio: ''
   })
 
-  // Mock stats - In produzione verrebbero da API
+  const userStats = statsData?.summary || {}
+  const activityData = statsData?.activity || {}
+  const recentActivity = statsData?.recentActivity || []
+  const badges = statsData?.badges || []
+
+  // Usa dati reali invece di mock
   const mockStats: UserStats = {
     odlCreated: 23,
     odlCompleted: 87,
@@ -133,8 +140,17 @@ export default function ProfilePage() {
     }
   ]
 
-  const [stats] = useState<UserStats>(mockStats)
-  const [recentActivities] = useState<RecentActivity[]>(mockActivities)
+  const stats = {
+    odlCreated: userStats.odlCreated || 0,
+    odlCompleted: userStats.odlCompleted || 0,
+    totalWorkingHours: userStats.totalWorkingHours || 0,
+    lastLoginDate: new Date().toISOString(),
+    averageSessionTime: activityData.averageTimePerOperation || 0,
+    departmentRank: 1,
+    completionRate: userStats.performanceScore || 0,
+    perfectDays: 0
+  }
+  const recentActivities = recentActivity
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -175,6 +191,26 @@ export default function ProfilePage() {
   }
 
   const memberSince = differenceInDays(new Date(), new Date('2023-01-15'))
+
+  if (statsLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <Typography>Caricamento statistiche profilo...</Typography>
+        </Box>
+      </Container>
+    )
+  }
+
+  if (statsError) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error">
+          Errore nel caricamento delle statistiche: {statsError}
+        </Alert>
+      </Container>
+    )
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>

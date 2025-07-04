@@ -128,12 +128,17 @@ export default function CreateODLPage() {
 
       setOdlNumberCheck('checking')
       try {
-        const response = await fetch(`/api/odl?search=${encodeURIComponent(odlNumber)}`)
+        const response = await fetch(`/api/odl/check-unique?progressivo=${encodeURIComponent(odlNumber)}`)
         const data = await response.json()
         
-        const exists = data.data?.some((odl: any) => odl.odlNumber.toLowerCase() === odlNumber.toLowerCase())
-        setOdlNumberCheck(exists ? 'taken' : 'available')
-      } catch {
+        if (response.ok) {
+          setOdlNumberCheck(data.isUnique ? 'available' : 'taken')
+        } else {
+          console.error('Errore validazione ODL:', data.error)
+          setOdlNumberCheck('idle')
+        }
+      } catch (error) {
+        console.error('Errore rete validazione ODL:', error)
         setOdlNumberCheck('idle')
       }
     }, 500),

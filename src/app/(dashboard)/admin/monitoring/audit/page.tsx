@@ -58,6 +58,7 @@ import {
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useAuth } from '@/hooks/useAuth'
+import AuditCharts from '@/components/audit/AuditCharts'
 
 interface AuditEvent {
   id: string
@@ -606,55 +607,7 @@ export default function AdminAuditPage() {
 
         {/* Analytics Tab */}
         <TabPanel value={currentTab} index={1}>
-          <Alert severity="info" sx={{ mb: 3 }}>
-            Sezione Analytics - Richiede specifiche per grafici e metriche da visualizzare
-          </Alert>
-          
-          <Grid container spacing={4}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Distribuzione per Categoria
-                  </Typography>
-                  <List>
-                    {Object.entries(eventCategories).map(([key, config]) => {
-                      const count = auditEvents.filter(e => e.category === key).length
-                      const IconComponent = config.icon
-                      return (
-                        <ListItem key={key}>
-                          <ListItemIcon>
-                            <IconComponent color={config.color} />
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={config.label}
-                            secondary={`${count} eventi`}
-                          />
-                          <Chip 
-                            label={totalEvents > 0 ? ((count / totalEvents) * 100).toFixed(1) + '%' : '0%'} 
-                            size="small" 
-                          />
-                        </ListItem>
-                      )
-                    })}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Grafici Temporali
-                  </Typography>
-                  <Alert severity="info">
-                    Grafici temporali degli eventi - Richiede libreria charting (Recharts?) e specifiche sui periodi
-                  </Alert>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          <AuditCharts events={auditEvents} loading={loading} />
         </TabPanel>
 
         {/* Security Tab */}

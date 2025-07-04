@@ -34,18 +34,9 @@ import {
   PendingActions
 } from '@mui/icons-material'
 import { useAuth } from '@/hooks/useAuth'
+import { useDashboardKPI } from '@/hooks/useRealTimeUpdates'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-// Mock KPI Data - in production this would come from API
-const mockKPIs = {
-  odlInProgress: 24,
-  odlCompleted: 187,
-  completionRate: 78,
-  avgTimePerDepartment: 4.2,
-  activeAlerts: 3,
-  todayProduction: 45
-}
 
 // Mock notifications - in production this would come from WebSocket/API
 const mockNotifications = [
@@ -56,15 +47,7 @@ const mockNotifications = [
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth()
-  const [kpis, setKpis] = useState(mockKPIs)
-  const [notifications, setNotifications] = useState(mockNotifications)
-  const [loading, setLoading] = useState(true)
-
-  // Simulate data loading
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000)
-    return () => clearTimeout(timer)
-  }, [])
+  const { data: kpiData, loading, error, realTime } = useDashboardKPI()
 
   if (loading) {
     return (
@@ -73,6 +56,20 @@ export default function DashboardPage() {
       </Box>
     )
   }
+
+  if (error) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Alert severity="error">
+          Errore nel caricamento dei dati: {error}
+        </Alert>
+      </Container>
+    )
+  }
+
+  const kpis = kpiData?.metrics || {}
+  const notifications = kpiData?.notifications || []
+  const recentActivity = kpiData?.recentActivity || []
 
   const quickActions = [
     {
@@ -171,9 +168,33 @@ export default function DashboardPage() {
 
         {/* KPI Dashboard */}
         <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            KPI Dashboard
-          </Typography>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6">
+              KPI Dashboard
+            </Typography>
+            <Box display="flex" alignItems="center" gap={2}>
+              {realTime.lastUpdate && (
+                <Typography variant="caption" color="text.secondary">
+                  Ultimo aggiornamento: {realTime.lastUpdate.toLocaleTimeString('it-IT')}
+                </Typography>
+              )}
+              <Button
+                size="small"
+                onClick={realTime.toggle}
+                color={realTime.isRunning ? 'error' : 'primary'}
+                variant="outlined"
+              >
+                {realTime.isRunning ? 'Pausa Auto-refresh' : 'Avvia Auto-refresh'}
+              </Button>
+              <Button
+                size="small"
+                onClick={realTime.forceUpdate}
+                variant="contained"
+              >
+                Aggiorna
+              </Button>
+            </Box>
+          </Box>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Card sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
