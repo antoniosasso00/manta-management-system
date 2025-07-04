@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Box, Typography, Stack, IconButton, Tooltip } from '@mui/material'
+import { Box, Typography, Stack, IconButton, Tooltip, useTheme, useMediaQuery } from '@mui/material'
 import { QrCode, Timer, Engineering } from '@mui/icons-material'
 import { Card, StatusChip, ActionButton } from '@/components/atoms'
 import { QRDisplayModal } from './QRDisplayModal'
@@ -16,6 +16,8 @@ interface ODLCardProps {
 
 export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
   const [qrModalOpen, setQrModalOpen] = useState(false)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const formatTime = (minutes: number | null) => {
     if (!minutes) return '--'
@@ -57,7 +59,14 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
             </Typography>
           </Box>
           <Tooltip title="Mostra QR Code">
-            <IconButton size="small" onClick={() => setQrModalOpen(true)}>
+            <IconButton 
+              size={isMobile ? "medium" : "small"} 
+              onClick={() => setQrModalOpen(true)}
+              sx={{ 
+                width: { xs: 44, sm: 40 },
+                height: { xs: 44, sm: 40 }
+              }}
+            >
               <QrCode />
             </IconButton>
           </Tooltip>
@@ -101,16 +110,25 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
           </Box>
         )}
 
-        {/* Actions */}
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        {/* Actions - Mobile optimized */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 1, 
+          flexWrap: 'wrap' 
+        }}>
           {availableActions.map((action) => (
             <ActionButton
               key={action}
               actionType={action}
               onClick={() => onAction(odl.id, action)}
               loading={loading}
-              size="small"
-              sx={{ flex: '1 1 auto', minWidth: 120 }}
+              size={isMobile ? "medium" : "small"}
+              sx={{ 
+                flex: { xs: '1 1 100%', sm: '1 1 auto' }, 
+                minWidth: { xs: '100%', sm: 120 },
+                minHeight: { xs: 48, sm: 40 }
+              }}
             />
           ))}
         </Box>

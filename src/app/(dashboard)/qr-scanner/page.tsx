@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment as React } from 'react';
 import {
   Box,
   Paper,
@@ -16,7 +16,19 @@ import {
   ListItemText,
   ListItemIcon,
   LinearProgress,
-  Fab
+  Fab,
+  Tabs,
+  Tab,
+  SwipeableViews,
+  useTheme,
+  useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Collapse,
+  Divider,
 } from '@mui/material';
 import {
   QrCodeScanner,
@@ -27,7 +39,11 @@ import {
   CloudOff,
   Cloud,
   History,
-  CameraAlt
+  CameraAlt,
+  Close,
+  ExpandMore,
+  ExpandLess,
+  Sync,
 } from '@mui/icons-material';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -59,8 +75,38 @@ interface ActiveTimer {
   departmentId: string;
 }
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ py: 2 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
 export default function QRScannerPage() {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<QRData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +115,13 @@ export default function QRScannerPage() {
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
+  const [autoclaveDialog, setAutoclaveDialog] = useState<{
+    open: boolean;
+    batch: any;
+    odlId: string;
+  }>({ open: false, batch: null, odlId: '' });
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<BrowserMultiFormatReader | null>(null);
@@ -177,7 +230,11 @@ export default function QRScannerPage() {
       scannerRef.current = scanner;
       
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       });
       
       if (videoRef.current) {
@@ -216,8 +273,7 @@ export default function QRScannerPage() {
       const qrData: QRData = JSON.parse(qrText);
       
       if (qrData.type !== 'ODL') {
-        const error = new Error('QR Code non valido per ODL');
-        throw error;
+        throw new Error('QR Code non valido per ODL');
       }
       
       setScanResult(qrData);
@@ -261,7 +317,7 @@ export default function QRScannerPage() {
       }
 
       // Salva offline
-      const updatedScans = [newScan, ...recentScans].slice(0, 10);
+      const updatedScans = [newScan, ...recentScans].slice(0, 20);
       setRecentScans(updatedScans);
       saveToLocalStorage(updatedScans, eventType === 'ENTRY' ? activeTimer : null);
 
@@ -319,11 +375,9 @@ export default function QRScannerPage() {
 
   const handleAutoclaveExit = async (odlId: string) => {
     try {
-      // Cerca batch contenente l'ODL scansionato
       const response = await fetch(`/api/autoclavi/batches/by-odl/${odlId}`);
       
       if (!response.ok) {
-        // Se non c'è batch, procedi con trasferimento normale
         await triggerAutoTransfer(odlId);
         return;
       }
@@ -332,50 +386,45 @@ export default function QRScannerPage() {
       const batch = data.batch;
 
       if (batch && ['IN_CURE', 'COMPLETED'].includes(batch.status)) {
-        // Mostra dialog per avanzamento batch
-        const confirmed = confirm(
-          `ODL appartiene al batch ${batch.loadNumber} (${batch.status}).\n` +
-          `Vuoi avanzare l'intero batch al prossimo stato?\n` +
-          `Questo influenzerà tutti i ${batch.odlCount} ODL del batch.`
-        );
-
-        if (confirmed) {
-          await advanceBatchFromScan(batch.id, odlId);
-        }
+        setAutoclaveDialog({ open: true, batch, odlId });
       } else {
-        // Batch non in stato avanzabile, trasferimento normale
         await triggerAutoTransfer(odlId);
       }
     } catch (error) {
       console.error('Autoclave exit handling error:', error);
-      // Fallback a trasferimento normale
       await triggerAutoTransfer(odlId);
     }
   };
 
-  const advanceBatchFromScan = async (batchId: string, scannedOdlId: string) => {
+  const advanceBatchFromScan = async () => {
+    const { batch, odlId } = autoclaveDialog;
+    
     try {
       const response = await fetch('/api/autoclavi/batches/advance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          batchId,
-          targetStatus: 'COMPLETED', // Default advancement
-          scannedOdlId
+          batchId: batch.id,
+          targetStatus: 'COMPLETED',
+          scannedOdlId: odlId
         })
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        // Mostra notifica di successo
-        alert(`✅ ${result.message}\nODL aggiornati: ${result.odlUpdates?.join(', ')}`);
+        setError(null);
+        // Show success message
+        setTimeout(() => {
+          alert(`✅ ${result.message}\nODL aggiornati: ${result.odlUpdates?.join(', ')}`);
+        }, 100);
       } else {
         throw new Error(result.error || 'Errore avanzamento batch');
       }
     } catch (error) {
-      console.error('Batch advancement error:', error);
-      alert(`❌ Errore avanzamento batch: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
+      setError(`Errore avanzamento batch: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
+    } finally {
+      setAutoclaveDialog({ open: false, batch: null, odlId: '' });
     }
   };
 
@@ -387,43 +436,67 @@ export default function QRScannerPage() {
     return `${hours.toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
   };
 
-  return (
-    <Box className="p-4 space-y-4">
-        <Box className="flex items-center justify-between">
+  // Mobile optimized layout
+  if (isMobile) {
+    return (
+      <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+        {/* Status Bar */}
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Chip 
             icon={isOnline ? <Cloud /> : <CloudOff />}
             label={isOnline ? 'Online' : 'Offline'}
             color={isOnline ? 'success' : 'warning'}
+            size="small"
           />
+          
+          {!isOnline && recentScans.some(s => !s.synced) && (
+            <IconButton
+              color="primary"
+              onClick={syncOfflineData}
+              sx={{ width: 44, height: 44 }}
+            >
+              <Sync />
+            </IconButton>
+          )}
         </Box>
 
-      {/* Timer Attivo */}
-      {activeTimer && (
-        <Paper className="p-4 bg-blue-50">
-          <Typography variant="h6" className="flex items-center gap-2 mb-2">
-            <AccessTime color="primary" />
-            Timer Attivo - ODL {activeTimer.odlNumber}
-          </Typography>
-          <Typography variant="h4" color="primary">
-            {formatTime(elapsedTime)}
-          </Typography>
-          <LinearProgress 
-            variant="indeterminate" 
-            className="mt-2"
-            color="primary"
-          />
-        </Paper>
-      )}
+        {/* Timer Attivo */}
+        {activeTimer && (
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Card sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+              <CardContent sx={{ py: 2 }}>
+                <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <AccessTime fontSize="small" />
+                  Timer Attivo - ODL {activeTimer.odlNumber}
+                </Typography>
+                <Typography variant="h4">
+                  {formatTime(elapsedTime)}
+                </Typography>
+                <LinearProgress 
+                  variant="indeterminate" 
+                  sx={{ mt: 1, bgcolor: 'primary.dark' }}
+                />
+              </CardContent>
+            </Card>
+          </Box>
+        )}
 
-      {/* Scanner Area */}
-      <Paper className="p-4">
-        <Box className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Box className="md:col-span-2">
-            <Box className="text-center">
-              {!isScanning ? (
-                <Box className="space-y-4">
-                  <QrCodeScanner sx={{ fontSize: 100, color: 'grey.400' }} />
-                  <Typography variant="h6">
+        {/* Main Content Area */}
+        <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {/* Scanner/Result View */}
+          {!showHistory ? (
+            <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column' }}>
+              {!isScanning && !scanResult && (
+                <Box sx={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: 3
+                }}>
+                  <QrCodeScanner sx={{ fontSize: 120, color: 'grey.400' }} />
+                  <Typography variant="h6" align="center">
                     Scansiona QR Code ODL
                   </Typography>
                   <Button
@@ -431,27 +504,321 @@ export default function QRScannerPage() {
                     size="large"
                     startIcon={<CameraAlt />}
                     onClick={startScanning}
-                    className="w-full max-w-xs"
+                    sx={{ 
+                      minHeight: 56,
+                      minWidth: 200,
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    Avvia Scanner
+                  </Button>
+                </Box>
+              )}
+
+              {isScanning && (
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ 
+                    position: 'relative', 
+                    flex: 1, 
+                    bgcolor: 'black',
+                    borderRadius: 2,
+                    overflow: 'hidden'
+                  }}>
+                    <video
+                      ref={videoRef}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                      autoPlay
+                      muted
+                      playsInline
+                    />
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="large"
+                    onClick={stopScanning}
+                    sx={{ minHeight: 56 }}
+                  >
+                    Interrompi Scanner
+                  </Button>
+                </Box>
+              )}
+
+              {scanResult && (
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <CheckCircle color="success" />
+                        ODL Trovato
+                      </Typography>
+                      
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="body2" color="text.secondary">ID</Typography>
+                        <Typography variant="body1">{scanResult.id}</Typography>
+                      </Box>
+                      
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="body2" color="text.secondary">Numero ODL</Typography>
+                        <Typography variant="body1">{scanResult.odlNumber}</Typography>
+                      </Box>
+                      
+                      {scanResult.partNumber && (
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Part Number</Typography>
+                          <Typography variant="body1">{scanResult.partNumber}</Typography>
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="large"
+                      fullWidth
+                      startIcon={<PlayArrow />}
+                      onClick={() => handleEntryExit('ENTRY')}
+                      disabled={loading || !!activeTimer}
+                      sx={{ minHeight: 56 }}
+                    >
+                      Registra Ingresso
+                    </Button>
+                    
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="large"
+                      fullWidth
+                      startIcon={<Stop />}
+                      onClick={() => handleEntryExit('EXIT')}
+                      disabled={loading || !activeTimer}
+                      sx={{ minHeight: 56 }}
+                    >
+                      Registra Uscita
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      fullWidth
+                      onClick={() => setScanResult(null)}
+                      sx={{ minHeight: 48 }}
+                    >
+                      Annulla
+                    </Button>
+                  </Box>
+                  
+                  {loading && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                      <CircularProgress />
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {error}
+                </Alert>
+              )}
+            </Box>
+          ) : (
+            // History View
+            <Box sx={{ flex: 1, overflow: 'auto' }}>
+              <List sx={{ py: 0 }}>
+                {recentScans.map((scan, index) => (
+                  <React.Fragment key={scan.id}>
+                    {index > 0 && <Divider />}
+                    <ListItem sx={{ py: 2 }}>
+                      <ListItemIcon>
+                        {scan.synced ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <CloudOff color="warning" />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body1">
+                              ODL {scan.odlNumber}
+                            </Typography>
+                            <Chip 
+                              label={scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}
+                              size="small"
+                              color={scan.eventType === 'ENTRY' ? 'success' : 'error'}
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography variant="caption" display="block">
+                              {new Date(scan.timestamp).toLocaleString()}
+                            </Typography>
+                            {scan.duration && (
+                              <Typography variant="caption" display="block">
+                                Durata: {formatTime(scan.duration)}
+                              </Typography>
+                            )}
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  </React.Fragment>
+                ))}
+                
+                {recentScans.length === 0 && (
+                  <ListItem>
+                    <ListItemText 
+                      primary="Nessuna scansione recente"
+                      sx={{ textAlign: 'center', color: 'text.secondary' }}
+                    />
+                  </ListItem>
+                )}
+              </List>
+            </Box>
+          )}
+        </Box>
+
+        {/* Bottom Navigation */}
+        <Paper sx={{ position: 'sticky', bottom: 0 }} elevation={3}>
+          <Tabs
+            value={showHistory ? 1 : 0}
+            onChange={(_, value) => setShowHistory(value === 1)}
+            variant="fullWidth"
+            indicatorColor="primary"
+          >
+            <Tab 
+              label="Scanner" 
+              icon={<QrCodeScanner />} 
+              sx={{ minHeight: 64 }}
+            />
+            <Tab 
+              label={`Storico (${recentScans.length})`} 
+              icon={<History />} 
+              sx={{ minHeight: 64 }}
+            />
+          </Tabs>
+        </Paper>
+
+        {/* Autoclave Batch Dialog */}
+        <Dialog
+          open={autoclaveDialog.open}
+          onClose={() => setAutoclaveDialog({ open: false, batch: null, odlId: '' })}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Avanzamento Batch Autoclave</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              L'ODL appartiene al batch <strong>{autoclaveDialog.batch?.loadNumber}</strong> 
+              {' '}(stato: <strong>{autoclaveDialog.batch?.status}</strong>).
+            </Typography>
+            <Typography variant="body1">
+              Vuoi avanzare l'intero batch al prossimo stato?
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Questo influenzerà tutti i {autoclaveDialog.batch?.odlCount} ODL del batch.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setAutoclaveDialog({ open: false, batch: null, odlId: '' })}
+              sx={{ minHeight: 44 }}
+            >
+              Annulla
+            </Button>
+            <Button 
+              onClick={advanceBatchFromScan} 
+              variant="contained"
+              sx={{ minHeight: 44 }}
+            >
+              Avanza Batch
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    );
+  }
+
+  // Desktop layout (existing layout with minor improvements)
+  return (
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Chip 
+          icon={isOnline ? <Cloud /> : <CloudOff />}
+          label={isOnline ? 'Online' : 'Offline'}
+          color={isOnline ? 'success' : 'warning'}
+        />
+      </Box>
+
+      {/* Timer Attivo */}
+      {activeTimer && (
+        <Paper sx={{ p: 3, mb: 3, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <AccessTime />
+            Timer Attivo - ODL {activeTimer.odlNumber}
+          </Typography>
+          <Typography variant="h4">
+            {formatTime(elapsedTime)}
+          </Typography>
+          <LinearProgress 
+            variant="indeterminate" 
+            sx={{ mt: 2, bgcolor: 'primary.dark' }}
+          />
+        </Paper>
+      )}
+
+      {/* Scanner Area */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { md: '2fr 1fr' }, gap: 4 }}>
+          <Box>
+            <Box sx={{ textAlign: 'center' }}>
+              {!isScanning ? (
+                <Box sx={{ py: 4 }}>
+                  <QrCodeScanner sx={{ fontSize: 100, color: 'grey.400', mb: 3 }} />
+                  <Typography variant="h6" sx={{ mb: 3 }}>
+                    Scansiona QR Code ODL
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<CameraAlt />}
+                    onClick={startScanning}
+                    sx={{ minWidth: 200, minHeight: 48 }}
                   >
                     Avvia Scanner
                   </Button>
                 </Box>
               ) : (
-                <Box className="space-y-4">
+                <Box>
                   <video
                     ref={videoRef}
-                    className="w-full max-w-sm mx-auto rounded"
+                    style={{
+                      width: '100%',
+                      maxWidth: 500,
+                      borderRadius: 8
+                    }}
                     autoPlay
                     muted
                     playsInline
                   />
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={stopScanning}
-                  >
-                    Interrompi Scanner
-                  </Button>
+                  <Box sx={{ mt: 3 }}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={stopScanning}
+                      sx={{ minHeight: 44 }}
+                    >
+                      Interrompi Scanner
+                    </Button>
+                  </Box>
                 </Box>
               )}
             </Box>
@@ -460,17 +827,20 @@ export default function QRScannerPage() {
           <Box>
             {/* Risultato Scan */}
             {scanResult && (
-              <Card className="mb-4">
+              <Card sx={{ mb: 3 }}>
                 <CardContent>
-                  <Typography variant="h6" className="flex items-center gap-2 mb-3">
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                     <CheckCircle color="success" />
                     ODL Trovato
                   </Typography>
                   
-                  <Typography><strong>ID:</strong> {scanResult.id}</Typography>
-                  <Typography><strong>Numero:</strong> {scanResult.odlNumber}</Typography>
+                  <Typography sx={{ mb: 1 }}><strong>ID:</strong> {scanResult.id}</Typography>
+                  <Typography sx={{ mb: 1 }}><strong>Numero:</strong> {scanResult.odlNumber}</Typography>
+                  {scanResult.partNumber && (
+                    <Typography><strong>Part Number:</strong> {scanResult.partNumber}</Typography>
+                  )}
                   
-                  <Box className="mt-3 space-y-2">
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Button
                       variant="contained"
                       color="success"
@@ -478,6 +848,7 @@ export default function QRScannerPage() {
                       startIcon={<PlayArrow />}
                       onClick={() => handleEntryExit('ENTRY')}
                       disabled={loading || !!activeTimer}
+                      sx={{ minHeight: 44 }}
                     >
                       Registra Ingresso
                     </Button>
@@ -489,13 +860,14 @@ export default function QRScannerPage() {
                       startIcon={<Stop />}
                       onClick={() => handleEntryExit('EXIT')}
                       disabled={loading || !activeTimer}
+                      sx={{ minHeight: 44 }}
                     >
                       Registra Uscita
                     </Button>
                   </Box>
                   
                   {loading && (
-                    <Box className="mt-2 text-center">
+                    <Box sx={{ mt: 2, textAlign: 'center' }}>
                       <CircularProgress size={24} />
                     </Box>
                   )}
@@ -505,7 +877,7 @@ export default function QRScannerPage() {
 
             {/* Errori */}
             {error && (
-              <Alert severity="error" className="mb-4">
+              <Alert severity="error">
                 {error}
               </Alert>
             )}
@@ -514,14 +886,14 @@ export default function QRScannerPage() {
       </Paper>
 
       {/* Storico Recenti */}
-      <Paper className="p-4">
-        <Typography variant="h6" className="flex items-center gap-2 mb-3">
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
           <History />
           Scansioni Recenti
         </Typography>
         
         <List>
-          {recentScans.slice(0, 5).map((scan) => (
+          {recentScans.slice(0, 10).map((scan) => (
             <ListItem key={scan.id}>
               <ListItemIcon>
                 {scan.synced ? (
@@ -531,14 +903,14 @@ export default function QRScannerPage() {
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={`ODL ${scan.odlNumber} - ${scan.eventType}`}
+                primary={`ODL ${scan.odlNumber} - ${scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}`}
                 secondary={
                   <Box>
                     <Typography variant="caption">
                       {new Date(scan.timestamp).toLocaleString()}
                     </Typography>
                     {scan.duration && (
-                      <Typography variant="caption" className="ml-2">
+                      <Typography variant="caption" sx={{ ml: 2 }}>
                         Durata: {formatTime(scan.duration)}
                       </Typography>
                     )}
@@ -552,7 +924,7 @@ export default function QRScannerPage() {
             <ListItem>
               <ListItemText 
                 primary="Nessuna scansione recente"
-                className="text-center text-gray-500"
+                sx={{ textAlign: 'center', color: 'text.secondary' }}
               />
             </ListItem>
           )}
@@ -563,12 +935,42 @@ export default function QRScannerPage() {
       {!isOnline && recentScans.some(s => !s.synced) && (
         <Fab
           color="primary"
-          className="fixed bottom-4 right-4"
+          sx={{ position: 'fixed', bottom: 16, right: 16 }}
           onClick={syncOfflineData}
         >
           <Cloud />
         </Fab>
       )}
+
+      {/* Autoclave Batch Dialog */}
+      <Dialog
+        open={autoclaveDialog.open}
+        onClose={() => setAutoclaveDialog({ open: false, batch: null, odlId: '' })}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Avanzamento Batch Autoclave</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            L'ODL appartiene al batch <strong>{autoclaveDialog.batch?.loadNumber}</strong> 
+            {' '}(stato: <strong>{autoclaveDialog.batch?.status}</strong>).
+          </Typography>
+          <Typography variant="body1">
+            Vuoi avanzare l'intero batch al prossimo stato?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Questo influenzerà tutti i {autoclaveDialog.batch?.odlCount} ODL del batch.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAutoclaveDialog({ open: false, batch: null, odlId: '' })}>
+            Annulla
+          </Button>
+          <Button onClick={advanceBatchFromScan} variant="contained">
+            Avanza Batch
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

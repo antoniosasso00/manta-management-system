@@ -112,7 +112,7 @@ export function NavigationItem({
         <ListItemButton
           onClick={handleToggleExpand}
           sx={{
-            minHeight: 44, // Mobile-first touch target
+            minHeight: { xs: 48, md: 44 }, // 48px mobile, 44px desktop
             pl: `${paddingLeft}px`,
             backgroundColor: isActive ? 'action.selected' : 'transparent',
             '&:hover': {
@@ -129,7 +129,7 @@ export function NavigationItem({
           href={item.href}
           onClick={handleItemClick}
           sx={{
-            minHeight: 44, // Mobile-first touch target
+            minHeight: { xs: 48, md: 44 }, // 48px mobile, 44px desktop
             pl: `${paddingLeft}px`,
             backgroundColor: isActive ? 'action.selected' : 'transparent',
             '&:hover': {

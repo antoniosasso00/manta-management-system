@@ -11,8 +11,13 @@ import {
   Link,
   IconButton,
   useTheme,
+  useMediaQuery,
+  Slide,
+  useScrollTrigger,
+  Fab,
+  Zoom,
 } from '@mui/material'
-import { Menu as MenuIcon } from '@mui/icons-material'
+import { Menu as MenuIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserMenu } from '@/components/auth/UserMenu'
@@ -30,6 +35,8 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   const pathname = usePathname()
   const theme = useTheme()
   const { isMobile, defaultOpen, sidebarWidth, sidebarCollapsedWidth } = useSidebar()
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const trigger = useScrollTrigger({ disableHysteresis: true, threshold: 100 })
   
   // Stato per evitare hydration mismatch
   const [mounted, setMounted] = useState(false)
@@ -37,6 +44,11 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   // Stato sidebar
   const [sidebarOpen, setSidebarOpen] = useState(defaultOpen)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  
+  // ScrollToTop handler
+  const handleScrollTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -102,14 +114,19 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
           }),
         }}
       >
-        {/* App Bar */}
-        <AppBar 
-          position="static" 
-          elevation={1}
-          sx={{
-            zIndex: theme.zIndex.drawer + 1,
-          }}
-        >
+        {/* App Bar con Hide on Scroll per mobile */}
+        <Slide appear={false} direction="down" in={!trigger || !isMobile}>
+          <AppBar 
+            position={isMobile ? 'fixed' : 'static'} 
+            elevation={1}
+            sx={{
+              zIndex: theme.zIndex.drawer + 1,
+              top: 0,
+              left: isMobile ? 0 : 'auto',
+              right: 0,
+              width: isMobile ? '100%' : 'auto',
+            }}
+          >
           <Toolbar>
             {/* Menu button per mobile */}
             {isMobile && (
@@ -118,41 +135,75 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
                 aria-label="open drawer"
                 edge="start"
                 onClick={handleDrawerToggle}
-                sx={{ mr: 2 }}
+                sx={{ 
+                  mr: 2,
+                  width: 48,
+                  height: 48,
+                }}
               >
                 <MenuIcon />
               </IconButton>
             )}
             
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant={isSmallMobile ? 'body1' : 'h6'} component="div" sx={{ flexGrow: 1 }}>
               <Link 
                 component={NextLink} 
                 href="/dashboard" 
                 color="inherit" 
                 underline="none"
-                sx={{ fontWeight: 'bold' }}
+                sx={{ 
+                  fontWeight: 'bold',
+                  display: 'block',
+                  lineHeight: 1.2,
+                }}
               >
-                MES Aerospazio
+                {isSmallMobile ? 'MES' : 'MES Aerospazio'}
               </Link>
             </Typography>
             
             <UserMenu />
           </Toolbar>
         </AppBar>
+      </Slide>
 
-        {/* Breadcrumbs */}
-        {autoBreadcrumbs.length > 0 && (
-          <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
+        {/* Breadcrumbs - nascosti su mobile piccoli */}
+        {autoBreadcrumbs.length > 0 && !isSmallMobile && (
+          <Box sx={{ 
+            bgcolor: 'background.paper', 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            mt: isMobile ? '64px' : 0,
+          }}>
             <Container maxWidth="xl" sx={{ py: 1 }}>
-              <Breadcrumbs aria-label="breadcrumb">
+              <Breadcrumbs 
+                aria-label="breadcrumb"
+                maxItems={isMobile ? 2 : undefined}
+                itemsAfterCollapse={isMobile ? 1 : 2}
+                itemsBeforeCollapse={isMobile ? 1 : 1}
+              >
                 {autoBreadcrumbs.map((crumb, index) => (
                   <div key={index}>
                     {crumb.href && index < autoBreadcrumbs.length - 1 ? (
-                      <Link component={NextLink} href={crumb.href} color="inherit">
+                      <Link 
+                        component={NextLink} 
+                        href={crumb.href} 
+                        color="inherit"
+                        sx={{ 
+                          fontSize: { xs: '0.875rem', sm: '1rem' },
+                          minHeight: 44,
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
                         {crumb.label}
                       </Link>
                     ) : (
-                      <Typography color="text.primary">{crumb.label}</Typography>
+                      <Typography 
+                        color="text.primary"
+                        sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                      >
+                        {crumb.label}
+                      </Typography>
                     )}
                   </div>
                 ))}
@@ -161,25 +212,41 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
           </Box>
         )}
 
-        {/* Page Title */}
+        {/* Page Title - responsive sizing */}
         {title && (
-          <Container maxWidth="xl" sx={{ mt: 3, mb: 2 }}>
-            <Typography variant="h4" component="h1">
+          <Container maxWidth="xl" sx={{ 
+            mt: isMobile && !autoBreadcrumbs.length ? '80px' : 3, 
+            mb: 2,
+            px: { xs: 2, sm: 3 },
+          }}>
+            <Typography 
+              variant={isSmallMobile ? 'h5' : 'h4'} 
+              component="h1"
+              sx={{
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                fontWeight: 500,
+              }}
+            >
               {title}
             </Typography>
           </Container>
         )}
 
-        {/* Main Content */}
-        <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default' }}>
+        {/* Main Content con padding top per mobile fixed header */}
+        <Box component="main" sx={{ 
+          flexGrow: 1, 
+          bgcolor: 'background.default',
+          pt: isMobile && !title && !autoBreadcrumbs.length ? '64px' : 0,
+          minHeight: { xs: 'calc(100vh - 64px)', sm: 'auto' },
+        }}>
           {children}
         </Box>
 
-        {/* Footer */}
+        {/* Footer - semplificato per mobile */}
         <Box
           component="footer"
           sx={{
-            py: 3,
+            py: { xs: 2, sm: 3 },
             px: 2,
             mt: 'auto',
             backgroundColor: 'background.paper',
@@ -188,11 +255,34 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
           }}
         >
           <Container maxWidth="xl">
-            <Typography variant="body2" color="text.secondary" align="center">
-              © 2024 MES Aerospazio - Manufacturing Execution System
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              align="center"
+              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+            >
+              © 2024 {isSmallMobile ? 'MES' : 'MES Aerospazio - Manufacturing Execution System'}
             </Typography>
           </Container>
         </Box>
+        
+        {/* Scroll to Top FAB per mobile */}
+        <Zoom in={trigger && isMobile}>
+          <Fab
+            onClick={handleScrollTop}
+            color="primary"
+            size="small"
+            aria-label="scroll back to top"
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              zIndex: theme.zIndex.fab,
+            }}
+          >
+            <KeyboardArrowUpIcon />
+          </Fab>
+        </Zoom>
       </Box>
     </Box>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   Drawer,
   List,
@@ -15,12 +15,16 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  SwipeableDrawer,
+  Divider,
 } from '@mui/material'
+import { useSwipeable } from 'react-swipeable'
 import {
   ChevronLeft,
   ChevronRight,
   AccountCircle,
   PersonSearch,
+  Close as CloseIcon,
 } from '@mui/icons-material'
 import { NavigationItem } from '@/components/molecules/NavigationItem'
 import { Logo } from '@/components/atoms/Logo'
@@ -51,7 +55,17 @@ export function NavigationSidebar({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'), {
     noSsr: true // Evita hydration mismatch
   })
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const { user, isAuthenticated } = useAuth()
+  
+  // Swipe handlers per mobile
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => isMobile && onClose(),
+    onSwipedRight: () => {}, // Previeni swipe accidentale dal bordo
+    trackMouse: false,
+    trackTouch: true,
+    delta: 50, // Minimo movimento richiesto
+  })
   
   // Stato per la selezione del ruolo (solo per admin)
   const [selectedRole, setSelectedRole] = useState<string>('')
@@ -96,32 +110,44 @@ export function NavigationSidebar({
         borderRight: `1px solid ${theme.palette.divider}`,
       }}
     >
-      {/* Logo Section */}
-      <Box
-        sx={{
-          p: collapsed ? 1 : 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: collapsed ? 'center' : 'flex-start',
-          minHeight: 56,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Logo 
-          size={collapsed ? 'small' : 'medium'} 
-          showText={!collapsed} 
-          variant={collapsed ? 'icon' : 'full'}
-        />
-      </Box>
-
-      {/* Header con info utente */}
+      {/* Logo Section con close button per mobile */}
       <Box
         sx={{
           p: collapsed ? 1 : 2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'space-between',
-          minHeight: 64,
+          minHeight: { xs: 64, sm: 56 },
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Logo 
+          size={collapsed || isSmallScreen ? 'small' : 'medium'} 
+          showText={!collapsed && !isSmallScreen} 
+          variant={collapsed || isSmallScreen ? 'icon' : 'full'}
+        />
+        {isMobile && !collapsed && (
+          <IconButton 
+            onClick={onClose}
+            sx={{ 
+              width: 44,
+              height: 44,
+            }}
+            aria-label="chiudi menu"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
+      </Box>
+
+      {/* Header con info utente - ottimizzato mobile */}
+      <Box
+        sx={{
+          p: collapsed ? 1 : { xs: 1.5, sm: 2 },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'space-between',
+          minHeight: { xs: 56, sm: 64 },
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
@@ -129,10 +155,10 @@ export function NavigationSidebar({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
             <Avatar
               sx={{
-                width: 32,
-                height: 32,
+                width: { xs: 36, sm: 32 },
+                height: { xs: 36, sm: 32 },
                 bgcolor: 'primary.main',
-                fontSize: '0.875rem',
+                fontSize: { xs: '1rem', sm: '0.875rem' },
               }}
             >
               {user.name?.charAt(0).toUpperCase() || <AccountCircle />}
@@ -169,8 +195,8 @@ export function NavigationSidebar({
         )}
       </Box>
 
-      {/* Info reparto se presente */}
-      {!collapsed && user.departmentRole && user.role !== USER_ROLES.ADMIN && (
+      {/* Info reparto se presente - nascosto su mobile piccoli */}
+      {!collapsed && !isSmallScreen && user.departmentRole && user.role !== USER_ROLES.ADMIN && (
         <Box sx={{ px: 2, py: 1 }}>
           <Chip
             label={ROLE_DISPLAY_NAMES[user.departmentRole]}
@@ -182,21 +208,24 @@ export function NavigationSidebar({
         </Box>
       )}
       
-      {/* Dropdown Impersona Ruolo per Admin */}
+      {/* Dropdown Impersona Ruolo per Admin - semplificato mobile */}
       {!collapsed && user.role === USER_ROLES.ADMIN && (
-        <Box sx={{ px: 2, py: 1 }}>
+        <Box sx={{ px: { xs: 1.5, sm: 2 }, py: 1 }}>
           <FormControl fullWidth size="small">
             <InputLabel id="role-select-label">
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <PersonSearch sx={{ fontSize: 18 }} />
-                <span>Impersona Ruolo</span>
+                <PersonSearch sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                <span style={{ fontSize: isSmallScreen ? '0.875rem' : '1rem' }}>Impersona</span>
               </Box>
             </InputLabel>
             <Select
               labelId="role-select-label"
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              label="Impersona Ruolo"
+              label="Impersona"
+              sx={{
+                minHeight: 44, // Touch target minimo
+              }}
             >
               <MenuItem value="">
                 <em>Vista Admin (Default)</em>
@@ -222,9 +251,14 @@ export function NavigationSidebar({
         </Box>
       )}
 
-      {/* Navigazione principale */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
-        <List disablePadding sx={{ py: 1 }}>
+      {/* Navigazione principale con scroll ottimizzato */}
+      <Box sx={{ 
+        flex: 1, 
+        overflow: 'auto',
+        overscrollBehavior: 'contain',
+        WebkitOverflowScrolling: 'touch', // Smooth scrolling iOS
+      }}>
+        <List disablePadding sx={{ py: { xs: 0.5, sm: 1 } }}>
           {navigation.map((item) => (
             <NavigationItem
               key={item.id}
@@ -236,42 +270,45 @@ export function NavigationSidebar({
         </List>
       </Box>
 
-      {/* Footer con versione */}
-      {!collapsed && (
+      {/* Footer con versione - nascosto su mobile piccoli */}
+      {!collapsed && !isSmallScreen && (
         <Box
           sx={{
-            p: 2,
+            p: { xs: 1, sm: 2 },
             borderTop: `1px solid ${theme.palette.divider}`,
             textAlign: 'center',
           }}
         >
           <Typography variant="caption" color="text.secondary">
-            MES Aerospazio v1.0
+            MES v1.0
           </Typography>
         </Box>
       )}
     </Box>
   )
 
-  // Mobile: usa sempre drawer temporaneo
+  // Mobile: usa SwipeableDrawer con gesture support
   if (isMobile) {
     return (
-      <Drawer
+      <SwipeableDrawer
         variant="temporary"
         open={open}
         onClose={onClose}
+        onOpen={() => {}}
         ModalProps={{
           keepMounted: true, // Better open performance on mobile
         }}
         sx={{
           '& .MuiDrawer-paper': {
-            width: SIDEBAR_WIDTH,
+            width: { xs: '85%', sm: SIDEBAR_WIDTH },
+            maxWidth: SIDEBAR_WIDTH,
             boxSizing: 'border-box',
           },
         }}
+        {...swipeHandlers}
       >
         {sidebarContent}
-      </Drawer>
+      </SwipeableDrawer>
     )
   }
 

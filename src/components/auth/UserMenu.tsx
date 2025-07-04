@@ -11,6 +11,8 @@ import {
   Divider,
   Typography,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material'
 import {
   Person as PersonIcon,
@@ -28,6 +30,8 @@ export function UserMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const { user, isAdmin } = useAuth()
   const router = useRouter()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -76,13 +80,22 @@ export function UserMenu() {
     <>
       <IconButton
         onClick={handleClick}
-        size="small"
-        sx={{ ml: 2 }}
+        size={isMobile ? "medium" : "small"}
+        sx={{ 
+          ml: { xs: 1, sm: 2 },
+          width: { xs: 44, sm: 40 },
+          height: { xs: 44, sm: 40 },
+        }}
         aria-controls={anchorEl ? 'user-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={anchorEl ? 'true' : undefined}
       >
-        <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+        <Avatar sx={{ 
+          width: { xs: 36, sm: 32 }, 
+          height: { xs: 36, sm: 32 }, 
+          bgcolor: 'primary.main',
+          fontSize: { xs: '1rem', sm: '0.875rem' },
+        }}>
           {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
@@ -141,7 +154,10 @@ export function UserMenu() {
         <Divider />
 
         {/* Profile */}
-        <MenuItem onClick={() => handleMenuAction(() => router.push('/profile'))}>
+        <MenuItem 
+          onClick={() => handleMenuAction(() => router.push('/profile'))}
+          sx={{ minHeight: { xs: 48, sm: 'auto' } }}
+        >
           <ListItemIcon>
             <PersonIcon fontSize="small" />
           </ListItemIcon>
@@ -149,7 +165,10 @@ export function UserMenu() {
         </MenuItem>
 
         {/* Change Password */}
-        <MenuItem onClick={() => handleMenuAction(() => router.push('/change-password'))}>
+        <MenuItem 
+          onClick={() => handleMenuAction(() => router.push('/change-password'))}
+          sx={{ minHeight: { xs: 48, sm: 'auto' } }}
+        >
           <ListItemIcon>
             <LockIcon fontSize="small" />
           </ListItemIcon>
@@ -157,7 +176,10 @@ export function UserMenu() {
         </MenuItem>
 
         {/* Settings */}
-        <MenuItem onClick={() => handleMenuAction(() => router.push('/settings'))}>
+        <MenuItem 
+          onClick={() => handleMenuAction(() => router.push('/settings'))}
+          sx={{ minHeight: { xs: 48, sm: 'auto' } }}
+        >
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
@@ -167,7 +189,11 @@ export function UserMenu() {
         {/* Admin Panel */}
         {isAdmin && [
           <Divider key="admin-divider" />,
-          <MenuItem key="admin-menu" onClick={() => handleMenuAction(() => router.push('/admin/users'))}>
+          <MenuItem 
+            key="admin-menu" 
+            onClick={() => handleMenuAction(() => router.push('/admin/users'))}
+            sx={{ minHeight: { xs: 48, sm: 'auto' } }}
+          >
             <ListItemIcon>
               <AdminIcon fontSize="small" />
             </ListItemIcon>
@@ -180,7 +206,10 @@ export function UserMenu() {
         {/* Logout */}
         <MenuItem 
           onClick={() => handleMenuAction(() => signOut({ callbackUrl: '/login' }))}
-          sx={{ color: 'error.main' }}
+          sx={{ 
+            color: 'error.main',
+            minHeight: { xs: 48, sm: 'auto' }
+          }}
         >
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />
