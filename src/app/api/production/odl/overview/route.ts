@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-utils';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { WorkflowService } from '@/domains/production/services/WorkflowService';
 
 export async function GET() {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Non autorizzato' },

@@ -1024,12 +1024,12 @@ async function main() {
     }),
     prisma.oDL.create({
       data: {
-        odlNumber: 'ODL-24-003',
+        odlNumber: 'ODL-24-005',
         partId: parts[11].id, // Radome
         quantity: 1,
         priority: 'URGENT',
         status: 'IN_CLEANROOM',
-        qrCode: 'QR-ODL-24-003',
+        qrCode: 'QR-ODL-24-005',
         gammaId: 'GM-ODL-003',
         curingCycleId: curingCycles[4].id,
         length: 800, width: 800, height: 200, vacuumLines: 1,

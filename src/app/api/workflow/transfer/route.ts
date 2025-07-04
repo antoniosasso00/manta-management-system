@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-utils';
+import { auth } from '@/lib/auth';
 import { WorkflowService } from '@/domains/production/services/WorkflowService';
 import { z } from 'zod';
 import { withRateLimit, workflowRateLimiter } from '@/lib/rate-limit-middleware';
@@ -12,7 +12,7 @@ const TransferRequestSchema = z.object({
 async function postHandler(request: NextRequest) {
   try {
     // Verifica autenticazione
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Non autorizzato' },
@@ -74,7 +74,7 @@ async function postHandler(request: NextRequest) {
 
 async function getHandler(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Non autorizzato' },
