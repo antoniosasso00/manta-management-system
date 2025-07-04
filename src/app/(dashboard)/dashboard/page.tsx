@@ -35,15 +35,8 @@ import {
 } from '@mui/icons-material'
 import { useAuth } from '@/hooks/useAuth'
 import { useDashboardKPI } from '@/hooks/useRealTimeUpdates'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-// Mock notifications - in production this would come from WebSocket/API
-const mockNotifications = [
-  { id: 1, type: 'warning', title: 'ODL in ritardo', message: 'ODL-2024-001 è in ritardo di 2 ore', timestamp: '10:30' },
-  { id: 2, type: 'info', title: 'Nuovo ODL', message: 'ODL-2024-045 assegnato al tuo reparto', timestamp: '09:15' },
-  { id: 3, type: 'success', title: 'Completato', message: 'ODL-2024-044 completato con successo', timestamp: '08:45' }
-]
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth()
@@ -67,7 +60,13 @@ export default function DashboardPage() {
     )
   }
 
-  const kpis = kpiData?.metrics || {}
+  const kpis = kpiData?.metrics || {
+    odlInProgress: 0,
+    completionRate: 0,
+    avgTimePerDepartment: 0,
+    activeAlerts: 0,
+    todayProduction: 0
+  }
   const notifications = kpiData?.notifications || []
   const recentActivity = kpiData?.recentActivity || []
 

@@ -128,8 +128,10 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Calcola la media ponderata di tutte le durate (convertendo da millisecondi a ore)
+    const totalDuration = avgTimeCalculation.reduce((sum, dept) => sum + (dept._avg.duration || 0), 0);
     const avgTimePerDepartment = avgTimeCalculation.length > 0 
-      ? avgTimeCalculation.reduce((sum, dept) => sum + (dept._avg.duration || 0), 0) / avgTimeCalculation.length
+      ? (totalDuration / avgTimeCalculation.length) / (1000 * 60 * 60) // Converti ms -> ore
       : 0;
 
     // Calcola tasso di completamento (completati vs totali questo mese)
@@ -184,7 +186,7 @@ export async function GET(request: NextRequest) {
         odlInProgress,
         odlCompleted,
         completionRate,
-        avgTimePerDepartment: Math.round(avgTimePerDepartment * 100) / 100, // 2 decimali
+        avgTimePerDepartment: Math.round(avgTimePerDepartment * 10) / 10, // 1 decimale per le ore
         activeAlerts,
         todayProduction: todayProductionEvents
       },
