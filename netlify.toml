@@ -16,11 +16,7 @@
 [context.branch-deploy.environment]
   NODE_ENV = "development"
 
-# Redirect rules for Next.js App Router
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/___netlify-server-handler"
-  status = 200
+# Redirect rules handled automatically by Next.js Runtime
 
 # Security headers
 [[headers]]
