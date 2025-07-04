@@ -27,13 +27,26 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
   }
 
   const getAvailableActions = (): EventType[] => {
+    // Se l'ODL è completato per questo reparto, nessuna azione disponibile
+    const completedStates = [
+      'CLEANROOM_COMPLETED', 'AUTOCLAVE_COMPLETED', 'CONTROLLO_NUMERICO_COMPLETED',
+      'NDI_COMPLETED', 'MONTAGGIO_COMPLETED', 'VERNICIATURA_COMPLETED',
+      'CONTROLLO_QUALITA_COMPLETED', 'COMPLETED'
+    ]
+    
+    if (completedStates.includes(odl.status)) {
+      return [] // Nessuna azione disponibile se completato
+    }
+    
     if (!odl.lastEvent) return ['ENTRY']
     
     switch (odl.lastEvent.eventType) {
       case 'ENTRY':
         return ['EXIT', 'PAUSE']
       case 'EXIT':
-        return ['ENTRY']
+        // Se è uscito ma lo stato non è completato, potrebbe essere un errore
+        // Non permettere il re-entry
+        return []
       case 'PAUSE':
         return ['RESUME']
       case 'RESUME':
@@ -117,20 +130,38 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
           gap: 1, 
           flexWrap: 'wrap' 
         }}>
-          {availableActions.map((action) => (
-            <ActionButton
-              key={action}
-              actionType={action}
-              onClick={() => onAction(odl.id, action)}
-              loading={loading}
-              size={isMobile ? "medium" : "small"}
-              sx={{ 
-                flex: { xs: '1 1 100%', sm: '1 1 auto' }, 
-                minWidth: { xs: '100%', sm: 120 },
-                minHeight: { xs: 48, sm: 40 }
-              }}
-            />
-          ))}
+          {availableActions.length > 0 ? (
+            availableActions.map((action) => (
+              <ActionButton
+                key={action}
+                actionType={action}
+                onClick={() => onAction(odl.id, action)}
+                loading={loading}
+                size={isMobile ? "medium" : "small"}
+                sx={{ 
+                  flex: { xs: '1 1 100%', sm: '1 1 auto' }, 
+                  minWidth: { xs: '100%', sm: 120 },
+                  minHeight: { xs: 48, sm: 40 }
+                }}
+              />
+            ))
+          ) : (
+            <Box sx={{ 
+              width: '100%', 
+              textAlign: 'center', 
+              py: 2, 
+              px: 1,
+              bgcolor: 'success.light',
+              borderRadius: 1
+            }}>
+              <Typography variant="body2" color="success.dark" sx={{ fontWeight: 500 }}>
+                ✓ ODL completato in questo reparto
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                In attesa di trasferimento al reparto successivo
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Stack>
 

@@ -92,17 +92,18 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       icon: Engineering,
       href: '#',
       children: [
-        {
-          id: 'production-honeycomb',
-          label: 'Honeycomb',
-          icon: Hexagon,
-          href: '/production/honeycomb',
-        },
+        // Flusso principale: Clean Room → Autoclave → CN → NDI → Montaggio → Verniciatura
         {
           id: 'production-cleanroom',
           label: 'Clean Room',
           icon: CleaningServices,
           href: '/production/cleanroom',
+        },
+        {
+          id: 'production-autoclave',
+          label: 'Autoclavi',
+          icon: LocalFireDepartment,
+          href: '/production/autoclave',
         },
         {
           id: 'production-controllo-numerico',
@@ -111,16 +112,16 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/production/controllo-numerico',
         },
         {
-          id: 'production-montaggio',
-          label: 'Montaggio',
-          icon: HomeRepairService,
-          href: '/production/montaggio',
-        },
-        {
           id: 'production-ndi',
           label: 'NDI',
           icon: Science,
           href: '/production/ndi',
+        },
+        {
+          id: 'production-montaggio',
+          label: 'Montaggio',
+          icon: HomeRepairService,
+          href: '/production/montaggio',
         },
         {
           id: 'production-verniciatura',
@@ -129,16 +130,30 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/production/verniciatura',
         },
         {
-          id: 'production-motori',
-          label: 'Motori',
-          icon: DirectionsCar,
-          href: '/production/motori',
-        },
-        {
           id: 'production-controllo-qualita',
           label: 'Controllo Qualità',
           icon: VerifiedUser,
           href: '/production/controllo-qualita',
+        },
+        // Reparti separati
+        {
+          id: 'divider-1',
+          label: '---',
+          icon: Engineering,
+          href: '#',
+          divider: true,
+        },
+        {
+          id: 'production-honeycomb',
+          label: 'Honeycomb (Separato)',
+          icon: Hexagon,
+          href: '/production/honeycomb',
+        },
+        {
+          id: 'production-motori',
+          label: 'Motori (Separato)',
+          icon: DirectionsCar,
+          href: '/production/motori',
         },
       ],
     },
@@ -288,17 +303,18 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       icon: Engineering,
       href: '#',
       children: [
-        {
-          id: 'production-honeycomb',
-          label: 'Honeycomb',
-          icon: Hexagon,
-          href: '/production/honeycomb',
-        },
+        // Flusso principale: Clean Room → Autoclave → CN → NDI → Montaggio → Verniciatura
         {
           id: 'production-cleanroom',
           label: 'Clean Room',
           icon: CleaningServices,
           href: '/production/cleanroom',
+        },
+        {
+          id: 'production-autoclave',
+          label: 'Autoclavi',
+          icon: LocalFireDepartment,
+          href: '/production/autoclave',
         },
         {
           id: 'production-controllo-numerico',
@@ -307,28 +323,22 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           href: '/production/controllo-numerico',
         },
         {
-          id: 'production-montaggio',
-          label: 'Montaggio',
-          icon: HomeRepairService,
-          href: '/production/montaggio',
-        },
-        {
           id: 'production-ndi',
           label: 'NDI',
           icon: Science,
           href: '/production/ndi',
         },
         {
+          id: 'production-montaggio',
+          label: 'Montaggio',
+          icon: HomeRepairService,
+          href: '/production/montaggio',
+        },
+        {
           id: 'production-verniciatura',
           label: 'Verniciatura',
           icon: Brush,
           href: '/production/verniciatura',
-        },
-        {
-          id: 'production-motori',
-          label: 'Motori',
-          icon: DirectionsCar,
-          href: '/production/motori',
         },
         {
           id: 'production-controllo-qualita',

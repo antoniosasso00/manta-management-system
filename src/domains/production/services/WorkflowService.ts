@@ -39,41 +39,37 @@ const transferInputSchema = z.object({
 type TransferInput = z.infer<typeof transferInputSchema>;
 
 // Definizione workflow produttivo sequenziale aerospazio (parti composite)
+// NOTA: HC è separato con ODL separati e logica separata - non fa parte del flusso principale
+// Flusso principale: Clean Room → Autoclave → CN → NDI → Montaggio → Verniciatura
 const WORKFLOW_SEQUENCE: WorkflowTransition[] = [
   {
-    from: 'HONEYCOMB',
-    to: 'CLEANROOM',
-    requiredStatus: 'HONEYCOMB_COMPLETED',
-    targetStatus: 'IN_CLEANROOM'
-  },
-  {
     from: 'CLEANROOM',
-    to: 'CONTROLLO_NUMERICO',
-    requiredStatus: 'CLEANROOM_COMPLETED',
-    targetStatus: 'IN_CONTROLLO_NUMERICO'
-  },
-  {
-    from: 'CONTROLLO_NUMERICO',
-    to: 'MONTAGGIO',
-    requiredStatus: 'CONTROLLO_NUMERICO_COMPLETED',
-    targetStatus: 'IN_MONTAGGIO'
-  },
-  {
-    from: 'MONTAGGIO',
     to: 'AUTOCLAVE',
-    requiredStatus: 'MONTAGGIO_COMPLETED',
+    requiredStatus: 'CLEANROOM_COMPLETED',
     targetStatus: 'IN_AUTOCLAVE'
   },
   {
     from: 'AUTOCLAVE', 
-    to: 'NDI',
+    to: 'CONTROLLO_NUMERICO',
     requiredStatus: 'AUTOCLAVE_COMPLETED',
+    targetStatus: 'IN_CONTROLLO_NUMERICO'
+  },
+  {
+    from: 'CONTROLLO_NUMERICO',
+    to: 'NDI',
+    requiredStatus: 'CONTROLLO_NUMERICO_COMPLETED',
     targetStatus: 'IN_NDI'
   },
   {
     from: 'NDI',
-    to: 'VERNICIATURA',
+    to: 'MONTAGGIO',
     requiredStatus: 'NDI_COMPLETED',
+    targetStatus: 'IN_MONTAGGIO'
+  },
+  {
+    from: 'MONTAGGIO',
+    to: 'VERNICIATURA',
+    requiredStatus: 'MONTAGGIO_COMPLETED',
     targetStatus: 'IN_VERNICIATURA'
   },
   {
@@ -98,9 +94,9 @@ export class WorkflowService {
    * Ottiene il workflow appropriato per il tipo di reparto
    */
   static getWorkflowForDepartment(departmentType: DepartmentType): WorkflowTransition[] {
-    // MOTORI è escluso dal workflow aerospazio - gestione separata se necessaria
-    if (departmentType === 'MOTORI') {
-      return []; // Nessun workflow automatico per motori
+    // HONEYCOMB e MOTORI sono esclusi dal workflow principale - gestione separata
+    if (departmentType === 'HONEYCOMB' || departmentType === 'MOTORI') {
+      return []; // Nessun workflow automatico per honeycomb e motori
     }
     // Tutti gli altri reparti seguono workflow aerospazio sequenziale
     return WORKFLOW_SEQUENCE;

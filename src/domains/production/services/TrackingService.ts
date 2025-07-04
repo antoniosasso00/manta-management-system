@@ -76,30 +76,55 @@ export class TrackingService {
     // Logica per determinare il nuovo stato basato su reparto ed evento
     if (eventType === EventType.ENTRY) {
       switch (department.type) {
+        case 'HONEYCOMB':
+          newStatus = ODLStatus.IN_HONEYCOMB
+          break
         case 'CLEANROOM':
           newStatus = ODLStatus.IN_CLEANROOM
           break
         case 'AUTOCLAVE':
           newStatus = ODLStatus.IN_AUTOCLAVE
           break
+        case 'CONTROLLO_NUMERICO':
+          newStatus = ODLStatus.IN_CONTROLLO_NUMERICO
+          break
         case 'NDI':
           newStatus = ODLStatus.IN_NDI
           break
-        case 'RIFILATURA':
-          newStatus = ODLStatus.IN_RIFILATURA
+        case 'MONTAGGIO':
+          newStatus = ODLStatus.IN_MONTAGGIO
+          break
+        case 'VERNICIATURA':
+          newStatus = ODLStatus.IN_VERNICIATURA
+          break
+        case 'CONTROLLO_QUALITA':
+          newStatus = ODLStatus.IN_CONTROLLO_QUALITA
           break
       }
     } else if (eventType === EventType.EXIT) {
       switch (department.type) {
+        case 'HONEYCOMB':
+          newStatus = ODLStatus.HONEYCOMB_COMPLETED
+          break
         case 'CLEANROOM':
           newStatus = ODLStatus.CLEANROOM_COMPLETED
           break
         case 'AUTOCLAVE':
           newStatus = ODLStatus.AUTOCLAVE_COMPLETED
           break
+        case 'CONTROLLO_NUMERICO':
+          newStatus = ODLStatus.CONTROLLO_NUMERICO_COMPLETED
+          break
         case 'NDI':
-        case 'RIFILATURA':
-          // Logica più complessa per determinare se completato o in attesa
+          newStatus = ODLStatus.NDI_COMPLETED
+          break
+        case 'MONTAGGIO':
+          newStatus = ODLStatus.MONTAGGIO_COMPLETED
+          break
+        case 'VERNICIATURA':
+          newStatus = ODLStatus.VERNICIATURA_COMPLETED
+          break
+        case 'CONTROLLO_QUALITA':
           newStatus = ODLStatus.COMPLETED
           break
       }
