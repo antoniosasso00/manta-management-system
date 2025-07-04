@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run build:netlify"
   publish = ".next"
 
 [build.environment]
@@ -7,6 +7,7 @@
   NPM_VERSION = "9"
   NEXT_TELEMETRY_DISABLED = "1"
   SKIP_ENV_VALIDATION = "1"
+  NEXT_RUNTIME = "edge"
 
 # Next.js plugin per deployment automatico
 [[plugins]]
@@ -14,6 +15,12 @@
 
 [functions]
   node_bundler = "esbuild"
+  
+# Configurazione per API routes Next.js
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
 # Redirect principali per compatibility
 [[redirects]]
@@ -25,6 +32,12 @@
   from = "/auth/*"
   to = "/:splat"
   status = 301
+
+# Fallback per SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [context.production]
   environment = { NODE_ENV = "production" }
