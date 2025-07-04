@@ -1,17 +1,20 @@
 import { PrismaClient } from '@prisma/client'
 import { Pool, neonConfig } from '@neondatabase/serverless'
 import { PrismaNeon } from '@prisma/adapter-neon'
-import ws from 'ws'
 
 // Enable WebSocket support for Neon serverless driver
-neonConfig.webSocketConstructor = ws
+// Only import ws in Node.js environments, not in Edge Functions
+if (typeof globalThis.WebSocket === 'undefined') {
+  const ws = require('ws')
+  neonConfig.webSocketConstructor = ws
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
 // Create Neon connection pool with optimized settings
-const connectionString = process.env.DATABASE_URL!
+const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL!
 
 const pool = new Pool({ 
   connectionString,
