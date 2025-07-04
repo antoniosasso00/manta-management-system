@@ -68,3 +68,6 @@
  ✓ Compiled middleware in 1ms
  ✓ Compiled middleware in 1ms
  ✓ Compiled middleware in 0ms
+   Reload env: .env.local
+   Reload env: .env.local
+ ✓ Compiled middleware in 1ms
