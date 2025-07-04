@@ -61,7 +61,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'DataTable.tsx',
     element: 'TableSortLabel',
-    currentSize: { width: 'unknown', height: 'unknown' },
+    currentSize: { width: 0, height: 0 },
     meetsStandard: false,
     recommendation: 'Verificare dimensioni effettive e aggiungere padding se necessario',
     severity: 'medium'
@@ -111,7 +111,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'QR Scanner (future)',
     element: 'Camera controls',
-    currentSize: { width: 'unknown', height: 'unknown' },
+    currentSize: { width: 0, height: 0 },
     meetsStandard: false,
     recommendation: 'Assicurare controlli camera siano almeno 48px per uso con guanti',
     severity: 'high'

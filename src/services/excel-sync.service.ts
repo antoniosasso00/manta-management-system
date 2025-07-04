@@ -110,7 +110,7 @@ export class ExcelSyncService {
           if (existingPart) {
             // Aggiorna solo se la descrizione è diversa
             if (existingPart.description !== description) {
-              await PartService.update(existingPart.id, { description })
+              await PartService.update(existingPart.id, { id: existingPart.id, description })
               result.updated++
               console.log(`Aggiornato: ${partNumber}`)
             } else {

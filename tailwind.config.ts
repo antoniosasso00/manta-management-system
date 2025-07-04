@@ -218,7 +218,7 @@ const config: Config = {
   },
   plugins: [
     // Custom utilities for MES-specific needs
-    function({ addUtilities, theme }) {
+    function({ addUtilities, theme }: any) {
       const newUtilities = {
         // Touch-friendly interactive elements (44px minimum)
         '.touch-target': {
@@ -281,8 +281,10 @@ const config: Config = {
   ],
   // Dark mode configuration
   darkMode: 'class',
-  // Safelist for dynamic classes used in MES components
-  safelist: [
+} satisfies Config;
+
+// Safelist for dynamic classes used in MES components
+const safelist = [
     'text-success-600',
     'text-warning-600',
     'text-error-600',
@@ -302,7 +304,6 @@ const config: Config = {
     'status-online',
     'status-offline',
     'status-warning',
-  ],
-}
+  ];
 
 export default config

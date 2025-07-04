@@ -180,10 +180,10 @@ export class AutoclaviBatchService {
       await tx.productionEvent.create({
         data: {
           odlId: odls[0].id,
-          departmentId: autoclaveData.departmentId,
+          departmentId: batch.autoclave?.departmentId || 'autoclave-dept',
           eventType: 'ENTRY',
-          notes: `Batch created: ${loadNumber} with ${odls.length} ODLs in autoclave ${autoclaveData.code}`,
-          userId: odls[0].events?.[0]?.userId || 'system',
+          notes: `Batch created: ${loadNumber} with ${odls.length} ODLs in autoclave ${batch.autoclave?.code || 'unknown'}`,
+          userId: 'system',
         },
       });
 
@@ -276,9 +276,9 @@ export class AutoclaviBatchService {
       await tx.productionEvent.create({
         data: {
           odlId: batch.odls[0]?.id || '',
-          departmentId: batch.autoclaveId, // Using autoclave as department reference
+          departmentId: batch.autoclave?.departmentId || 'autoclave-dept',
           eventType: 'NOTE',
-          notes: `Batch status changed: ${batch.loadNumber} from ${batch.status} to ${newStatus}`,
+          notes: `Batch status changed: ${batch.loadNumber} from ${batch.status} to ${status}`,
           userId: 'system',
         },
       });
