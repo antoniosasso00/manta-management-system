@@ -13,9 +13,6 @@ export const createPartSchema = z.object({
   
   // Production specifications (optional, configurabili localmente)
   defaultCuringCycleId: z.string().cuid('Invalid curing cycle ID').optional(),
-  standardLength: z.number().positive('Length must be positive').optional(),
-  standardWidth: z.number().positive('Width must be positive').optional(),
-  standardHeight: z.number().positive('Height must be positive').optional(),
   defaultVacuumLines: z.number().int().min(1).max(10).optional(),
 })
 

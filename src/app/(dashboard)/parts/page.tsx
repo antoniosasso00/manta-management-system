@@ -144,18 +144,6 @@ export default function PartsPage() {
       minWidth: 200
     },
     {
-      id: 'standardLength',
-      label: 'Lunghezza',
-      minWidth: 100,
-      format: (value) => value ? `${value}mm` : '-'
-    },
-    {
-      id: 'standardWidth', 
-      label: 'Larghezza',
-      minWidth: 100,
-      format: (value) => value ? `${value}mm` : '-'
-    },
-    {
       id: 'odlCount' as keyof Part,
       label: 'ODL',
       minWidth: 100,
@@ -204,30 +192,6 @@ export default function PartsPage() {
       required: true,
       placeholder: 'Descrizione della parte',
       gridSize: 6
-    },
-    {
-      name: 'standardLength',
-      label: 'Lunghezza Standard (mm)',
-      type: 'number',
-      min: 0,
-      step: 0.1,
-      gridSize: 4
-    },
-    {
-      name: 'standardWidth',
-      label: 'Larghezza Standard (mm)', 
-      type: 'number',
-      min: 0,
-      step: 0.1,
-      gridSize: 4
-    },
-    {
-      name: 'standardHeight',
-      label: 'Altezza Standard (mm)',
-      type: 'number',
-      min: 0,
-      step: 0.1,
-      gridSize: 4
     },
     {
       name: 'defaultVacuumLines',

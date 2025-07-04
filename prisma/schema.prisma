@@ -129,9 +129,6 @@ model Part {
   
   // Production specifications (configurabili localmente)
   defaultCuringCycleId String?     // Reference to CuringCycle
-  standardLength       Float?
-  standardWidth        Float?
-  standardHeight       Float?
   defaultVacuumLines   Int?
   
   // Relations
