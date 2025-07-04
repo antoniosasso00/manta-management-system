@@ -2,7 +2,7 @@
 
 import { Box, Typography } from '@mui/material'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large'
@@ -18,6 +18,11 @@ export function Logo({
   sx = {} 
 }: LogoProps) {
   const [imageError, setImageError] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   const sizeMap = {
     small: { width: 32, height: 32, fontSize: 'h6' },
@@ -28,7 +33,7 @@ export function Logo({
   const currentSize = sizeMap[size]
 
   const handleImageError = () => {
-    console.error('Logo image failed to load')
+    console.error('Logo image failed to load from /manta-logo.svg')
     setImageError(true)
   }
 
@@ -54,15 +59,18 @@ export function Logo({
   if (variant === 'icon') {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>
-        {imageError ? (
+        {!mounted || imageError ? (
           <LogoFallback />
         ) : (
-          <Image
+          <Box
+            component="img"
             src="/manta-logo.svg"
             alt="Manta Group Logo"
-            width={currentSize.width}
-            height={currentSize.height}
-            priority
+            sx={{
+              width: currentSize.width,
+              height: currentSize.height,
+              display: 'block'
+            }}
             onError={handleImageError}
           />
         )}
@@ -77,15 +85,18 @@ export function Logo({
       gap: showText ? 2 : 0,
       ...sx 
     }}>
-      {imageError ? (
+      {!mounted || imageError ? (
         <LogoFallback />
       ) : (
-        <Image
+        <Box
+          component="img"
           src="/manta-logo.svg"
           alt="Manta Group Logo"
-          width={currentSize.width}
-          height={currentSize.height}
-          priority
+          sx={{
+            width: currentSize.width,
+            height: currentSize.height,
+            display: 'block'
+          }}
           onError={handleImageError}
         />
       )}
