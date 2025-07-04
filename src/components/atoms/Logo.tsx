@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import Image from 'next/image'
+import { useState } from 'react'
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large'
@@ -14,6 +15,8 @@ export function Logo({
   variant = 'full',
   sx = {} 
 }: LogoProps) {
+  const [imageError, setImageError] = useState(false)
+  
   const sizeMap = {
     small: { width: 32, height: 32, fontSize: 'h6' },
     medium: { width: 48, height: 48, fontSize: 'h5' },
@@ -22,16 +25,45 @@ export function Logo({
 
   const currentSize = sizeMap[size]
 
+  const handleImageError = () => {
+    console.error('Logo image failed to load')
+    setImageError(true)
+  }
+
+  const LogoFallback = () => (
+    <Box
+      sx={{
+        width: currentSize.width,
+        height: currentSize.height,
+        borderRadius: '8px',
+        backgroundColor: '#1976d2',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: size === 'small' ? '14px' : size === 'medium' ? '18px' : '22px'
+      }}
+    >
+      MG
+    </Box>
+  )
+
   if (variant === 'icon') {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>
-        <Image
-          src="/android-chrome-192x192.png"
-          alt="Manta Group Logo"
-          width={currentSize.width}
-          height={currentSize.height}
-          priority
-        />
+        {imageError ? (
+          <LogoFallback />
+        ) : (
+          <Image
+            src="/manta-logo.svg"
+            alt="Manta Group Logo"
+            width={currentSize.width}
+            height={currentSize.height}
+            priority
+            onError={handleImageError}
+          />
+        )}
       </Box>
     )
   }
@@ -43,13 +75,18 @@ export function Logo({
       gap: showText ? 2 : 0,
       ...sx 
     }}>
-      <Image
-        src="/android-chrome-192x192.png"
-        alt="Manta Group Logo"
-        width={currentSize.width}
-        height={currentSize.height}
-        priority
-      />
+      {imageError ? (
+        <LogoFallback />
+      ) : (
+        <Image
+          src="/manta-logo.svg"
+          alt="Manta Group Logo"
+          width={currentSize.width}
+          height={currentSize.height}
+          priority
+          onError={handleImageError}
+        />
+      )}
       {showText && (
         <Box>
           <Typography 
