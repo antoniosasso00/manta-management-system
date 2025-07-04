@@ -1,14 +1,14 @@
 'use client'
 
 import { Container, Typography, Box, Paper, Alert } from '@mui/material'
-import { Precision } from '@mui/icons-material'
+import { PrecisionManufacturing } from '@mui/icons-material'
 
 export default function ControlloNumericoPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <Precision sx={{ fontSize: 32, color: 'primary.main' }} />
+          <PrecisionManufacturing sx={{ fontSize: 32, color: 'primary.main' }} />
           <Typography variant="h4" component="h1">
             Controllo Numerico
           </Typography>

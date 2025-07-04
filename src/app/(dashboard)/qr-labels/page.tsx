@@ -236,7 +236,7 @@ export default function QRLabelsPage() {
 
     const { cols } = getMatrixDimensions(printConfig.matrixLayout)
     const qrSizes = { SMALL: '25mm', MEDIUM: '35mm', LARGE: '45mm' }
-    const labelSizes = { SMALL: '50mm', MEDIUM: '60mm', LARGE: '70mm' }
+    const labelSizes = { SMALL: '60mm', MEDIUM: '75mm', LARGE: '90mm' }
 
     const currentDateTime = new Date().toLocaleString('it-IT')
 
@@ -286,20 +286,23 @@ export default function QRLabelsPage() {
             .qr-labels-grid {
               display: grid;
               grid-template-columns: repeat(${cols}, 1fr);
-              gap: 5mm;
+              gap: 4mm;
               page-break-inside: avoid;
+              padding: 2mm;
             }
             .qr-label {
               border: 1px solid #333;
-              padding: 3mm;
+              padding: 2mm;
               text-align: center;
               background: white;
               page-break-inside: avoid;
-              min-height: ${labelSizes[printConfig.qrSize]};
+              height: ${labelSizes[printConfig.qrSize]};
               width: ${labelSizes[printConfig.qrSize]};
               display: flex;
               flex-direction: column;
               justify-content: space-between;
+              aspect-ratio: 1;
+              position: relative;
             }
             .qr-header {
               margin-bottom: 2mm;
@@ -333,11 +336,13 @@ export default function QRLabelsPage() {
               display: flex;
               align-items: center;
               justify-content: center;
-              margin: 2mm 0;
+              margin: 1mm 0;
+              min-height: ${qrSizes[printConfig.qrSize]};
             }
             .qr-image {
               width: ${qrSizes[printConfig.qrSize]} !important;
               height: ${qrSizes[printConfig.qrSize]} !important;
+              object-fit: contain;
             }
             .no-qr {
               width: ${qrSizes[printConfig.qrSize]};
@@ -348,6 +353,7 @@ export default function QRLabelsPage() {
               justify-content: center;
               font-size: 10px;
               color: #666;
+              background: #f9f9f9;
             }
             .part-info {
               font-size: 9px;
@@ -360,8 +366,11 @@ export default function QRLabelsPage() {
             .part-description {
               color: #666;
               margin-bottom: 1mm;
-              max-height: 6mm;
+              max-height: 8mm;
               overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              font-size: 8px;
             }
             .department {
               font-size: 8px;
@@ -373,8 +382,19 @@ export default function QRLabelsPage() {
               color: #aaa;
             }
             @media print {
-              body { margin: ${printConfig.margins.top}mm ${printConfig.margins.right}mm ${printConfig.margins.bottom}mm ${printConfig.margins.left}mm; }
-              .qr-labels-grid { gap: 3mm; }
+              body { 
+                margin: ${printConfig.margins.top}mm ${printConfig.margins.right}mm ${printConfig.margins.bottom}mm ${printConfig.margins.left}mm;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              .qr-labels-grid { 
+                gap: 2mm;
+                padding: 0;
+              }
+              .qr-label {
+                border: 1px solid #000;
+                padding: 1mm;
+              }
             }
             @page {
               size: ${printConfig.paperFormat};
@@ -1147,7 +1167,9 @@ export default function QRLabelsPage() {
               gap: 1,
               p: 2,
               bgcolor: 'white',
-              border: '1px solid #ccc'
+              border: '1px solid #ccc',
+              aspectRatio: '1',
+              maxWidth: '400px'
             }}>
               {Array.from(selectedOdls).slice(0, 4).map((odlId) => {
                 const odl = odls.find(o => o.id === odlId)
@@ -1162,7 +1184,9 @@ export default function QRLabelsPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    fontSize: '10px'
+                    fontSize: '10px',
+                    aspectRatio: '1',
+                    position: 'relative'
                   }}>
                     <Typography variant="caption" fontWeight="bold">
                       {odl.odlNumber}

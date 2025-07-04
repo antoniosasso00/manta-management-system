@@ -19,7 +19,7 @@ export default function CleanRoomPage() {
         if (!response.ok) throw new Error('Errore nel caricamento reparti')
         
         const { departments } = await response.json()
-        const cleanRoom = departments.find((d: { code: string }) => d.code === 'CLEANROOM')
+        const cleanRoom = departments.find((d: { code: string }) => d.code === 'CR')
         
         if (cleanRoom) {
           setDepartmentId(cleanRoom.id)
@@ -61,7 +61,7 @@ export default function CleanRoomPage() {
           <ProductionDashboard
             departmentId={departmentId}
             departmentName="Clean Room - Laminazione"
-            departmentCode="CLEANROOM"
+            departmentCode="CR"
           />
         ) : null}
       </RoleBasedAccess>
