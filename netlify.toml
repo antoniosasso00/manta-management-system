@@ -16,12 +16,11 @@
 [context.branch-deploy.environment]
   NODE_ENV = "development"
 
-# Redirect rules for SPA routing
+# Redirect rules for Next.js App Router
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/.netlify/functions/___netlify-server-handler"
   status = 200
-  conditions = {Role = ["admin"]}
 
 # Security headers
 [[headers]]

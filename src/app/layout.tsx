@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://mes.mantagroup.it'),
   title: {
     default: "Manta Group - MES Aerospazio",
     template: "%s | Manta Group MES"

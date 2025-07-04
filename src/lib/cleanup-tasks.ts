@@ -10,7 +10,10 @@ export class CleanupTasks {
 
   constructor() {
     // Auto-start cleanup tasks in production only when database is available
-    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+    // and we're not in a build environment
+    if (process.env.NODE_ENV === 'production' && 
+        process.env.DATABASE_URL && 
+        !process.env.NEXT_PHASE) {
       this.start()
     }
   }
@@ -119,5 +122,18 @@ export class CleanupTasks {
   }
 }
 
-// Export singleton instance
-export const cleanupTasks = CleanupTasks.getInstance()
+// Export singleton instance - lazy loaded to avoid build issues
+let cleanupTasksInstance: CleanupTasks | null = null
+
+export const cleanupTasks = {
+  getInstance(): CleanupTasks {
+    if (!cleanupTasksInstance) {
+      cleanupTasksInstance = CleanupTasks.getInstance()
+    }
+    return cleanupTasksInstance
+  },
+  
+  async runManualCleanup() {
+    return this.getInstance().runManualCleanup()
+  }
+}
