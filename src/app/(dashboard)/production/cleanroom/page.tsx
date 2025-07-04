@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { Container } from '@mui/material'
-import { DashboardLayout } from '@/components/templates/DashboardLayout'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 import { ProductionDashboard } from '@/components/organisms'
 
@@ -37,32 +36,23 @@ export default function CleanRoomPage() {
   }, [])
 
   return (
-    <DashboardLayout 
-      title="Produzione Clean Room" 
-      breadcrumbs={[
-        { label: 'Dashboard', href: '/' },
-        { label: 'Produzione', href: '/production' },
-        { label: 'Clean Room' }
-      ]}
+    <RoleBasedAccess 
+      requiredRoles={['ADMIN', 'SUPERVISOR']} 
+      requiredDepartmentRoles={['CAPO_REPARTO', 'CAPO_TURNO', 'OPERATORE']}
     >
-      <RoleBasedAccess 
-        requiredRoles={['ADMIN', 'SUPERVISOR']} 
-        requiredDepartmentRoles={['CAPO_REPARTO', 'CAPO_TURNO', 'OPERATORE']}
-      >
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-          {loading ? (
-            <>Caricamento...</>
-          ) : error ? (
-            <>Errore: {error}</>
-          ) : departmentId ? (
-            <ProductionDashboard
-              departmentId={departmentId}
-              departmentName="Clean Room - Laminazione"
-              departmentCode="CR"
-            />
-          ) : null}
-        </Container>
-      </RoleBasedAccess>
-    </DashboardLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {loading ? (
+          <>Caricamento...</>
+        ) : error ? (
+          <>Errore: {error}</>
+        ) : departmentId ? (
+          <ProductionDashboard
+            departmentId={departmentId}
+            departmentName="Clean Room - Laminazione"
+            departmentCode="CR"
+          />
+        ) : null}
+      </Container>
+    </RoleBasedAccess>
   )
 }

@@ -2,16 +2,12 @@
 
 import { Container, Paper, Typography, Box, Grid, Card, CardContent, Chip } from '@mui/material'
 import { Schedule, Assignment, TrendingUp, PieChart } from '@mui/icons-material'
-import { DashboardLayout } from '@/components/templates/DashboardLayout'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 
 export default function PlanningPage() {
   return (
-    <DashboardLayout 
-      title="Pianificazione Produzione"
-    >
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {/* KPI Overview */}
             <Grid container spacing={3}>
@@ -202,6 +198,5 @@ export default function PlanningPage() {
           </Box>
         </RoleBasedAccess>
       </Container>
-    </DashboardLayout>
   )
 }
