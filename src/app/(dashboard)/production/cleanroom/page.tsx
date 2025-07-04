@@ -49,21 +49,19 @@ export default function CleanRoomPage() {
         requiredRoles={['ADMIN', 'SUPERVISOR']} 
         requiredDepartmentRoles={['CAPO_REPARTO', 'CAPO_TURNO', 'OPERATORE']}
       >
-        {loading ? (
-          <Container maxWidth="xl" sx={{ py: 4 }}>
-            Caricamento...
-          </Container>
-        ) : error ? (
-          <Container maxWidth="xl" sx={{ py: 4 }}>
-            Errore: {error}
-          </Container>
-        ) : departmentId ? (
-          <ProductionDashboard
-            departmentId={departmentId}
-            departmentName="Clean Room - Laminazione"
-            departmentCode="CR"
-          />
-        ) : null}
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          {loading ? (
+            <>Caricamento...</>
+          ) : error ? (
+            <>Errore: {error}</>
+          ) : departmentId ? (
+            <ProductionDashboard
+              departmentId={departmentId}
+              departmentName="Clean Room - Laminazione"
+              departmentCode="CR"
+            />
+          ) : null}
+        </Container>
       </RoleBasedAccess>
     </DashboardLayout>
   )

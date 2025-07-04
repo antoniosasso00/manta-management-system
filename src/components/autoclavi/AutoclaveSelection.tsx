@@ -65,7 +65,7 @@ export function AutoclaveSelection({
 
   const fetchAutoclaves = async () => {
     try {
-      const response = await fetch('/api/departments/AUTOCLAVI/autoclaves');
+      const response = await fetch('/api/autoclavi');
       if (!response.ok) throw new Error('Errore caricamento autoclavi');
       
       const data = await response.json();
@@ -78,7 +78,7 @@ export function AutoclaveSelection({
 
   const fetchCuringCycles = async () => {
     try {
-      const response = await fetch('/api/parts/curing-cycles');
+      const response = await fetch('/api/curing-cycles');
       if (!response.ok) throw new Error('Errore caricamento cicli');
       
       const data = await response.json();

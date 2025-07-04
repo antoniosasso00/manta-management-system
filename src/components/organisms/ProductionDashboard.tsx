@@ -11,7 +11,8 @@ import {
   IconButton,
   Tooltip,
   Alert,
-  Snackbar
+  Snackbar,
+  Grid
 } from '@mui/material'
 import { 
   Refresh, 
@@ -110,7 +111,7 @@ export function ProductionDashboard({
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -137,9 +138,9 @@ export function ProductionDashboard({
         </Box>
 
         {/* Statistiche */}
-        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           {getStatCards().map((stat, index) => (
-            <Box key={index}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Card>
                 <CardContent sx={{ textAlign: 'center' }}>
                   <Box sx={{ color: stat.color, mb: 1 }}>
@@ -153,9 +154,9 @@ export function ProductionDashboard({
                   </Typography>
                 </CardContent>
               </Card>
-            </Box>
+            </Grid>
           ))}
-        </Box>
+        </Grid>
 
         {/* Lista ODL */}
         <Paper sx={{ p: 3 }}>
@@ -180,6 +181,6 @@ export function ProductionDashboard({
           {successMessage}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   )
 }

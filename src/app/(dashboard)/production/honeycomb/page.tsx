@@ -210,7 +210,7 @@ export default function HoneycombPage() {
         <TabPanel value={currentTab} index={0}>
           <Grid container spacing={3}>
             {mockProcesses.map((process) => (
-              <Grid item xs={12} md={6} key={process.id}>
+              <Grid size={{ xs: 12, md: 6 }} key={process.id}>
                 <Card>
                   <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>

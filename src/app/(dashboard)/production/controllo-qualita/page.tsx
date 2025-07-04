@@ -292,7 +292,7 @@ export default function ControlloQualitaPage() {
         <TabPanel value={currentTab} index={0}>
           <Grid container spacing={3}>
             {/* Recent Inspections */}
-            <Grid item xs={12} lg={8}>
+            <Grid size={{ xs: 12, lg: 8 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -347,7 +347,7 @@ export default function ControlloQualitaPage() {
             </Grid>
 
             {/* Quick Actions */}
-            <Grid item xs={12} lg={4}>
+            <Grid size={{ xs: 12, lg: 4 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
