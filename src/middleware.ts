@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-export default async function middleware(req: any) {
+export default async function middleware(req: NextRequest) {
+  // Skip during build
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.next()
+  }
+  
   // Always skip auth in development for now due to edge runtime issues
   if (process.env.NODE_ENV === 'development') {
     return NextResponse.next()
@@ -9,11 +15,38 @@ export default async function middleware(req: any) {
   // Skip auth during build for static generation
   const isStaticGeneration = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
   
-  // Skip middleware completely during Netlify build or edge runtime
-  const isNetlifyOrEdge = process.env.NETLIFY === 'true' || process.env.VERCEL_ENV === 'production'
-  
-  // Skip auth middleware during static generation, Netlify, or edge runtime
-  if (isStaticGeneration || isNetlifyOrEdge) {
+  // Skip auth middleware during static generation
+  if (isStaticGeneration) {
+    return NextResponse.next()
+  }
+
+  // For Netlify, we need to handle auth differently to avoid Prisma edge runtime issues
+  if (process.env.NETLIFY) {
+    // Simple auth check based on session cookie
+    const sessionToken = req.cookies.get('authjs.session-token')?.value || 
+                       req.cookies.get('__Secure-authjs.session-token')?.value
+    
+    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
+                       req.nextUrl.pathname.startsWith("/register") ||
+                       req.nextUrl.pathname.startsWith("/forgot-password") ||
+                       req.nextUrl.pathname.startsWith("/reset-password")
+    
+    // Allow auth pages
+    if (isAuthPage) {
+      return NextResponse.next()
+    }
+    
+    // Redirect to login if no session token
+    if (!sessionToken) {
+      let from = req.nextUrl.pathname
+      if (req.nextUrl.search) {
+        from += req.nextUrl.search
+      }
+      return NextResponse.redirect(
+        new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
+      )
+    }
+    
     return NextResponse.next()
   }
 
