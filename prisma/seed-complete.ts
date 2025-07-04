@@ -1011,12 +1011,12 @@ async function main() {
   const remainingOdls = await Promise.all([
     prisma.oDL.create({
       data: {
-        odlNumber: 'ODL-24-004',
+        odlNumber: 'ODL-24-021',
         partId: parts[1].id, // A320 ala inferiore
         quantity: 4,
         priority: 'NORMAL',
         status: 'CLEANROOM_COMPLETED',
-        qrCode: 'QR-ODL-24-004',
+        qrCode: 'QR-ODL-24-021',
         gammaId: 'GM-ODL-002',
         curingCycleId: curingCycles[1].id,
         length: 1800, width: 300, height: 80, vacuumLines: 1,
@@ -1024,12 +1024,12 @@ async function main() {
     }),
     prisma.oDL.create({
       data: {
-        odlNumber: 'ODL-24-005',
+        odlNumber: 'ODL-24-022',
         partId: parts[11].id, // Radome
         quantity: 1,
         priority: 'URGENT',
         status: 'IN_CLEANROOM',
-        qrCode: 'QR-ODL-24-005',
+        qrCode: 'QR-ODL-24-022',
         gammaId: 'GM-ODL-003',
         curingCycleId: curingCycles[4].id,
         length: 800, width: 800, height: 200, vacuumLines: 1,
@@ -1273,6 +1273,9 @@ async function main() {
       },
     }),
   ])
+
+  // Add remaining ODLs to the main array
+  odls.push(...remainingOdls)
 
   // 10. AUTOCLAVE LOADS - Esteso con vari stati
   console.log('🔥 Creazione carichi autoclave...')
