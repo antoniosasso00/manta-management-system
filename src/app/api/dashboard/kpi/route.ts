@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
           type: true,
           _count: {
             select: {
-              productionEvents: {
+              events: {
                 where: {
                   timestamp: {
                     gte: new Date(new Date().setHours(0, 0, 0, 0))
@@ -192,8 +192,8 @@ export async function GET(request: NextRequest) {
         id: dept.id,
         name: dept.name,
         type: dept.type,
-        todayEvents: dept._count.productionEvents,
-        status: dept._count.productionEvents > 0 ? 'ACTIVE' : 'IDLE'
+        todayEvents: dept._count.events,
+        status: dept._count.events > 0 ? 'ACTIVE' : 'IDLE'
       })),
       recentActivity: recentActivity.map(event => ({
         id: event.id,
