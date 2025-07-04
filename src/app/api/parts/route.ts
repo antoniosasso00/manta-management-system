@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const queryParams = {
       search: searchParams.get('search') || undefined,
+      isActive: searchParams.get('isActive') ? searchParams.get('isActive') === 'true' : undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
       sortBy: searchParams.get('sortBy') || 'partNumber',

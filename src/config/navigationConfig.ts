@@ -224,7 +224,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           id: 'admin-audit',
           label: 'Audit Logs',
           icon: EventNote,
-          href: '/admin/audit',
+          href: '/admin/monitoring/audit',
         },
         {
           id: 'admin-sync',

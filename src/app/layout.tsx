@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 
@@ -59,17 +59,18 @@ export const metadata: Metadata = {
     description: 'Manufacturing Execution System per la produzione aerospaziale',
     images: ['/og-image.png'],
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  category: 'Manufacturing',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#1976d2' },
     { media: '(prefers-color-scheme: dark)', color: '#1976d2' }
   ],
-  category: 'Manufacturing',
 };
 
 export default function RootLayout({

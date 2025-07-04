@@ -581,6 +581,7 @@ Gamma Sync    Time Tracking         2D Layout Planning + Auto Assignment
 - **Validation**: Multi-constraint checking before allowing department transitions
 - **Graceful Degradation**: System continues working if automatic transfer fails
 - **Audit Trail**: All workflow events logged with automatic/manual distinction
+- **IMPORTANTE**: Il reparto MOTORI è completamente autonomo e separato dal flusso ODL principale - non deve essere considerato nel workflow automatico
 
 ## MVP Development Plan
 

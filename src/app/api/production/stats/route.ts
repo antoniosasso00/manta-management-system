@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-utils';
 import { prisma } from '@/lib/prisma';
+import { ODL_STATUS } from '@/utils/constants';
 
 export async function GET() {
   try {
@@ -15,15 +16,18 @@ export async function GET() {
     // Stats ODL totali
     const totalODL = await prisma.oDL.count();
 
-    // ODL in lavorazione (stati intermedi)
+    // ODL in lavorazione (stati intermedi - escluso MOTORI che è autonomo)
     const inProgress = await prisma.oDL.count({
       where: {
         status: {
           in: [
-            'IN_CLEANROOM',
-            'IN_AUTOCLAVE', 
-            'IN_NDI',
-            'IN_RIFILATURA'
+            ODL_STATUS.IN_CLEANROOM,
+            ODL_STATUS.IN_AUTOCLAVE, 
+            ODL_STATUS.IN_NDI,
+            ODL_STATUS.IN_CONTROLLO_NUMERICO,
+            ODL_STATUS.IN_MONTAGGIO,
+            ODL_STATUS.IN_VERNICIATURA,
+            ODL_STATUS.IN_CONTROLLO_QUALITA
           ]
         }
       }
@@ -32,7 +36,7 @@ export async function GET() {
     // ODL completati
     const completed = await prisma.oDL.count({
       where: {
-        status: 'COMPLETED'
+        status: ODL_STATUS.COMPLETED
       }
     });
 

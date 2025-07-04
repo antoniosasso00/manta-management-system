@@ -19,10 +19,7 @@ export class PartService {
       data: {
         partNumber: input.partNumber,
         description: input.description,
-        // defaultCuringCycleId: input.defaultCuringCycleId, // TODO: Fix Prisma schema types
-        standardLength: input.standardLength,
-        standardWidth: input.standardWidth,
-        standardHeight: input.standardHeight,
+        defaultCuringCycleId: input.defaultCuringCycleId,
         defaultVacuumLines: input.defaultVacuumLines,
       }
     })
@@ -126,10 +123,7 @@ export class PartService {
       data: {
         partNumber: input.partNumber,
         description: input.description,
-        // defaultCuringCycleId: input.defaultCuringCycleId, // TODO: Fix Prisma schema types
-        standardLength: input.standardLength,
-        standardWidth: input.standardWidth,
-        standardHeight: input.standardHeight,
+        defaultCuringCycleId: input.defaultCuringCycleId,
         defaultVacuumLines: input.defaultVacuumLines,
       }
     })
@@ -213,10 +207,7 @@ export class PartService {
     const data = await prisma.part.findMany({
       where: {
         AND: [
-          { defaultCuringCycle: null },
-          { standardLength: null },
-          { standardWidth: null },
-          { standardHeight: null },
+          { defaultCuringCycleId: null },
           { defaultVacuumLines: null }
         ]
       },

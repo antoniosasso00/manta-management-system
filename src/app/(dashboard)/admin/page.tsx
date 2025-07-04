@@ -115,6 +115,10 @@ export default function AdminPage() {
           completedODL: 0,
           systemUptime: 'N/A',
           lastBackup: 'N/A',
+          productionEfficiency: 0,
+          avgCycleTime: 0,
+          totalEvents: 0,
+          errorRate: 0,
           todayEvents: 0,
           weeklyEvents: 0
         })
@@ -130,6 +134,10 @@ export default function AdminPage() {
         completedODL: 0,
         systemUptime: 'N/A',
         lastBackup: 'N/A',
+        productionEfficiency: 0,
+        avgCycleTime: 0,
+        totalEvents: 0,
+        errorRate: 0,
         todayEvents: 0,
         weeklyEvents: 0
       })
@@ -322,7 +330,7 @@ export default function AdminPage() {
         </Typography>
         <Grid container spacing={3}>
           {adminModules.map((module) => (
-            <Grid item xs={12} sm={6} md={6} key={module.title}>
+            <Grid size={{ xs: 12, sm: 6, md: 6 }} key={module.title}>
               <Card sx={{ height: '100%' }}>
                 <CardActionArea 
                   onClick={() => router.push(module.href)}
@@ -406,7 +414,7 @@ export default function AdminPage() {
             Azioni Rapide
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined">
                 <CardActionArea onClick={() => router.push('/admin/users')}>
                   <CardContent className="text-center">
@@ -421,7 +429,7 @@ export default function AdminPage() {
                 </CardActionArea>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined">
                 <CardActionArea onClick={() => router.push('/admin/monitoring/audit')}>
                   <CardContent className="text-center">
@@ -436,7 +444,7 @@ export default function AdminPage() {
                 </CardActionArea>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card variant="outlined">
                 <CardActionArea onClick={() => router.push('/admin/settings')}>
                   <CardContent className="text-center">

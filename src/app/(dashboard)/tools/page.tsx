@@ -18,16 +18,8 @@ import {
   Chip,
   TextField,
   InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Skeleton,
-  Tooltip,
-  Grid,
-  FormControlLabel,
-  Switch,
-  Alert
+  Tooltip
 } from '@mui/material'
 import {
   Build,
@@ -37,6 +29,15 @@ import {
   Delete,
   Visibility
 } from '@mui/icons-material'
+import ToolForm from '@/components/organisms/ToolForm'
+import { CreateToolWithPartsInput, UpdateToolWithPartsInput } from '@/domains/core/schemas/tool.schema'
+
+interface Part {
+  id: string
+  partNumber: string
+  description?: string
+  isActive: boolean
+}
 
 interface Tool {
   id: string
@@ -45,9 +46,10 @@ interface Tool {
   base: number
   height: number
   weight?: number
-  material: string
+  material?: string
   isActive: boolean
   associatedParts: number
+  parts: Part[]
   createdAt: string
   updatedAt: string
 }
@@ -57,20 +59,8 @@ export default function ToolsPage() {
   const [filteredTools, setFilteredTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [toolFormOpen, setToolFormOpen] = useState(false)
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
-  const [formData, setFormData] = useState({
-    toolPartNumber: '',
-    description: '',
-    base: '',
-    height: '',
-    weight: '',
-    material: '',
-    isActive: true
-  })
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     loadTools()
@@ -100,6 +90,7 @@ export default function ToolsPage() {
             material: 'Acciaio inox 316L',
             isActive: true,
             associatedParts: 3,
+            parts: [],
             createdAt: '2024-06-15T10:00:00Z',
             updatedAt: '2024-06-15T10:00:00Z'
           },
@@ -113,6 +104,7 @@ export default function ToolsPage() {
             material: 'Fibra di carbonio',
             isActive: true,
             associatedParts: 8,
+            parts: [],
             createdAt: '2024-06-20T14:30:00Z',
             updatedAt: '2024-06-20T14:30:00Z'
           },
@@ -125,6 +117,7 @@ export default function ToolsPage() {
             material: 'Alluminio 7075',
             isActive: false,
             associatedParts: 1,
+            parts: [],
             createdAt: '2024-05-10T09:15:00Z',
             updatedAt: '2024-05-10T09:15:00Z'
           }
@@ -167,104 +160,35 @@ export default function ToolsPage() {
     return weight ? `${weight} kg` : '-'
   }
 
-  const resetForm = () => {
-    setFormData({
-      toolPartNumber: '',
-      description: '',
-      base: '',
-      height: '',
-      weight: '',
-      material: '',
-      isActive: true
-    })
-    setFormErrors({})
-    setSelectedTool(null)
-  }
-
   const handleCreateTool = () => {
-    resetForm()
-    setCreateDialogOpen(true)
+    setSelectedTool(null)
+    setToolFormOpen(true)
   }
 
   const handleEditTool = (tool: Tool) => {
-    setSelectedTool(tool)
-    setFormData({
-      toolPartNumber: tool.toolPartNumber,
-      description: tool.description || '',
-      base: tool.base.toString(),
-      height: tool.height.toString(),
-      weight: tool.weight?.toString() || '',
-      material: tool.material,
-      isActive: tool.isActive
+    setSelectedTool({
+      ...tool,
+      associatedParts: tool.parts
     })
-    setEditDialogOpen(true)
+    setToolFormOpen(true)
   }
 
-  const validateForm = () => {
-    const errors: Record<string, string> = {}
+  const handleToolSubmit = async (data: CreateToolWithPartsInput | UpdateToolWithPartsInput) => {
+    const url = selectedTool ? `/api/tools/${selectedTool.id}` : '/api/tools'
+    const method = selectedTool ? 'PUT' : 'POST'
 
-    if (!formData.toolPartNumber.trim()) {
-      errors.toolPartNumber = 'Part Number richiesto'
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Errore nel salvataggio')
     }
 
-    if (!formData.base || parseFloat(formData.base) <= 0) {
-      errors.base = 'Base deve essere un numero positivo'
-    }
-
-    if (!formData.height || parseFloat(formData.height) <= 0) {
-      errors.height = 'Altezza deve essere un numero positivo'
-    }
-
-    if (formData.weight && parseFloat(formData.weight) <= 0) {
-      errors.weight = 'Peso deve essere un numero positivo'
-    }
-
-    if (!formData.material.trim()) {
-      errors.material = 'Materiale richiesto'
-    }
-
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return
-
-    setSubmitting(true)
-    try {
-      const payload = {
-        toolPartNumber: formData.toolPartNumber.trim(),
-        description: formData.description.trim() || undefined,
-        base: parseFloat(formData.base),
-        height: parseFloat(formData.height),
-        weight: formData.weight ? parseFloat(formData.weight) : undefined,
-        material: formData.material.trim(),
-        isActive: formData.isActive
-      }
-
-      const url = selectedTool ? `/api/tools/${selectedTool.id}` : '/api/tools'
-      const method = selectedTool ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      if (response.ok) {
-        await loadTools()
-        setCreateDialogOpen(false)
-        setEditDialogOpen(false)
-        resetForm()
-      } else {
-        const error = await response.json()
-        setFormErrors({ general: error.error || 'Errore nel salvataggio' })
-      }
-    } catch (error) {
-      setFormErrors({ general: 'Errore di connessione' })
-    } finally {
-      setSubmitting(false)
-    }
+    await loadTools()
   }
 
   const handleDeleteTool = async (tool: Tool) => {
@@ -381,7 +305,7 @@ export default function ToolsPage() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {tool.material}
+                        {tool.material || '-'}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -432,213 +356,13 @@ export default function ToolsPage() {
         </CardContent>
       </Card>
 
-      {/* Create Dialog */}
-      <Dialog 
-        open={createDialogOpen} 
-        onClose={() => setCreateDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Nuovo Strumento</DialogTitle>
-        <DialogContent>
-          {formErrors.general && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {formErrors.general}
-            </Alert>
-          )}
-          
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Part Number"
-                value={formData.toolPartNumber}
-                onChange={(e) => setFormData({ ...formData, toolPartNumber: e.target.value })}
-                error={!!formErrors.toolPartNumber}
-                helperText={formErrors.toolPartNumber}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Descrizione"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                required
-                label="Base (mm)"
-                type="number"
-                value={formData.base}
-                onChange={(e) => setFormData({ ...formData, base: e.target.value })}
-                error={!!formErrors.base}
-                helperText={formErrors.base}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                required
-                label="Altezza (mm)"
-                type="number"
-                value={formData.height}
-                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                error={!!formErrors.height}
-                helperText={formErrors.height}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Peso (kg)"
-                type="number"
-                value={formData.weight}
-                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                error={!!formErrors.weight}
-                helperText={formErrors.weight}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                required
-                label="Materiale"
-                value={formData.material}
-                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                error={!!formErrors.material}
-                helperText={formErrors.material}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  />
-                }
-                label="Strumento attivo"
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)} disabled={submitting}>
-            Annulla
-          </Button>
-          <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Salvataggio...' : 'Salva'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog 
-        open={editDialogOpen} 
-        onClose={() => setEditDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Modifica Strumento</DialogTitle>
-        <DialogContent>
-          {formErrors.general && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {formErrors.general}
-            </Alert>
-          )}
-          
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                required
-                label="Part Number"
-                value={formData.toolPartNumber}
-                onChange={(e) => setFormData({ ...formData, toolPartNumber: e.target.value })}
-                error={!!formErrors.toolPartNumber}
-                helperText={formErrors.toolPartNumber}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Descrizione"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                required
-                label="Base (mm)"
-                type="number"
-                value={formData.base}
-                onChange={(e) => setFormData({ ...formData, base: e.target.value })}
-                error={!!formErrors.base}
-                helperText={formErrors.base}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                required
-                label="Altezza (mm)"
-                type="number"
-                value={formData.height}
-                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                error={!!formErrors.height}
-                helperText={formErrors.height}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Peso (kg)"
-                type="number"
-                value={formData.weight}
-                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                error={!!formErrors.weight}
-                helperText={formErrors.weight}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                required
-                label="Materiale"
-                value={formData.material}
-                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                error={!!formErrors.material}
-                helperText={formErrors.material}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  />
-                }
-                label="Strumento attivo"
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)} disabled={submitting}>
-            Annulla
-          </Button>
-          <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Salvataggio...' : 'Salva'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Enhanced Tool Form */}
+      <ToolForm
+        open={toolFormOpen}
+        onClose={() => setToolFormOpen(false)}
+        tool={selectedTool}
+        onSubmit={handleToolSubmit}
+      />
     </Box>
   )
 }

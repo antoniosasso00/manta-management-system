@@ -22,6 +22,7 @@ export const updatePartSchema = createPartSchema.partial().extend({
 
 export const partQuerySchema = z.object({
   search: z.string().optional(),
+  isActive: z.boolean().optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(10),
   sortBy: z.enum(['partNumber', 'description', 'createdAt']).default('partNumber'),

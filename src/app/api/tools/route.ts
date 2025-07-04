@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { z } from 'zod'
-
-// Schema di validazione per la creazione/aggiornamento strumenti
-const createToolSchema = z.object({
-  toolPartNumber: z.string().min(1, 'Part Number richiesto'),
-  description: z.string().optional(),
-  base: z.number().positive('Dimensione base deve essere positiva'),
-  height: z.number().positive('Altezza deve essere positiva'),
-  weight: z.number().positive().optional(),
-  material: z.string().min(1, 'Materiale richiesto'),
-  isActive: z.boolean().optional().default(true)
-})
+import { z, ZodError } from 'zod'
+import { createToolWithPartsSchema, toolQuerySchema } from '@/domains/core/schemas/tool.schema'
 
 // GET /api/tools - Lista tutti gli strumenti
 export async function GET(request: NextRequest) {
@@ -102,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const validatedData = createToolSchema.parse(body)
+    const validatedData = createToolWithPartsSchema.parse(body)
 
     // Verifica unicità del Part Number
     const existingTool = await prisma.tool.findUnique({
@@ -116,53 +106,93 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const newTool = await prisma.tool.create({
-      data: validatedData,
-      include: {
-        partTools: {
-          include: {
-            part: {
-              select: {
-                id: true,
-                partNumber: true,
-                description: true
+    const { associatedPartIds, ...toolData } = validatedData
+    
+    const newTool = await prisma.$transaction(async (tx) => {
+      // Create the tool
+      const tool = await tx.tool.create({
+        data: toolData,
+        include: {
+          partTools: {
+            include: {
+              part: {
+                select: {
+                  id: true,
+                  partNumber: true,
+                  description: true,
+                  isActive: true
+                }
               }
             }
           }
         }
+      })
+
+      // Create part associations if provided
+      if (associatedPartIds && associatedPartIds.length > 0) {
+        await tx.partTool.createMany({
+          data: associatedPartIds.map(partId => ({
+            toolId: tool.id,
+            partId: partId
+          }))
+        })
+
+        // Refetch with associations
+        return await tx.tool.findUnique({
+          where: { id: tool.id },
+          include: {
+            partTools: {
+              include: {
+                part: {
+                  select: {
+                    id: true,
+                    partNumber: true,
+                    description: true,
+                    isActive: true
+                  }
+                }
+              }
+            }
+          }
+        })
       }
+
+      return tool
     })
 
     // Log audit
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
-        action: 'TOOL_CREATE',
-        resource: 'TOOL',
-        resourceId: newTool.id,
-        details: `Created tool ${newTool.toolPartNumber}`,
+        action: 'CREATE',
+        resource: 'Tool',
+        resourceId: newTool!.id,
+        details: {
+          toolPartNumber: newTool!.toolPartNumber,
+          associatedParts: newTool!.partTools.length
+        },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'
       }
     })
 
     return NextResponse.json({
-      id: newTool.id,
-      toolPartNumber: newTool.toolPartNumber,
-      description: newTool.description,
-      base: newTool.base,
-      height: newTool.height,
-      weight: newTool.weight,
-      material: newTool.material,
-      isActive: newTool.isActive,
-      associatedParts: newTool.partTools.length,
-      parts: newTool.partTools.map(pt => pt.part),
-      createdAt: newTool.createdAt,
-      updatedAt: newTool.updatedAt
+      id: newTool!.id,
+      toolPartNumber: newTool!.toolPartNumber,
+      description: newTool!.description,
+      base: newTool!.base,
+      height: newTool!.height,
+      weight: newTool!.weight,
+      material: newTool!.material,
+      isActive: newTool!.isActive,
+      associatedParts: newTool!.partTools.length,
+      parts: newTool!.partTools.map(pt => pt.part),
+      createdAt: newTool!.createdAt,
+      updatedAt: newTool!.updatedAt
     }, { status: 201 })
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         { error: 'Dati non validi', details: error.errors },
         { status: 400 }

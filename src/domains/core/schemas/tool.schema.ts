@@ -15,10 +15,11 @@ export const createToolSchema = z.object({
   height: z.number()
     .positive('Height must be positive'),
   weight: z.number()
-    .positive('Weight must be positive'),
+    .positive('Weight must be positive')
+    .optional(),
   material: z.string()
-    .min(1, 'Material is required')
-    .max(100, 'Material description too long'),
+    .max(100, 'Material description too long')
+    .optional(),
   valveCount: z.number()
     .int('Valve count must be an integer')
     .min(0, 'Valve count cannot be negative'),
@@ -50,9 +51,20 @@ export const bulkAssignToolsSchema = z.object({
   toolIds: z.array(z.string().cuid()).min(1, 'At least one tool must be selected'),
 })
 
+// Enhanced tool creation with parts association
+export const createToolWithPartsSchema = createToolSchema.extend({
+  associatedPartIds: z.array(z.string().cuid()).optional(),
+})
+
+export const updateToolWithPartsSchema = updateToolSchema.extend({
+  associatedPartIds: z.array(z.string().cuid()).optional(),
+})
+
 // Type exports
 export type CreateToolInput = z.infer<typeof createToolSchema>
 export type UpdateToolInput = z.infer<typeof updateToolSchema>
 export type ToolQueryInput = z.infer<typeof toolQuerySchema>
 export type CreatePartToolInput = z.infer<typeof createPartToolSchema>
 export type BulkAssignToolsInput = z.infer<typeof bulkAssignToolsSchema>
+export type CreateToolWithPartsInput = z.infer<typeof createToolWithPartsSchema>
+export type UpdateToolWithPartsInput = z.infer<typeof updateToolWithPartsSchema>

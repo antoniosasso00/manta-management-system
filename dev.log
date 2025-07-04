@@ -15,3 +15,49 @@
 ❌ Redis initialization failed, using fallback: this.redis.on(...) is not a function
  GET /api/health 200 in 996ms
  GET /api/health 200 in 35ms
+   Reload env: .env
+   Reload env: .env
+   Reload env: .env
+   Reload env: .env
+   Reload env: .env
+   Reload env: .env
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 13ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled in 11ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 24ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 10ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 12ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled in 10ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 10ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 12ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 11ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled in 10ms
+   Reload env: .env
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.3.4 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.50.61:3001
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 1146ms
+ ✓ Ready in 2.8s
+ ✓ Compiled middleware in 18ms
+ ✓ Compiled in 28ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 0ms

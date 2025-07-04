@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { z } from 'zod'
-
-// Schema di validazione per l'aggiornamento
-const updateToolSchema = z.object({
-  toolPartNumber: z.string().min(1, 'Part Number richiesto').optional(),
-  description: z.string().optional(),
-  base: z.number().positive('Dimensione base deve essere positiva').optional(),
-  height: z.number().positive('Altezza deve essere positiva').optional(),
-  weight: z.number().positive().optional().nullable(),
-  material: z.string().min(1, 'Materiale richiesto').optional(),
-  isActive: z.boolean().optional()
-})
+import { z, ZodError } from 'zod'
+import { updateToolWithPartsSchema } from '@/domains/core/schemas/tool.schema'
 
 // GET /api/tools/[id] - Recupera singolo strumento
 export async function GET(
@@ -88,7 +78,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const validatedData = updateToolSchema.parse(body)
+    const validatedData = updateToolWithPartsSchema.parse(body)
 
     const { id } = await params
     
@@ -115,54 +105,102 @@ export async function PUT(
       }
     }
 
-    const updatedTool = await prisma.tool.update({
-      where: { id },
-      data: validatedData,
-      include: {
-        partTools: {
-          include: {
-            part: {
-              select: {
-                id: true,
-                partNumber: true,
-                description: true
+    const { associatedPartIds, ...toolData } = validatedData
+
+    const updatedTool = await prisma.$transaction(async (tx) => {
+      // Update the tool
+      const tool = await tx.tool.update({
+        where: { id },
+        data: toolData,
+        include: {
+          partTools: {
+            include: {
+              part: {
+                select: {
+                  id: true,
+                  partNumber: true,
+                  description: true,
+                  isActive: true
+                }
               }
             }
           }
         }
+      })
+
+      // Update part associations if provided
+      if (associatedPartIds !== undefined) {
+        // Remove all existing associations
+        await tx.partTool.deleteMany({
+          where: { toolId: id }
+        })
+
+        // Create new associations
+        if (associatedPartIds.length > 0) {
+          await tx.partTool.createMany({
+            data: associatedPartIds.map(partId => ({
+              toolId: id,
+              partId: partId
+            }))
+          })
+        }
+
+        // Refetch with updated associations
+        return await tx.tool.findUnique({
+          where: { id },
+          include: {
+            partTools: {
+              include: {
+                part: {
+                  select: {
+                    id: true,
+                    partNumber: true,
+                    description: true,
+                    isActive: true
+                  }
+                }
+              }
+            }
+          }
+        })
       }
+
+      return tool
     })
 
     // Log audit
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
-        action: 'TOOL_UPDATE',
-        resource: 'TOOL',
-        resourceId: updatedTool.id,
-        details: `Updated tool ${updatedTool.toolPartNumber}`,
+        action: 'UPDATE',
+        resource: 'Tool',
+        resourceId: updatedTool!.id,
+        details: {
+          toolPartNumber: updatedTool!.toolPartNumber,
+          associatedParts: updatedTool!.partTools.length
+        },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'
       }
     })
 
     return NextResponse.json({
-      id: updatedTool.id,
-      toolPartNumber: updatedTool.toolPartNumber,
-      description: updatedTool.description,
-      base: updatedTool.base,
-      height: updatedTool.height,
-      weight: updatedTool.weight,
-      material: updatedTool.material,
-      isActive: updatedTool.isActive,
-      associatedParts: updatedTool.partTools.length,
-      parts: updatedTool.partTools.map(pt => pt.part),
-      createdAt: updatedTool.createdAt,
-      updatedAt: updatedTool.updatedAt
+      id: updatedTool!.id,
+      toolPartNumber: updatedTool!.toolPartNumber,
+      description: updatedTool!.description,
+      base: updatedTool!.base,
+      height: updatedTool!.height,
+      weight: updatedTool!.weight,
+      material: updatedTool!.material,
+      isActive: updatedTool!.isActive,
+      associatedParts: updatedTool!.partTools.length,
+      parts: updatedTool!.partTools.map(pt => pt.part),
+      createdAt: updatedTool!.createdAt,
+      updatedAt: updatedTool!.updatedAt
     })
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         { error: 'Dati non validi', details: error.errors },
         { status: 400 }
@@ -223,10 +261,12 @@ export async function DELETE(
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
-        action: 'TOOL_DELETE',
-        resource: 'TOOL',
-        resourceId: params.id,
-        details: `Deleted tool ${existingTool.toolPartNumber}`,
+        action: 'DELETE',
+        resource: 'Tool',
+        resourceId: id,
+        details: {
+          toolPartNumber: existingTool.toolPartNumber
+        },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'
       }

@@ -35,9 +35,6 @@ export async function GET(request: NextRequest) {
       where.priority = priority
     }
 
-    if (departmentId) {
-      where.currentDepartmentId = departmentId
-    }
 
     const odls = await prisma.oDL.findMany({
       where,
@@ -54,11 +51,6 @@ export async function GET(request: NextRequest) {
             description: true
           }
         },
-        currentDepartment: {
-          select: {
-            name: true
-          }
-        }
       },
       orderBy: [
         { priority: 'desc' },

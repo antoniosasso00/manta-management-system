@@ -57,7 +57,8 @@
       "Bash(cut:*)",
       "Bash(./start-dev.sh:*)",
       "Bash(cp:*)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(timeout 15 npm run dev -- -p 3001)"
     ],
     "deny": []
   }

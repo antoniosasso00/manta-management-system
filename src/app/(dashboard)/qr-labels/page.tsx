@@ -6,7 +6,7 @@ import {
   Typography,
   Paper,
   Button,
-  Grid2 as Grid,
+  Grid,
   Checkbox,
   FormControlLabel,
   TextField,
@@ -18,7 +18,21 @@ import {
   Card,
   CardContent,
   IconButton,
-  Tooltip
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Slider,
+  Switch,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Badge
 } from '@mui/material'
 import {
   Print,
@@ -27,7 +41,13 @@ import {
   CheckBox,
   CheckBoxOutlineBlank,
   QrCode2,
-  PictureAsPdf
+  PictureAsPdf,
+  Settings as SettingsIcon,
+  ExpandMore as ExpandMoreIcon,
+  Save as SaveIcon,
+  Visibility as PreviewIcon,
+  GridView as GridIcon,
+  CheckCircle as CheckedIcon
 } from '@mui/icons-material'
 import { DataTable } from '@/components/atoms'
 import { FilterPanel, FilterConfig, FilterValues } from '@/components/molecules'
@@ -48,6 +68,32 @@ interface ODLForQR {
     name: string
   } | null
   createdAt: string
+  labelsPrinted?: boolean
+  lastPrintedAt?: string
+  printedBy?: string
+}
+
+interface PrintConfiguration {
+  paperFormat: 'A4' | 'A5' | 'CUSTOM'
+  matrixLayout: '2x2' | '3x3' | '4x4' | '2x1' | '1x4'
+  qrSize: 'SMALL' | 'MEDIUM' | 'LARGE'
+  margins: {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
+  includePartDescription: boolean
+  includeDepartment: boolean
+  includeDateTime: boolean
+  customQRPerPage?: number
+}
+
+interface PrintTemplate {
+  id: string
+  name: string
+  configuration: PrintConfiguration
+  isDefault: boolean
 }
 
 export default function QRLabelsPage() {
@@ -59,6 +105,21 @@ export default function QRLabelsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterValues, setFilterValues] = useState<FilterValues>({})
   const [printPreview, setPrintPreview] = useState(false)
+  
+  // Print Configuration State
+  const [configDialog, setConfigDialog] = useState(false)
+  const [printConfig, setPrintConfig] = useState<PrintConfiguration>({
+    paperFormat: 'A4',
+    matrixLayout: '2x2',
+    qrSize: 'MEDIUM',
+    margins: { top: 10, right: 10, bottom: 10, left: 10 },
+    includePartDescription: true,
+    includeDepartment: true,
+    includeDateTime: true
+  })
+  const [templates, setTemplates] = useState<PrintTemplate[]>([])
+  const [currentTemplate, setCurrentTemplate] = useState<string>('default')
+  const [previewDialog, setPreviewDialog] = useState(false)
 
   // Fetch ODLs
   const fetchOdls = useCallback(async () => {
@@ -128,11 +189,58 @@ export default function QRLabelsPage() {
     printQRLabels(odls)
   }
 
-  const printQRLabels = (odlsToPrint: ODLForQR[]) => {
+  const printQRLabels = async (odlsToPrint: ODLForQR[]) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
 
-    const qrLabelsHtml = odlsToPrint.map(odl => `
+    // Generate QR codes for labels that don't have them
+    const labelsWithQR = await Promise.all(
+      odlsToPrint.map(async (odl) => {
+        if (!odl.qrCode) {
+          // Generate QR code on the fly
+          const qrData = {
+            type: 'ODL',
+            id: odl.id,
+            odlNumber: odl.odlNumber,
+            partNumber: odl.part.partNumber,
+            timestamp: new Date().toISOString()
+          }
+          
+          try {
+            const QRCode = (await import('qrcode')).default
+            const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
+              width: 256,
+              margin: 2,
+              color: { dark: '#000000', light: '#FFFFFF' }
+            })
+            return { ...odl, qrCode: qrCodeDataUrl }
+          } catch (error) {
+            console.error('Error generating QR code:', error)
+            return odl
+          }
+        }
+        return odl
+      })
+    )
+
+    const getMatrixDimensions = (layout: string) => {
+      switch (layout) {
+        case '2x2': return { cols: 2, rows: 2 }
+        case '3x3': return { cols: 3, rows: 3 }
+        case '4x4': return { cols: 4, rows: 4 }
+        case '2x1': return { cols: 2, rows: 1 }
+        case '1x4': return { cols: 1, rows: 4 }
+        default: return { cols: 2, rows: 2 }
+      }
+    }
+
+    const { cols } = getMatrixDimensions(printConfig.matrixLayout)
+    const qrSizes = { SMALL: '25mm', MEDIUM: '35mm', LARGE: '45mm' }
+    const labelSizes = { SMALL: '50mm', MEDIUM: '60mm', LARGE: '70mm' }
+
+    const currentDateTime = new Date().toLocaleString('it-IT')
+
+    const qrLabelsHtml = labelsWithQR.map(odl => `
       <div class="qr-label">
         <div class="qr-header">
           <div class="odl-number">${odl.odlNumber}</div>
@@ -142,12 +250,22 @@ export default function QRLabelsPage() {
           </div>
         </div>
         <div class="qr-code">
-          ${odl.qrCode || '<div class="no-qr">QR non disponibile</div>'}
+          ${odl.qrCode ? 
+            `<img src="${odl.qrCode}" alt="QR ${odl.odlNumber}" class="qr-image" />` : 
+            '<div class="no-qr">QR non disponibile</div>'
+          }
         </div>
         <div class="part-info">
           <div class="part-number">${odl.part.partNumber}</div>
-          <div class="part-description">${odl.part.description}</div>
-          ${odl.currentDepartment ? `<div class="department">Rep: ${odl.currentDepartment.name}</div>` : ''}
+          ${printConfig.includePartDescription ? 
+            `<div class="part-description">${odl.part.description}</div>` : ''
+          }
+          ${printConfig.includeDepartment && odl.currentDepartment ? 
+            `<div class="department">Rep: ${odl.currentDepartment.name}</div>` : ''
+          }
+          ${printConfig.includeDateTime ? 
+            `<div class="datetime">Stampato: ${currentDateTime}</div>` : ''
+          }
         </div>
       </div>
     `).join('')
@@ -156,18 +274,18 @@ export default function QRLabelsPage() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Labels - ${odlsToPrint.length} ODL</title>
+          <title>QR Labels - ${labelsWithQR.length} ODL - ${printConfig.matrixLayout}</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
               font-family: Arial, sans-serif;
               font-size: 12px;
               background: white;
-              padding: 10mm;
+              padding: ${printConfig.margins.top}mm ${printConfig.margins.right}mm ${printConfig.margins.bottom}mm ${printConfig.margins.left}mm;
             }
             .qr-labels-grid {
               display: grid;
-              grid-template-columns: repeat(3, 1fr);
+              grid-template-columns: repeat(${cols}, 1fr);
               gap: 5mm;
               page-break-inside: avoid;
             }
@@ -177,8 +295,8 @@ export default function QRLabelsPage() {
               text-align: center;
               background: white;
               page-break-inside: avoid;
-              min-height: 60mm;
-              width: 60mm;
+              min-height: ${labelSizes[printConfig.qrSize]};
+              width: ${labelSizes[printConfig.qrSize]};
               display: flex;
               flex-direction: column;
               justify-content: space-between;
@@ -205,9 +323,10 @@ export default function QRLabelsPage() {
               font-weight: bold;
             }
             .priority-high { background: #f44336; }
+            .priority-urgent { background: #d32f2f; }
             .priority-medium { background: #ff9800; }
-            .priority-low { background: #4caf50; }
             .priority-normal { background: #2196f3; }
+            .priority-low { background: #4caf50; }
             .status-badge { background: #666; }
             .qr-code {
               flex: 1;
@@ -216,13 +335,13 @@ export default function QRLabelsPage() {
               justify-content: center;
               margin: 2mm 0;
             }
-            .qr-code svg {
-              width: 35mm !important;
-              height: 35mm !important;
+            .qr-image {
+              width: ${qrSizes[printConfig.qrSize]} !important;
+              height: ${qrSizes[printConfig.qrSize]} !important;
             }
             .no-qr {
-              width: 35mm;
-              height: 35mm;
+              width: ${qrSizes[printConfig.qrSize]};
+              height: ${qrSizes[printConfig.qrSize]};
               border: 1px dashed #ccc;
               display: flex;
               align-items: center;
@@ -247,17 +366,19 @@ export default function QRLabelsPage() {
             .department {
               font-size: 8px;
               color: #888;
+              margin-bottom: 1mm;
+            }
+            .datetime {
+              font-size: 7px;
+              color: #aaa;
             }
             @media print {
-              body { margin: 0; padding: 5mm; }
+              body { margin: ${printConfig.margins.top}mm ${printConfig.margins.right}mm ${printConfig.margins.bottom}mm ${printConfig.margins.left}mm; }
               .qr-labels-grid { gap: 3mm; }
-              .qr-label { min-height: 55mm; width: 55mm; }
-              .qr-code svg { width: 30mm !important; height: 30mm !important; }
-              .no-qr { width: 30mm; height: 30mm; }
             }
             @page {
-              size: A4;
-              margin: 10mm;
+              size: ${printConfig.paperFormat};
+              margin: 0;
             }
           </style>
         </head>
@@ -274,7 +395,76 @@ export default function QRLabelsPage() {
     printWindow.focus()
     printWindow.print()
     printWindow.close()
+
+    // Mark ODLs as printed
+    await markAsPrinted(labelsWithQR.map(odl => odl.id))
   }
+
+  const markAsPrinted = async (odlIds: string[]) => {
+    try {
+      await fetch('/api/odl/qr-labels/mark-printed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          odlIds,
+          printedBy: user?.name,
+          printedAt: new Date().toISOString()
+        })
+      })
+      
+      // Refresh ODL list to show updated status
+      fetchOdls()
+    } catch (error) {
+      console.error('Error marking as printed:', error)
+    }
+  }
+
+  // Template management
+  const saveTemplate = async (name: string) => {
+    const newTemplate: PrintTemplate = {
+      id: Date.now().toString(),
+      name,
+      configuration: { ...printConfig },
+      isDefault: false
+    }
+    
+    setTemplates(prev => [...prev, newTemplate])
+    setCurrentTemplate(newTemplate.id)
+    
+    // In production, this would save to the backend
+    localStorage.setItem('qr-label-templates', JSON.stringify([...templates, newTemplate]))
+  }
+
+  const loadTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    if (template) {
+      setPrintConfig(template.configuration)
+      setCurrentTemplate(templateId)
+    }
+  }
+
+  const deleteTemplate = (templateId: string) => {
+    const updatedTemplates = templates.filter(t => t.id !== templateId)
+    setTemplates(updatedTemplates)
+    localStorage.setItem('qr-label-templates', JSON.stringify(updatedTemplates))
+    
+    if (currentTemplate === templateId) {
+      setCurrentTemplate('default')
+    }
+  }
+
+  // Load templates on mount
+  useEffect(() => {
+    const savedTemplates = localStorage.getItem('qr-label-templates')
+    if (savedTemplates) {
+      try {
+        const parsed = JSON.parse(savedTemplates)
+        setTemplates(parsed)
+      } catch (error) {
+        console.error('Error loading templates:', error)
+      }
+    }
+  }, [])
 
   // Export handlers
   const handleExportLabels = async () => {
@@ -419,6 +609,26 @@ export default function QRLabelsPage() {
           <QrCode2 color={value ? 'primary' : 'disabled'} />
         </Tooltip>
       )
+    },
+    {
+      id: 'labelsPrinted',
+      label: 'Stampato',
+      minWidth: 100,
+      format: (_value, row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {row.labelsPrinted ? (
+            <Tooltip title={`Stampato da ${row.printedBy || 'N/A'} il ${row.lastPrintedAt ? new Date(row.lastPrintedAt).toLocaleDateString('it-IT') : 'N/A'}`}>
+              <Badge color="success" variant="dot">
+                <CheckedIcon color="success" />
+              </Badge>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Non ancora stampato">
+              <Chip label="Da stampare" size="small" variant="outlined" color="warning" />
+            </Tooltip>
+          )}
+        </Box>
+      )
     }
   ]
 
@@ -467,7 +677,7 @@ export default function QRLabelsPage() {
 
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom variant="caption">
@@ -479,7 +689,7 @@ export default function QRLabelsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom variant="caption">
@@ -491,7 +701,7 @@ export default function QRLabelsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom variant="caption">
@@ -503,7 +713,7 @@ export default function QRLabelsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom variant="caption">
@@ -551,6 +761,25 @@ export default function QRLabelsPage() {
             disabled={odls.length === 0}
           >
             Stampa Tutti ({odls.length})
+          </Button>
+          
+          <Button
+            variant="outlined"
+            startIcon={<SettingsIcon />}
+            onClick={() => setConfigDialog(true)}
+            color="secondary"
+          >
+            Configurazione
+          </Button>
+          
+          <Button
+            variant="outlined"
+            startIcon={<PreviewIcon />}
+            onClick={() => setPreviewDialog(true)}
+            disabled={selectedOdls.size === 0}
+            color="info"
+          >
+            Anteprima
           </Button>
           
           <Button
@@ -630,6 +859,358 @@ export default function QRLabelsPage() {
           />
         )}
       </Paper>
+
+      {/* Configuration Dialog */}
+      <Dialog open={configDialog} onClose={() => setConfigDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6">Configurazione Stampa QR</Typography>
+            <IconButton onClick={() => setConfigDialog(false)}>
+              ×
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            {/* Template Selection */}
+            <Grid size={{ xs: 12 }}>
+              <FormControl fullWidth>
+                <InputLabel>Template</InputLabel>
+                <Select
+                  value={currentTemplate}
+                  label="Template"
+                  onChange={(e) => loadTemplate(e.target.value)}
+                >
+                  <MenuItem value="default">Default</MenuItem>
+                  {templates.map((template) => (
+                    <MenuItem key={template.id} value={template.id}>
+                      {template.name} {template.isDefault && '(Default)'}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Basic Configuration */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Formato Carta</InputLabel>
+                <Select
+                  value={printConfig.paperFormat}
+                  label="Formato Carta"
+                  onChange={(e) => setPrintConfig(prev => ({ ...prev, paperFormat: e.target.value as any }))}
+                >
+                  <MenuItem value="A4">A4 (210 × 297 mm)</MenuItem>
+                  <MenuItem value="A5">A5 (148 × 210 mm)</MenuItem>
+                  <MenuItem value="CUSTOM">Personalizzato</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Layout Matrice</InputLabel>
+                <Select
+                  value={printConfig.matrixLayout}
+                  label="Layout Matrice"
+                  onChange={(e) => setPrintConfig(prev => ({ ...prev, matrixLayout: e.target.value as any }))}
+                >
+                  <MenuItem value="2x2">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridIcon /> 2×2 (4 etichette per foglio)
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="3x3">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridIcon /> 3×3 (9 etichette per foglio)
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="4x4">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridIcon /> 4×4 (16 etichette per foglio)
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="2x1">2×1 (2 etichette per riga)</MenuItem>
+                  <MenuItem value="1x4">1×4 (4 etichette in colonna)</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Dimensione QR</InputLabel>
+                <Select
+                  value={printConfig.qrSize}
+                  label="Dimensione QR"
+                  onChange={(e) => setPrintConfig(prev => ({ ...prev, qrSize: e.target.value as any }))}
+                >
+                  <MenuItem value="SMALL">Piccola (25mm)</MenuItem>
+                  <MenuItem value="MEDIUM">Media (35mm)</MenuItem>
+                  <MenuItem value="LARGE">Grande (45mm)</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Margins */}
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Margini (mm)
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 6 }}>
+                  <TextField
+                    label="Superiore"
+                    type="number"
+                    value={printConfig.margins.top}
+                    onChange={(e) => setPrintConfig(prev => ({
+                      ...prev,
+                      margins: { ...prev.margins, top: Number(e.target.value) }
+                    }))}
+                    inputProps={{ min: 0, max: 50 }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <TextField
+                    label="Destro"
+                    type="number"
+                    value={printConfig.margins.right}
+                    onChange={(e) => setPrintConfig(prev => ({
+                      ...prev,
+                      margins: { ...prev.margins, right: Number(e.target.value) }
+                    }))}
+                    inputProps={{ min: 0, max: 50 }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <TextField
+                    label="Inferiore"
+                    type="number"
+                    value={printConfig.margins.bottom}
+                    onChange={(e) => setPrintConfig(prev => ({
+                      ...prev,
+                      margins: { ...prev.margins, bottom: Number(e.target.value) }
+                    }))}
+                    inputProps={{ min: 0, max: 50 }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <TextField
+                    label="Sinistro"
+                    type="number"
+                    value={printConfig.margins.left}
+                    onChange={(e) => setPrintConfig(prev => ({
+                      ...prev,
+                      margins: { ...prev.margins, left: Number(e.target.value) }
+                    }))}
+                    inputProps={{ min: 0, max: 50 }}
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+
+            {/* Content Options */}
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Contenuto Etichette
+              </Typography>
+              <Stack spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={printConfig.includePartDescription}
+                      onChange={(e) => setPrintConfig(prev => ({ ...prev, includePartDescription: e.target.checked }))}
+                    />
+                  }
+                  label="Includi descrizione parte"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={printConfig.includeDepartment}
+                      onChange={(e) => setPrintConfig(prev => ({ ...prev, includeDepartment: e.target.checked }))}
+                    />
+                  }
+                  label="Includi reparto corrente"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={printConfig.includeDateTime}
+                      onChange={(e) => setPrintConfig(prev => ({ ...prev, includeDateTime: e.target.checked }))}
+                    />
+                  }
+                  label="Includi data/ora stampa"
+                />
+              </Stack>
+            </Grid>
+
+            {/* Template Management */}
+            <Grid size={{ xs: 12 }}>
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="subtitle2">Gestione Template</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={2}>
+                    <TextField
+                      label="Nome nuovo template"
+                      placeholder="es. Etichette Produzione"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          saveTemplate(e.currentTarget.value.trim())
+                          e.currentTarget.value = ''
+                        }
+                      }}
+                      InputProps={{
+                        endAdornment: (
+                          <Button
+                            size="small"
+                            startIcon={<SaveIcon />}
+                            onClick={(e) => {
+                              const input = (e.target as any).closest('.MuiTextField-root').querySelector('input')
+                              if (input?.value.trim()) {
+                                saveTemplate(input.value.trim())
+                                input.value = ''
+                              }
+                            }}
+                          >
+                            Salva
+                          </Button>
+                        )
+                      }}
+                    />
+                    
+                    {templates.length > 0 && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Template salvati:
+                        </Typography>
+                        <Stack spacing={1} sx={{ mt: 1 }}>
+                          {templates.map((template) => (
+                            <Box key={template.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Typography variant="body2">{template.name}</Typography>
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => deleteTemplate(template.id)}
+                              >
+                                Elimina
+                              </Button>
+                            </Box>
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfigDialog(false)}>
+            Chiudi
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setConfigDialog(false)
+              if (selectedOdls.size > 0) {
+                setPreviewDialog(true)
+              }
+            }}
+            startIcon={<PreviewIcon />}
+          >
+            Applica e Anteprima
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={previewDialog} onClose={() => setPreviewDialog(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>
+          Anteprima Stampa - {selectedOdls.size} etichette
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1, bgcolor: '#f9f9f9' }}>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Configurazione: {printConfig.paperFormat} - {printConfig.matrixLayout} - QR {printConfig.qrSize}
+            </Typography>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: `repeat(${printConfig.matrixLayout.split('x')[0]}, 1fr)`,
+              gap: 1,
+              p: 2,
+              bgcolor: 'white',
+              border: '1px solid #ccc'
+            }}>
+              {Array.from(selectedOdls).slice(0, 4).map((odlId) => {
+                const odl = odls.find(o => o.id === odlId)
+                if (!odl) return null
+                
+                return (
+                  <Box key={odlId} sx={{ 
+                    border: '1px solid #333',
+                    p: 1,
+                    textAlign: 'center',
+                    minHeight: '80px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    fontSize: '10px'
+                  }}>
+                    <Typography variant="caption" fontWeight="bold">
+                      {odl.odlNumber}
+                    </Typography>
+                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <QrCode2 sx={{ fontSize: printConfig.qrSize === 'LARGE' ? 40 : printConfig.qrSize === 'MEDIUM' ? 30 : 20 }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" fontWeight="bold">
+                        {odl.part.partNumber}
+                      </Typography>
+                      {printConfig.includePartDescription && (
+                        <Typography variant="caption" display="block" sx={{ fontSize: '8px', color: 'text.secondary' }}>
+                          {odl.part.description.slice(0, 30)}...
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                )
+              })}
+            </Box>
+            
+            {selectedOdls.size > 4 && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+                ... e altre {selectedOdls.size - 4} etichette
+              </Typography>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPreviewDialog(false)}>
+            Chiudi
+          </Button>
+          <Button onClick={() => setConfigDialog(true)} startIcon={<SettingsIcon />}>
+            Modifica Configurazione
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setPreviewDialog(false)
+              handlePrintSelected()
+            }}
+            startIcon={<Print />}
+          >
+            Stampa Ora
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
