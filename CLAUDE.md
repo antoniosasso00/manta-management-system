@@ -805,6 +805,8 @@ npm run db:seed-complete  # Full integration test
 ### Architecture Pattern: Extension Tables
 Il sistema gestisce dati supplementari per ogni reparto attraverso **tabelle di estensione opzionali** che mantengono l'isolamento tra reparti:
 
+**IMPORTANTE**: Le **dimensioni fisiche** delle parti vengono derivate dalle **relazioni con i Tools** (utensili di laminazione), non ridondante nelle estensioni. Le tabelle di estensione contengono solo **metadati specifici del reparto** e **configurazioni processo**.
+
 **Pattern**: One-to-One Optional Extensions per Part/ODL
 ```sql
 -- NDI Department Extensions
@@ -838,17 +840,44 @@ model PartAutoclave {
 model PartCleanroom {
   id                String   @id @default(cuid())
   partId            String   @unique
-  requiredTools     String[] // Tool part numbers necessari
+  requiredTools     String[] // Tool part numbers necessari (relazione via PartTool)
   setupTime         Int?     // Tempo setup in minuti
   cycleTime         Int?     // Tempo ciclo standard
   skillLevel        SkillLevel // BASIC, INTERMEDIATE, ADVANCED
   specialRequirements String? // Note speciali
   
   part              Part     @relation("PartCleanroomConfig", fields: [partId], references: [id])
+  // NOTA: Dimensioni fisiche derivate da Part->Tools relazione, non ridondanti qui
 }
 ```
 
 ### Data Management Patterns
+
+**Dimensioni da Tools Pattern**:
+```typescript
+// Dimensioni fisiche derivate dai Tools (utensili di laminazione)
+const getPartDimensions = async (partId: string) => {
+  const part = await prisma.part.findUnique({
+    where: { id: partId },
+    include: {
+      partTools: {
+        include: {
+          tool: true // base, height, weight da Tool table
+        }
+      }
+    }
+  });
+  
+  // Dimensioni calcolate da utensili associati
+  const dimensions = part.partTools.map(pt => ({
+    length: pt.tool.base,
+    height: pt.tool.height,
+    weight: pt.tool.weight
+  }));
+  
+  return dimensions;
+};
+```
 
 **Service Layer Pattern**:
 ```typescript
@@ -857,12 +886,18 @@ export class NDIService {
   async getPartNDIConfig(partId: string) {
     return await prisma.partNDI.findUnique({
       where: { partId },
-      include: { part: true }
+      include: { 
+        part: {
+          include: {
+            partTools: { include: { tool: true } } // Include dimensioni da tools
+          }
+        }
+      }
     });
   }
   
   async ensureConfigExists(partId: string) {
-    // Crea configurazione default se non esiste
+    // Crea configurazione default se non esiste (senza dimensioni ridondanti)
     return await prisma.partNDI.upsert({
       where: { partId },
       create: { partId, ...DEFAULT_NDI_CONFIG },
@@ -909,6 +944,7 @@ export function useDepartmentConfig(partId: string, department: DepartmentType) 
 ✅ **Performance**: Query ottimizzate per dominio specifico
 ✅ **Type Safety**: Schema Zod e validazione per ogni reparto
 ✅ **Manutenibilità**: Codice organizzato per reparto con clear separation of concerns
+✅ **No Ridondanza**: Dimensioni fisiche derivate da Tools, estensioni contengono solo metadati specifici
 
 ## Memories
 
