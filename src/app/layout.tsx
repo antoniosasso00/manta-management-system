@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mes.mantagroup.it'),
+  metadataBase: new URL('https://manta-management-system.netlify.app'),
   title: {
     default: "Manta Group - MES Aerospazio",
     template: "%s | Manta Group MES"
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     siteName: 'Manta Group MES',
     title: 'Manta Group - MES Aerospazio',
     description: 'Manufacturing Execution System per la produzione aerospaziale',
-    url: 'https://mes.mantagroup.it',
+    url: 'https://manta-management-system.netlify.app',
     images: [
       {
         url: '/og-image.png',
