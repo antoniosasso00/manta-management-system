@@ -9,7 +9,7 @@
 [context.production.environment]
   NODE_ENV = "production"
   DATABASE_POOLING = "true"
-  DATABASE_MAX_CONNECTIONS = "10"
+  DATABASE_MAX_CONNECTIONS = "25"
 
 [context.deploy-preview.environment]
   NODE_ENV = "preview"

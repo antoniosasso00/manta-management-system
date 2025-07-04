@@ -16,9 +16,15 @@ const connectionString = process.env.DATABASE_URL!
 const pool = new Pool({ 
   connectionString,
   // Neon-specific optimizations
-  max: 10, // Max connections in pool
+  max: parseInt(process.env.DATABASE_MAX_CONNECTIONS || '20'), // Increased from 10 to 20
   idleTimeoutMillis: 30000, // 30 seconds
   connectionTimeoutMillis: 10000, // 10 seconds
+  // Additional connection pool settings
+  min: 2, // Minimum connections in pool
+  acquireTimeoutMillis: 20000, // 20 seconds to acquire connection
+  createTimeoutMillis: 20000, // 20 seconds to create connection
+  destroyTimeoutMillis: 5000, // 5 seconds to destroy connection
+  reapIntervalMillis: 1000, // Check for idle connections every second
 })
 
 // Create adapter for Prisma with Neon
