@@ -4,8 +4,6 @@ import { ODLService } from '@/domains/core/services/ODLService'
 import { createODLSchema, odlQuerySchema } from '@/domains/core/schemas/odl.schema'
 import { ZodError } from 'zod'
 
-const odlService = new ODLService()
-
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -25,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const validatedQuery = odlQuerySchema.parse(queryParams)
-    const result = await odlService.findMany(validatedQuery)
+    const result = await ODLService.findMany(validatedQuery)
 
     return NextResponse.json(result)
   } catch (error) {
@@ -60,7 +58,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createODLSchema.parse(body)
     
-    const odl = await odlService.create(validatedData)
+    const odl = await ODLService.create(validatedData)
 
     return NextResponse.json(odl, { status: 201 })
   } catch (error) {

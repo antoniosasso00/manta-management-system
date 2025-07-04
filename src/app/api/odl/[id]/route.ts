@@ -4,7 +4,6 @@ import { ODLService } from '@/domains/core/services/ODLService'
 import { updateODLSchema } from '@/domains/core/schemas/odl.schema'
 import { ZodError } from 'zod'
 
-const odlService = new ODLService()
 
 export async function GET(
   request: NextRequest,
@@ -16,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const odl = await odlService.findById((await params).id)
+    const odl = await ODLService.findById((await params).id)
     
     if (!odl) {
       return NextResponse.json({ error: 'ODL not found' }, { status: 404 })
@@ -50,7 +49,7 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateODLSchema.parse({ ...body, id: (await params).id })
     
-    const odl = await odlService.update((await params).id, validatedData)
+    const odl = await ODLService.update((await params).id, validatedData)
 
     return NextResponse.json(odl)
   } catch (error) {
@@ -97,7 +96,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    await odlService.delete((await params).id)
+    await ODLService.delete((await params).id)
 
     return NextResponse.json({ message: 'ODL deleted successfully' })
   } catch (error) {

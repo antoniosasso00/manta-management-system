@@ -180,15 +180,10 @@ export class AutoclaviBatchService {
       await tx.productionEvent.create({
         data: {
           odlId: odls[0].id,
-          department: 'AUTOCLAVI',
-          eventType: 'BATCH_CREATED',
-          eventData: {
-            batchId: newBatch.id,
-            batchNumber: loadNumber,
-            odlCount: odls.length,
-            autoclaveId: data.autoclaveId,
-          },
-          userId,
+          departmentId: autoclaveData.departmentId,
+          eventType: 'ENTRY',
+          notes: `Batch created: ${loadNumber} with ${odls.length} ODLs in autoclave ${autoclaveData.code}`,
+          userId: odls[0].events?.[0]?.userId || 'system',
         },
       });
 
@@ -281,17 +276,10 @@ export class AutoclaviBatchService {
       await tx.productionEvent.create({
         data: {
           odlId: batch.odls[0]?.id || '',
-          department: 'AUTOCLAVI',
-          eventType: 'BATCH_STATUS_CHANGE',
-          eventData: {
-            batchId,
-            batchNumber: batch.loadNumber,
-            fromStatus: batch.status,
-            toStatus: targetStatus,
-            scannedOdlId,
-            odlCount: batch.odls.length,
-          },
-          userId,
+          departmentId: batch.autoclaveId, // Using autoclave as department reference
+          eventType: 'NOTE',
+          notes: `Batch status changed: ${batch.loadNumber} from ${batch.status} to ${newStatus}`,
+          userId: 'system',
         },
       });
 

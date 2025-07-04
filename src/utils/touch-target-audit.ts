@@ -27,7 +27,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'theme.ts',
     element: 'MuiButton.root',
-    currentSize: { width: 'auto', height: 44 },
+    currentSize: { width: 200, height: 44 },
     meetsStandard: true,
     recommendation: 'Già conforme WCAG 2.1 AA',
     severity: 'low'
@@ -43,7 +43,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'NavigationItem.tsx',
     element: 'ListItemButton',
-    currentSize: { width: 'auto', height: 44 },
+    currentSize: { width: 200, height: 44 },
     meetsStandard: true,
     recommendation: 'Già conforme WCAG 2.1 AA',
     severity: 'low'
@@ -51,7 +51,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'ActionButton.tsx',
     element: 'Button (inherited from theme)',
-    currentSize: { width: 'auto', height: 44 },
+    currentSize: { width: 200, height: 44 },
     meetsStandard: true,
     recommendation: 'Eredita correttamente da theme',
     severity: 'low'

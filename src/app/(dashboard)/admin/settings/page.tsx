@@ -238,13 +238,13 @@ export default function SettingsPage() {
             {/* Tab 1: Email Configuration */}
             {activeTab === 0 && (
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="h6" gutterBottom>
                     Configurazione Server Email (SMTP)
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Host SMTP"
@@ -256,7 +256,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Porta SMTP"
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Username SMTP"
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Password SMTP"
@@ -306,7 +306,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Email Mittente"
@@ -318,7 +318,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Nome Mittente"
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -345,7 +345,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Button
                     variant="outlined"
                     startIcon={<Email />}
@@ -360,13 +360,13 @@ export default function SettingsPage() {
             {/* Tab 2: System Configuration */}
             {activeTab === 1 && (
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="h6" gutterBottom>
                     Parametri di Sistema
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Timeout Sessione (minuti)"
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Dimensione Max Upload (MB)"
@@ -394,14 +394,14 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     Backup Automatico
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -416,7 +416,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Orario Backup"
@@ -431,7 +431,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Retention Backup (giorni)"
@@ -445,7 +445,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Box className="flex gap-2">
                     <Button
                       variant="outlined"
@@ -465,14 +465,14 @@ export default function SettingsPage() {
                   </Box>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     Modalità Manutenzione
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -487,7 +487,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Messaggio di Manutenzione"
@@ -508,13 +508,13 @@ export default function SettingsPage() {
             {/* Tab 3: Integrations */}
             {activeTab === 2 && (
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="h6" gutterBottom>
                     Integrazione Gamma MES
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -529,7 +529,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Percorso Cartella Sincronizzazione"
@@ -542,7 +542,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth disabled={!settings.integrations.gammaEnabled}>
                     <InputLabel>Intervallo Sincronizzazione</InputLabel>
                     <Select
@@ -560,14 +560,14 @@ export default function SettingsPage() {
                   </FormControl>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     API & Webhook
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Rate Limit API (richieste/minuto)"
@@ -580,7 +580,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle1" gutterBottom>
                     Endpoint Webhook
                   </Typography>
@@ -628,13 +628,13 @@ export default function SettingsPage() {
             {/* Tab 4: Notifications */}
             {activeTab === 3 && (
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="h6" gutterBottom>
                     Canali di Notifica
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -649,7 +649,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -664,7 +664,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -679,14 +679,14 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     Soglie di Allarme
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     fullWidth
                     label="Ritardo ODL (minuti)"
@@ -706,7 +706,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     fullWidth
                     label="Efficienza Minima (%)"
@@ -726,7 +726,7 @@ export default function SettingsPage() {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     fullWidth
                     label="Tasso Errore Max (%)"
@@ -751,19 +751,19 @@ export default function SettingsPage() {
             {/* Tab 5: Performance */}
             {activeTab === 4 && (
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="h6" gutterBottom>
                     Ottimizzazione Performance
                   </Typography>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Alert severity="warning" icon={<Warning />}>
                     La modifica di questi parametri può influenzare significativamente le prestazioni del sistema. Modificare con cautela.
                   </Alert>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="subtitle1" gutterBottom>
@@ -782,7 +782,7 @@ export default function SettingsPage() {
                   </Card>
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="subtitle1" gutterBottom>
@@ -801,7 +801,7 @@ export default function SettingsPage() {
                   </Card>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="subtitle1" gutterBottom>

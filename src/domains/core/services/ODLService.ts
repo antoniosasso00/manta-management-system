@@ -7,7 +7,7 @@ import { QRGenerator, QRValidator } from '@/utils/qr-validation'
 
 export class ODLService {
   
-  async create(input: CreateODLInput): Promise<ODL> {
+  static async create(input: CreateODLInput): Promise<ODL> {
     // Check if ODL number already exists
     const existing = await prisma.oDL.findUnique({
       where: { odlNumber: input.odlNumber }
@@ -62,7 +62,7 @@ export class ODLService {
     return ODL.fromPrisma(data)
   }
 
-  async findById(id: string): Promise<ODL | null> {
+  static async findById(id: string): Promise<ODL | null> {
     const data = await prisma.oDL.findUnique({
       where: { id },
       include: {
@@ -81,7 +81,7 @@ export class ODLService {
     return data ? ODL.fromPrisma(data) : null
   }
 
-  async findByODLNumber(odlNumber: string): Promise<ODL | null> {
+  static async findByODLNumber(odlNumber: string): Promise<ODL | null> {
     const data = await prisma.oDL.findUnique({
       where: { odlNumber },
       include: {
@@ -100,7 +100,7 @@ export class ODLService {
     return data ? ODL.fromPrisma(data) : null
   }
 
-  async findMany(query: ODLQueryInput): Promise<{
+  static async findMany(query: ODLQueryInput): Promise<{
     odls: ODL[]
     total: number
     page: number
@@ -157,7 +157,7 @@ export class ODLService {
     }
   }
 
-  async update(id: string, input: UpdateODLInput): Promise<ODL> {
+  static async update(id: string, input: UpdateODLInput): Promise<ODL> {
     const existing = await prisma.oDL.findUnique({
       where: { id },
       include: { part: true }
@@ -208,7 +208,7 @@ export class ODLService {
     return ODL.fromPrisma(data)
   }
 
-  async delete(id: string): Promise<void> {
+  static async delete(id: string): Promise<void> {
     // Check if ODL has production events
     const eventCount = await prisma.productionEvent.count({
       where: { odlId: id }
@@ -223,7 +223,7 @@ export class ODLService {
     })
   }
 
-  async syncFromGamma(odls: GammaSyncODLInput[]): Promise<{
+  static async syncFromGamma(odls: GammaSyncODLInput[]): Promise<{
     created: number
     updated: number
     skipped: number
@@ -308,7 +308,7 @@ export class ODLService {
     return { created, updated, skipped, errors }
   }
 
-  async getODLsByPart(partId: string): Promise<ODL[]> {
+  static async getODLsByPart(partId: string): Promise<ODL[]> {
     const data = await prisma.oDL.findMany({
       where: { partId },
       include: { part: true },
@@ -318,7 +318,7 @@ export class ODLService {
     return data.map(ODL.fromPrisma)
   }
 
-  async getODLsByStatus(status: string): Promise<ODL[]> {
+  static async getODLsByStatus(status: string): Promise<ODL[]> {
     const data = await prisma.oDL.findMany({
       where: { status: status as any }, // eslint-disable-line @typescript-eslint/no-explicit-any
       include: { part: true },
@@ -328,7 +328,7 @@ export class ODLService {
     return data.map(ODL.fromPrisma)
   }
 
-  async getODLsInProduction(): Promise<ODL[]> {
+  static async getODLsInProduction(): Promise<ODL[]> {
     const data = await prisma.oDL.findMany({
       where: {
         status: {
@@ -342,7 +342,7 @@ export class ODLService {
     return data.map(ODL.fromPrisma)
   }
 
-  async getODLsByGammaSync(syncStatus?: SyncStatus): Promise<ODL[]> {
+  static async getODLsByGammaSync(syncStatus?: SyncStatus): Promise<ODL[]> {
     const where = syncStatus ? { syncStatus } : { gammaId: { not: null } }
     
     const data = await prisma.oDL.findMany({
@@ -354,7 +354,7 @@ export class ODLService {
     return data.map(ODL.fromPrisma)
   }
 
-  async regenerateQRCode(id: string): Promise<ODL> {
+  static async regenerateQRCode(id: string): Promise<ODL> {
     const odl = await this.findById(id)
     if (!odl) {
       throw new Error('ODL not found')
