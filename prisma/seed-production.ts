@@ -38,10 +38,7 @@ export async function seedProduction() {
       create: {
         partNumber: '8G5350A057526',
         description: 'LONGERON RH UPPER',
-        gammaId: 'GAMMA_001',
-        standardLength: 2500,
-        standardWidth: 300,
-        standardHeight: 50
+        gammaId: 'GAMMA_001'
       }
     }),
     prisma.part.upsert({
@@ -50,10 +47,7 @@ export async function seedProduction() {
       create: {
         partNumber: '8G5350A058528',
         description: 'LONGERON LH LOWER',
-        gammaId: 'GAMMA_002',
-        standardLength: 2500,
-        standardWidth: 300,
-        standardHeight: 50
+        gammaId: 'GAMMA_002'
       }
     }),
     prisma.part.upsert({
@@ -62,10 +56,7 @@ export async function seedProduction() {
       create: {
         partNumber: 'EA53348179-043A1',
         description: 'POGGIABDEI',
-        gammaId: 'GAMMA_003',
-        standardLength: 1200,
-        standardWidth: 800,
-        standardHeight: 30
+        gammaId: 'GAMMA_003'
       }
     }),
     prisma.part.upsert({
@@ -74,10 +65,7 @@ export async function seedProduction() {
       create: {
         partNumber: 'EA53336A94-041',
         description: 'DISH ASSEMBLY',
-        gammaId: 'GAMMA_004',
-        standardLength: 600,
-        standardWidth: 600,
-        standardHeight: 150
+        gammaId: 'GAMMA_004'
       }
     }),
     prisma.part.upsert({
@@ -86,10 +74,7 @@ export async function seedProduction() {
       create: {
         partNumber: '8G5333A48331',
         description: 'WL 2470 REAR PANEL BONDED ASSY',
-        gammaId: 'GAMMA_005',
-        standardLength: 3000,
-        standardWidth: 1500,
-        standardHeight: 25
+        gammaId: 'GAMMA_005'
       }
     }),
     prisma.part.upsert({
@@ -98,10 +83,7 @@ export async function seedProduction() {
       create: {
         partNumber: 'EA53348130-043',
         description: 'COVER BARE',
-        gammaId: 'GAMMA_006',
-        standardLength: 800,
-        standardWidth: 400,
-        standardHeight: 20
+        gammaId: 'GAMMA_006'
       }
     })
   ])

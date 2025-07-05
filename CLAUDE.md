@@ -170,8 +170,9 @@ src/
 
 ### Seed Management & Testing Protocol
 - **Complete Seed File**: `prisma/seed-complete.ts` contains comprehensive test data for all domains
-- **When to Update Seed**: Every time new features/entities are added, update the seed file accordingly
-- **Test Credentials**: 
+- **IMPORTANTE**: Seed files sono SOLO per sviluppo locale, NON vengono utilizzati in produzione/Netlify
+- **When to Update Seed**: Every time new features/entities are added, update the seed file accordingly  
+- **Test Credentials** (solo sviluppo locale): 
   - Admin: `admin@mantaaero.com / password123`
   - Supervisor: `capo.cleanroom@mantaaero.com / password123`
   - Operator: `op1.cleanroom@mantaaero.com / password123`
@@ -185,8 +186,9 @@ npm run lint && npm run type-check
 
 ### Database Development
 - **Schema Changes**: `npm run db:generate` → `npm run db:push` for development
-- **Testing Data**: **SEMPRE** `npm run db:seed-complete` dopo nuove features
+- **Testing Data**: **SEMPRE** `npm run db:seed-complete` dopo nuove features (SOLO sviluppo locale)
 - **Production Migrations**: `npm run db:migrate` for production-ready migrations
+- **IMPORTANTE**: NO seeding in produzione - database Netlify rimane vuoto per dati reali
 
 ### Component Development Standards
 - **Atomic Design**: SEMPRE seguire pattern atoms → molecules → organisms → templates
