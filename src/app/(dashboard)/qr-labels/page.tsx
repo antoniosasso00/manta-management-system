@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Box,
   Typography,
@@ -53,6 +53,61 @@ import { DataTable } from '@/components/atoms'
 import { FilterPanel, FilterConfig, FilterValues } from '@/components/molecules'
 import type { Column } from '@/components/atoms/DataTable'
 import { useAuth } from '@/hooks/useAuth'
+import QRCode from 'qrcode'
+
+// Componente per generare QR code reali nell'anteprima
+function PreviewQRCode({ odl, size, errorCorrection }: { 
+  odl: ODLForQR; 
+  size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE';
+  errorCorrection: 'L' | 'M' | 'Q' | 'H';
+}) {
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  
+  useEffect(() => {
+    const generateQR = async () => {
+      const qrData = {
+        type: 'ODL',
+        id: odl.id,
+        odlNumber: odl.odlNumber,
+        partNumber: odl.part.partNumber,
+        timestamp: new Date().toISOString(),
+        currentDepartment: odl.currentDepartment?.name || 'CREATED',
+        status: odl.status
+      }
+      
+      try {
+        const dataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
+          width: size === 'XLARGE' ? 120 : size === 'LARGE' ? 100 : size === 'MEDIUM' ? 80 : 60,
+          margin: 1,
+          color: { dark: '#000000', light: '#FFFFFF' },
+          errorCorrectionLevel: errorCorrection
+        })
+        setQrDataUrl(dataUrl)
+      } catch (error) {
+        console.error('Error generating preview QR:', error)
+      }
+    }
+    
+    generateQR()
+  }, [odl, size, errorCorrection])
+  
+  if (!qrDataUrl) {
+    return <CircularProgress size={20} />
+  }
+  
+  return (
+    <img 
+      src={qrDataUrl} 
+      alt={`QR ${odl.odlNumber}`}
+      style={{ 
+        width: '100%', 
+        height: '100%',
+        maxWidth: size === 'XLARGE' ? 60 : size === 'LARGE' ? 50 : size === 'MEDIUM' ? 40 : 30,
+        maxHeight: size === 'XLARGE' ? 60 : size === 'LARGE' ? 50 : size === 'MEDIUM' ? 40 : 30
+      }}
+    />
+  )
+}
 
 interface ODLForQR {
   id: string
@@ -75,8 +130,8 @@ interface ODLForQR {
 
 interface PrintConfiguration {
   paperFormat: 'A4' | 'A5' | 'CUSTOM'
-  matrixLayout: '2x2' | '3x3' | '4x4' | '2x1' | '1x4'
-  qrSize: 'SMALL' | 'MEDIUM' | 'LARGE'
+  matrixLayout: '1x2' | '2x2' | '2x3' | '3x3' | '3x4' | '4x4'
+  qrSize: 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE'
   margins: {
     top: number
     right: number
@@ -87,6 +142,8 @@ interface PrintConfiguration {
   includeDepartment: boolean
   includeDateTime: boolean
   customQRPerPage?: number
+  dpi: 300 | 600
+  errorCorrection: 'L' | 'M' | 'Q' | 'H'
 }
 
 interface PrintTemplate {
@@ -112,10 +169,12 @@ export default function QRLabelsPage() {
     paperFormat: 'A4',
     matrixLayout: '2x2',
     qrSize: 'MEDIUM',
-    margins: { top: 10, right: 10, bottom: 10, left: 10 },
+    margins: { top: 15, right: 15, bottom: 15, left: 15 },
     includePartDescription: true,
     includeDepartment: true,
-    includeDateTime: true
+    includeDateTime: true,
+    dpi: 300,
+    errorCorrection: 'H'
   })
   const [templates, setTemplates] = useState<PrintTemplate[]>([])
   const [currentTemplate, setCurrentTemplate] = useState<string>('default')
@@ -203,15 +262,18 @@ export default function QRLabelsPage() {
             id: odl.id,
             odlNumber: odl.odlNumber,
             partNumber: odl.part.partNumber,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            currentDepartment: odl.currentDepartment?.name || 'CREATED',
+            status: odl.status
           }
           
           try {
             const QRCode = (await import('qrcode')).default
             const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
-              width: 256,
-              margin: 2,
-              color: { dark: '#000000', light: '#FFFFFF' }
+              width: printConfig.dpi === 600 ? 512 : 300,  // Dimensione in pixel basata su DPI
+              margin: 4,  // Quiet zone di 4 moduli come da best practice
+              color: { dark: '#000000', light: '#FFFFFF' },
+              errorCorrectionLevel: printConfig.errorCorrection || 'H'  // Alto livello per ambiente industriale
             })
             return { ...odl, qrCode: qrCodeDataUrl }
           } catch (error) {
@@ -225,18 +287,30 @@ export default function QRLabelsPage() {
 
     const getMatrixDimensions = (layout: string) => {
       switch (layout) {
-        case '2x2': return { cols: 2, rows: 2 }
-        case '3x3': return { cols: 3, rows: 3 }
-        case '4x4': return { cols: 4, rows: 4 }
-        case '2x1': return { cols: 2, rows: 1 }
-        case '1x4': return { cols: 1, rows: 4 }
-        default: return { cols: 2, rows: 2 }
+        case '1x2': return { cols: 1, rows: 2, total: 2 }
+        case '2x2': return { cols: 2, rows: 2, total: 4 }
+        case '2x3': return { cols: 2, rows: 3, total: 6 }
+        case '3x3': return { cols: 3, rows: 3, total: 9 }
+        case '3x4': return { cols: 3, rows: 4, total: 12 }
+        case '4x4': return { cols: 4, rows: 4, total: 16 }
+        default: return { cols: 2, rows: 2, total: 4 }
       }
     }
 
     const { cols } = getMatrixDimensions(printConfig.matrixLayout)
-    const qrSizes = { SMALL: '25mm', MEDIUM: '35mm', LARGE: '45mm' }
-    const labelSizes = { SMALL: '60mm', MEDIUM: '75mm', LARGE: '90mm' }
+    // Dimensioni QR secondo best practices aerospaziali (minimo 20mm, ottimale 30-50mm)
+    const qrSizes = { 
+      SMALL: '30mm',    // Minimo consigliato per leggibilità industriale
+      MEDIUM: '40mm',   // Dimensione standard
+      LARGE: '50mm',    // Per scansioni a distanza
+      XLARGE: '60mm'    // Per condizioni difficili
+    }
+    const labelSizes = { 
+      SMALL: '70mm', 
+      MEDIUM: '85mm', 
+      LARGE: '100mm',
+      XLARGE: '120mm'
+    }
 
     const currentDateTime = new Date().toLocaleString('it-IT')
 
@@ -260,9 +334,10 @@ export default function QRLabelsPage() {
           ${printConfig.includePartDescription ? 
             `<div class="part-description">${odl.part.description}</div>` : ''
           }
-          ${printConfig.includeDepartment && odl.currentDepartment ? 
-            `<div class="department">Rep: ${odl.currentDepartment.name}</div>` : ''
+          ${printConfig.includeDepartment ? 
+            `<div class="department">Reparto: ${odl.currentDepartment?.name || 'DA ASSEGNARE'}</div>` : ''
           }
+          <div class="tracking-info">Stato: ${odl.status.replace(/_/g, ' ')}</div>
           ${printConfig.includeDateTime ? 
             `<div class="datetime">Stampato: ${currentDateTime}</div>` : ''
           }
@@ -286,13 +361,13 @@ export default function QRLabelsPage() {
             .qr-labels-grid {
               display: grid;
               grid-template-columns: repeat(${cols}, 1fr);
-              gap: 4mm;
+              gap: 5mm;  /* Maggiore spazio tra etichette per evitare sovrapposizioni */
               page-break-inside: avoid;
-              padding: 2mm;
+              padding: 0;
             }
             .qr-label {
-              border: 1px solid #333;
-              padding: 2mm;
+              border: 2px solid #000;  /* Bordo più spesso per delimitazione chiara */
+              padding: 4mm;  /* Padding interno maggiore per quiet zone */
               text-align: center;
               background: white;
               page-break-inside: avoid;
@@ -303,6 +378,7 @@ export default function QRLabelsPage() {
               justify-content: space-between;
               aspect-ratio: 1;
               position: relative;
+              border-radius: 3mm;  /* Angoli arrotondati per taglio manuale */
             }
             .qr-header {
               margin-bottom: 2mm;
@@ -336,13 +412,19 @@ export default function QRLabelsPage() {
               display: flex;
               align-items: center;
               justify-content: center;
-              margin: 1mm 0;
+              margin: 3mm 0;  /* Maggiore margine per quiet zone */
               min-height: ${qrSizes[printConfig.qrSize]};
+              background: white;  /* Sfondo bianco garantito */
+              padding: 4mm;  /* Quiet zone di 4mm intorno al QR */
+              border-radius: 2mm;
             }
             .qr-image {
               width: ${qrSizes[printConfig.qrSize]} !important;
               height: ${qrSizes[printConfig.qrSize]} !important;
               object-fit: contain;
+              image-rendering: crisp-edges;  /* Rendering nitido per QR */
+              image-rendering: -webkit-optimize-contrast;
+              image-rendering: pixelated;
             }
             .no-qr {
               width: ${qrSizes[printConfig.qrSize]};
@@ -377,6 +459,13 @@ export default function QRLabelsPage() {
               color: #888;
               margin-bottom: 1mm;
             }
+            .tracking-info {
+              font-size: 9px;
+              font-weight: bold;
+              color: #000;
+              margin-bottom: 1mm;
+              text-transform: uppercase;
+            }
             .datetime {
               font-size: 7px;
               color: #aaa;
@@ -386,14 +475,20 @@ export default function QRLabelsPage() {
                 margin: ${printConfig.margins.top}mm ${printConfig.margins.right}mm ${printConfig.margins.bottom}mm ${printConfig.margins.left}mm;
                 -webkit-print-color-adjust: exact;
                 color-adjust: exact;
+                print-color-adjust: exact;
               }
               .qr-labels-grid { 
-                gap: 2mm;
+                gap: 5mm;
                 padding: 0;
               }
               .qr-label {
-                border: 1px solid #000;
-                padding: 1mm;
+                border: 2px solid #000;
+                padding: 4mm;
+                break-inside: avoid;
+                page-break-inside: avoid;
+              }
+              .qr-image {
+                filter: contrast(2);  /* Aumenta contrasto per stampa */
               }
             }
             @page {
@@ -682,11 +777,17 @@ export default function QRLabelsPage() {
     <Box sx={{ p: 3 }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Stampa QR Labels
+          Stampa QR Labels - Tracking Produzione
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Seleziona gli ODL per stampare le etichette QR
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          Genera etichette QR per il tracking degli ODL attraverso i reparti produttivi
         </Typography>
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          <Typography variant="body2">
+            <strong>IMPORTANTE</strong>: Questi QR code vengono utilizzati per registrare ingresso/uscita dai reparti 
+            (Clean Room → Autoclavi → NDI → Rifilatura). Assicurarsi che siano ben visibili e protetti durante la movimentazione.
+          </Typography>
+        </Alert>
       </Box>
 
       {error && (
@@ -935,9 +1036,19 @@ export default function QRLabelsPage() {
                   label="Layout Matrice"
                   onChange={(e) => setPrintConfig(prev => ({ ...prev, matrixLayout: e.target.value as any }))}
                 >
+                  <MenuItem value="1x2">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridIcon /> 1×2 (2 etichette per foglio)
+                    </Box>
+                  </MenuItem>
                   <MenuItem value="2x2">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <GridIcon /> 2×2 (4 etichette per foglio)
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="2x3">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridIcon /> 2×3 (6 etichette per foglio)
                     </Box>
                   </MenuItem>
                   <MenuItem value="3x3">
@@ -945,13 +1056,16 @@ export default function QRLabelsPage() {
                       <GridIcon /> 3×3 (9 etichette per foglio)
                     </Box>
                   </MenuItem>
+                  <MenuItem value="3x4">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <GridIcon /> 3×4 (12 etichette per foglio)
+                    </Box>
+                  </MenuItem>
                   <MenuItem value="4x4">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <GridIcon /> 4×4 (16 etichette per foglio)
                     </Box>
                   </MenuItem>
-                  <MenuItem value="2x1">2×1 (2 etichette per riga)</MenuItem>
-                  <MenuItem value="1x4">1×4 (4 etichette in colonna)</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -964,9 +1078,41 @@ export default function QRLabelsPage() {
                   label="Dimensione QR"
                   onChange={(e) => setPrintConfig(prev => ({ ...prev, qrSize: e.target.value as any }))}
                 >
-                  <MenuItem value="SMALL">Piccola (25mm)</MenuItem>
-                  <MenuItem value="MEDIUM">Media (35mm)</MenuItem>
-                  <MenuItem value="LARGE">Grande (45mm)</MenuItem>
+                  <MenuItem value="SMALL">Piccola (30mm) - Uso standard</MenuItem>
+                  <MenuItem value="MEDIUM">Media (40mm) - Consigliata</MenuItem>
+                  <MenuItem value="LARGE">Grande (50mm) - Scansione a distanza</MenuItem>
+                  <MenuItem value="XLARGE">Extra Grande (60mm) - Condizioni difficili</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Advanced QR Settings */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Risoluzione DPI</InputLabel>
+                <Select
+                  value={printConfig.dpi}
+                  label="Risoluzione DPI"
+                  onChange={(e) => setPrintConfig(prev => ({ ...prev, dpi: Number(e.target.value) as any }))}
+                >
+                  <MenuItem value={300}>300 DPI - Standard</MenuItem>
+                  <MenuItem value={600}>600 DPI - Alta qualità</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Correzione Errori</InputLabel>
+                <Select
+                  value={printConfig.errorCorrection}
+                  label="Correzione Errori"
+                  onChange={(e) => setPrintConfig(prev => ({ ...prev, errorCorrection: e.target.value as any }))}
+                >
+                  <MenuItem value="L">Basso (7%)</MenuItem>
+                  <MenuItem value="M">Medio (15%)</MenuItem>
+                  <MenuItem value="Q">Quartile (25%)</MenuItem>
+                  <MenuItem value="H">Alto (30%) - Consigliato Aerospace</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -1066,6 +1212,52 @@ export default function QRLabelsPage() {
                   label="Includi data/ora stampa"
                 />
               </Stack>
+            </Grid>
+
+            {/* Best Practices Info */}
+            <Grid size={{ xs: 12 }}>
+              <Alert severity="info" icon={false}>
+                <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                  Best Practices Stampa QR - Standard Aerospaziale
+                </Typography>
+                <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Dimensione minima</strong>: 30mm x 30mm per garantire leggibilità in ambiente industriale
+                    </Typography>
+                  </li>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Quiet zone</strong>: spazio bianco di almeno 4 moduli intorno al QR code
+                    </Typography>
+                  </li>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Risoluzione</strong>: 300 DPI minimo, 600 DPI per qualità professionale
+                    </Typography>
+                  </li>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Correzione errori</strong>: livello H (30%) consigliato per ambienti difficili
+                    </Typography>
+                  </li>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Contrasto</strong>: nero su bianco, evitare sfondi colorati o patterns
+                    </Typography>
+                  </li>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Posizionamento</strong>: applicare su superficie piana, protetta da plastificazione o supporto rigido
+                    </Typography>
+                  </li>
+                  <li>
+                    <Typography variant="body2">
+                      <strong>Identificazione</strong>: includere sempre ODL e Part Number leggibili sotto il QR
+                    </Typography>
+                  </li>
+                </Box>
+              </Alert>
             </Grid>
 
             {/* Template Management */}
@@ -1192,7 +1384,7 @@ export default function QRLabelsPage() {
                       {odl.odlNumber}
                     </Typography>
                     <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <QrCode2 sx={{ fontSize: printConfig.qrSize === 'LARGE' ? 40 : printConfig.qrSize === 'MEDIUM' ? 30 : 20 }} />
+                      <PreviewQRCode odl={odl} size={printConfig.qrSize} errorCorrection={printConfig.errorCorrection} />
                     </Box>
                     <Box>
                       <Typography variant="caption" fontWeight="bold">
