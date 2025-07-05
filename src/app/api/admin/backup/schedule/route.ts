@@ -200,7 +200,7 @@ function calculateNextBackup(schedule: BackupSchedule): Date | null {
 }
 
 // Funzione per pulire i backup vecchi
-export async function cleanupOldBackups(retentionDays: number) {
+async function cleanupOldBackups(retentionDays: number) {
   try {
     const backupDir = path.join(process.cwd(), 'backups')
     

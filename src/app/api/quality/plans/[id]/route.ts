@@ -4,9 +4,9 @@ import { QualityControlService } from '@/domains/quality/services/QualityControl
 import { QualityControlPlanUpdateSchema } from '@/domains/quality/schemas/qualitySchemas'
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
@@ -16,7 +16,8 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
     }
 
-    const plan = await QualityControlService.findPlanById(params.id)
+    const { id } = await params
+    const plan = await QualityControlService.findPlanById(id)
     
     if (!plan) {
       return NextResponse.json(
@@ -47,10 +48,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
     }
 
+    const { id } = await params
     const body = await request.json()
     const validatedData = QualityControlPlanUpdateSchema.parse(body)
 
-    const plan = await QualityControlService.updatePlan(params.id, validatedData)
+    const plan = await QualityControlService.updatePlan(id, validatedData)
 
     return NextResponse.json(plan)
   } catch (error) {
@@ -82,7 +84,8 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
     }
 
-    await QualityControlService.deletePlan(params.id)
+    const { id } = await params
+    await QualityControlService.deletePlan(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

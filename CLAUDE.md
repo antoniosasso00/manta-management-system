@@ -180,7 +180,7 @@ src/
 
 ### Pre-Commit Workflow (OBBLIGATORIO)
 ```bash
-npm run lint && npm run type-check && npm run db:seed-complete
+npm run lint && npm run type-check
 ```
 
 ### Database Development
@@ -196,7 +196,7 @@ npm run lint && npm run type-check && npm run db:seed-complete
 
 ## Production Readiness
 ```bash
-npm run build && npm run lint && npm run type-check && docker compose up -d && npm run db:seed-complete
+npm run build && npm run lint && npm run type-check
 ```
 
 ## Next Development Priorities

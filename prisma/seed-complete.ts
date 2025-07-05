@@ -957,7 +957,7 @@ async function main() {
       partId: parts[0].id, // A320 ala superiore
       partNumber: parts[0].partNumber,
       quantity: 2,
-      priority: 'HIGH',
+      priority: 'HIGH' as const,
       status: 'IN_CLEANROOM',
       gammaId: 'GM-ODL-001',
       curingCycleId: curingCycles[0].id,
@@ -968,7 +968,7 @@ async function main() {
       partId: parts[2].id, // A320 nervatura
       partNumber: parts[2].partNumber,
       quantity: 4,
-      priority: 'NORMAL',
+      priority: 'NORMAL' as const,
       status: 'IN_CLEANROOM',
       gammaId: 'GM-ODL-002',
       curingCycleId: curingCycles[1].id,
@@ -979,7 +979,7 @@ async function main() {
       partId: parts[11].id, // Radome
       partNumber: parts[11].partNumber,
       quantity: 1,
-      priority: 'URGENT',
+      priority: 'URGENT' as const,
       status: 'IN_CLEANROOM',
       gammaId: 'GM-ODL-003',
       curingCycleId: curingCycles[4].id,
@@ -1014,7 +1014,7 @@ async function main() {
         odlNumber: 'ODL-24-021',
         partId: parts[1].id, // A320 ala inferiore
         quantity: 4,
-        priority: 'NORMAL',
+        priority: 'NORMAL' as const,
         status: 'CLEANROOM_COMPLETED',
         qrCode: 'QR-ODL-24-021',
         gammaId: 'GM-ODL-002',
@@ -1027,7 +1027,7 @@ async function main() {
         odlNumber: 'ODL-24-022',
         partId: parts[11].id, // Radome
         quantity: 1,
-        priority: 'URGENT',
+        priority: 'URGENT' as const,
         status: 'IN_CLEANROOM',
         qrCode: 'QR-ODL-24-022',
         gammaId: 'GM-ODL-003',
@@ -1042,7 +1042,7 @@ async function main() {
         odlNumber: 'ODL-24-004',
         partId: parts[1].id, // A320 ala inferiore
         quantity: 2,
-        priority: 'HIGH',
+        priority: 'HIGH' as const,
         status: 'CLEANROOM_COMPLETED',
         qrCode: 'QR-ODL-24-004',
         gammaId: 'GM-ODL-004',
@@ -1055,7 +1055,7 @@ async function main() {
         odlNumber: 'ODL-24-005',
         partId: parts[4].id, // B777 longherone
         quantity: 1,
-        priority: 'URGENT',
+        priority: 'URGENT' as const,
         status: 'CLEANROOM_COMPLETED',
         qrCode: 'QR-ODL-24-005',
         gammaId: 'GM-ODL-005',
@@ -1068,7 +1068,7 @@ async function main() {
         odlNumber: 'ODL-24-006',
         partId: parts[7].id, // A330 stabilizzatore
         quantity: 1,
-        priority: 'NORMAL',
+        priority: 'NORMAL' as const,
         status: 'CLEANROOM_COMPLETED',
         qrCode: 'QR-ODL-24-006',
         gammaId: 'GM-ODL-006',
@@ -1081,7 +1081,7 @@ async function main() {
         odlNumber: 'ODL-24-007',
         partId: parts[14].id, // Pannello interno
         quantity: 8,
-        priority: 'LOW',
+        priority: 'LOW' as const,
         status: 'CLEANROOM_COMPLETED',
         qrCode: 'QR-ODL-24-007',
         gammaId: 'GM-ODL-007',
@@ -1096,7 +1096,7 @@ async function main() {
         odlNumber: 'ODL-24-008',
         partId: parts[9].id, // B787 fusoliera
         quantity: 1,
-        priority: 'HIGH',
+        priority: 'HIGH' as const,
         status: 'IN_AUTOCLAVE',
         qrCode: 'QR-ODL-24-008',
         gammaId: 'GM-ODL-008',
@@ -1109,7 +1109,7 @@ async function main() {
         odlNumber: 'ODL-24-009',
         partId: parts[12].id, // Cofano motore
         quantity: 2,
-        priority: 'NORMAL',
+        priority: 'NORMAL' as const,
         status: 'IN_AUTOCLAVE',
         qrCode: 'QR-ODL-24-009',
         gammaId: 'GM-ODL-009',
@@ -1124,7 +1124,7 @@ async function main() {
         odlNumber: 'ODL-24-010',
         partId: parts[5].id, // B777 fusoliera
         quantity: 1,
-        priority: 'HIGH',
+        priority: 'HIGH' as const,
         status: 'AUTOCLAVE_COMPLETED',
         qrCode: 'QR-ODL-24-010',
         gammaId: 'GM-ODL-010',
@@ -1137,7 +1137,7 @@ async function main() {
         odlNumber: 'ODL-24-011',
         partId: parts[3].id, // A320 winglet
         quantity: 4,
-        priority: 'NORMAL',
+        priority: 'NORMAL' as const,
         status: 'AUTOCLAVE_COMPLETED',
         qrCode: 'QR-ODL-24-011',
         gammaId: 'GM-ODL-011',
@@ -1152,7 +1152,7 @@ async function main() {
         odlNumber: 'ODL-24-012',
         partId: parts[6].id, // B777 stabilizzatore
         quantity: 1,
-        priority: 'URGENT',
+        priority: 'URGENT' as const,
         status: 'IN_NDI',
         qrCode: 'QR-ODL-24-012',
         gammaId: 'GM-ODL-012',
@@ -1165,7 +1165,7 @@ async function main() {
         odlNumber: 'ODL-24-013',
         partId: parts[13].id, // Porta cargo
         quantity: 1,
-        priority: 'HIGH',
+        priority: 'HIGH' as const,
         status: 'IN_NDI',
         qrCode: 'QR-ODL-24-013',
         gammaId: 'GM-ODL-013',
@@ -1180,7 +1180,7 @@ async function main() {
         odlNumber: 'ODL-24-014',
         partId: parts[8].id, // A330 deriva
         quantity: 2,
-        priority: 'NORMAL',
+        priority: 'NORMAL' as const,
         status: 'IN_CONTROLLO_QUALITA',
         qrCode: 'QR-ODL-24-014',
         gammaId: 'GM-ODL-014',
@@ -1195,7 +1195,7 @@ async function main() {
         odlNumber: 'ODL-24-015',
         partId: parts[10].id, // B787 ala centrale
         quantity: 1,
-        priority: 'HIGH',
+        priority: 'HIGH' as const,
         status: 'COMPLETED',
         qrCode: 'QR-ODL-24-015',
         gammaId: 'GM-ODL-015',
@@ -1210,7 +1210,7 @@ async function main() {
         odlNumber: 'ODL-24-016',
         partId: parts[0].id, // A320 ala superiore
         quantity: 1,
-        priority: 'LOW',
+        priority: 'LOW' as const,
         status: 'ON_HOLD',
         qrCode: 'QR-ODL-24-016',
         gammaId: 'GM-ODL-016',
@@ -1225,7 +1225,7 @@ async function main() {
         odlNumber: 'ODL-24-017',
         partId: parts[1].id, // A320 ala inferiore
         quantity: 3,
-        priority: 'NORMAL',
+        priority: 'NORMAL' as const,
         status: 'CREATED',
         qrCode: 'QR-ODL-24-017',
         gammaId: 'GM-ODL-017',
@@ -1238,7 +1238,7 @@ async function main() {
         odlNumber: 'ODL-24-018',
         partId: parts[9].id, // B787 fusoliera
         quantity: 2,
-        priority: 'HIGH',
+        priority: 'HIGH' as const,
         status: 'CREATED',
         qrCode: 'QR-ODL-24-018',
         gammaId: 'GM-ODL-018',
@@ -1251,7 +1251,7 @@ async function main() {
         odlNumber: 'ODL-24-019',
         partId: parts[4].id, // B777 longherone
         quantity: 1,
-        priority: 'URGENT',
+        priority: 'URGENT' as const,
         status: 'CREATED',
         qrCode: 'QR-ODL-24-019',
         gammaId: 'GM-ODL-019',
@@ -1264,7 +1264,7 @@ async function main() {
         odlNumber: 'ODL-24-020',
         partId: parts[14].id, // Pannello interno
         quantity: 12,
-        priority: 'LOW',
+        priority: 'LOW' as const,
         status: 'CREATED',
         qrCode: 'QR-ODL-24-020',
         gammaId: 'GM-ODL-020',

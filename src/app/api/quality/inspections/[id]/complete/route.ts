@@ -4,9 +4,9 @@ import { QualityInspectionService } from '@/domains/quality/services/QualityInsp
 import { QualityInspectionCompleteSchema } from '@/domains/quality/schemas/qualitySchemas'
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
@@ -16,10 +16,11 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await request.json()
     const validatedData = QualityInspectionCompleteSchema.parse({
       ...body,
-      inspectionId: params.id,
+      inspectionId: id,
     })
 
     const inspection = await QualityInspectionService.completeInspection(

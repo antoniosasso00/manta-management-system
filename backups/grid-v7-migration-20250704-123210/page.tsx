@@ -52,7 +52,7 @@ export default function MyDepartmentEventsPage() {
 
       {/* Event Categories */}
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function MyDepartmentEventsPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom className="flex items-center gap-2">
@@ -128,7 +128,7 @@ export default function MyDepartmentEventsPage() {
           </Typography>
           
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="body1" fontWeight="bold" gutterBottom>
                 🎯 Machine Learning per Ottimizzazione
               </Typography>
@@ -150,7 +150,7 @@ export default function MyDepartmentEventsPage() {
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="body1" fontWeight="bold" gutterBottom>
                 🔍 Analisi Comparative
               </Typography>
