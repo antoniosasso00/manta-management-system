@@ -403,12 +403,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       icon: QrCodeScanner,
       href: '/qr-scanner',
     },
-    {
-      id: 'production-overview',
-      label: 'Overview Produzione',
-      icon: Analytics,
-      href: '/production',
-    },
   ],
 }
 

@@ -161,6 +161,7 @@ model ODL {
   priority        Priority         @default(NORMAL)
   status          ODLStatus        @default(CREATED)
   qrCode          String           @unique
+  expectedCompletionDate DateTime?  // ECD - Data di completamento prevista
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   

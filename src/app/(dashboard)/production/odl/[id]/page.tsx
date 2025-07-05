@@ -75,6 +75,7 @@ interface ODL {
   status: string
   priority: string
   quantity: number
+  expectedCompletionDate?: string
   createdAt: string
   updatedAt: string
   part: {
@@ -82,7 +83,7 @@ interface ODL {
     partNumber: string
     description: string
   }
-  productionEvents: ProductionEvent[]
+  events: ProductionEvent[]
   curingCycle?: {
     id: string
     name: string
@@ -457,9 +458,9 @@ export default function ODLDetailPage() {
             Storico Eventi di Produzione
           </Typography>
           
-          {odl.productionEvents && odl.productionEvents.length > 0 ? (
+          {odl.events && odl.events.length > 0 ? (
             <Timeline>
-              {odl.productionEvents.map((event, index) => {
+              {odl.events.map((event, index) => {
                 const DeptIcon = departmentIcons[event.department.type] || FactoryIcon
                 return (
                   <TimelineItem key={event.id}>
@@ -476,7 +477,7 @@ export default function ODLDetailPage() {
                       <TimelineDot color={getTimelineDotColor(event.eventType)}>
                         {getTimelineDotIcon(event.eventType)}
                       </TimelineDot>
-                      {index < odl.productionEvents.length - 1 && <TimelineConnector />}
+                      {index < odl.events.length - 1 && <TimelineConnector />}
                     </TimelineSeparator>
                     
                     <TimelineContent sx={{ py: '12px', px: 2 }}>
@@ -595,6 +596,14 @@ export default function ODLDetailPage() {
                         {format(new Date(odl.updatedAt), 'dd/MM/yyyy HH:mm', { locale: it })}
                       </Typography>
                     </Box>
+                    {odl.expectedCompletionDate && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" color="text.secondary">ECD:</Typography>
+                        <Typography variant="body2" fontWeight="bold" color="primary">
+                          {format(new Date(odl.expectedCompletionDate), 'dd/MM/yyyy', { locale: it })}
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
                 </CardContent>
               </Card>

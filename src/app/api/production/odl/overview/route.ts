@@ -13,6 +13,14 @@ export async function GET() {
       );
     }
 
+    // Solo SUPERVISOR e ADMIN possono vedere l'overview
+    if (session.user.role !== 'SUPERVISOR' && session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Accesso negato. Solo supervisori e amministratori possono visualizzare questa pagina.' },
+        { status: 403 }
+      );
+    }
+
     // Ottieni tutti gli ODL con le informazioni di produzione
     const odlList = await prisma.oDL.findMany({
       include: {
@@ -70,6 +78,7 @@ export async function GET() {
           status: odl.status,
           priority: odl.priority,
           quantity: odl.quantity,
+          expectedCompletionDate: odl.expectedCompletionDate?.toISOString(),
           currentDepartment,
           assignedOperator: lastEvent?.user?.name,
           timeInDepartment,

@@ -43,6 +43,7 @@ interface ProductionODL {
   status: ODLStatus;
   priority: Priority;
   quantity: number;
+  expectedCompletionDate?: string;
   currentDepartment?: string;
   assignedOperator?: string;
   timeInDepartment?: number;
@@ -392,6 +393,7 @@ export default function ProductionPage() {
                   <TableCell>Parte</TableCell>
                   <TableCell>Stato</TableCell>
                   <TableCell>Priorità</TableCell>
+                  <TableCell>ECD</TableCell>
                   <TableCell>Reparto Attuale</TableCell>
                   <TableCell>Operatore</TableCell>
                   <TableCell>Tempo</TableCell>
@@ -438,6 +440,13 @@ export default function ProductionPage() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
+                        {odl.expectedCompletionDate 
+                          ? new Date(odl.expectedCompletionDate).toLocaleDateString('it-IT')
+                          : '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
                         {odl.currentDepartment || '-'}
                       </Typography>
                     </TableCell>
@@ -481,7 +490,7 @@ export default function ProductionPage() {
                 ))}
       {filteredODL.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} align="center">
+                    <TableCell colSpan={10} align="center">
                       <Typography color="textSecondary">
                         Nessun ODL trovato con i filtri applicati
                       </Typography>
