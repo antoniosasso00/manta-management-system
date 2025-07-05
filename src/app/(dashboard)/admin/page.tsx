@@ -82,7 +82,12 @@ export default function AdminPage() {
     weeklyEvents: 0
   })
   
-  const [notifications, setNotifications] = useState<unknown[]>([])
+  const [notifications, setNotifications] = useState<{
+    id: string;
+    type: 'success' | 'warning' | 'error' | 'info';
+    title: string;
+    message: string;
+  }[]>([])
   const [lastUpdate, setLastUpdate] = useState(new Date())
   
   // Impersonation state
