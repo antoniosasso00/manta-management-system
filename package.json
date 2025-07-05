@@ -18,7 +18,9 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed-complete": "tsx prisma/seed-complete.ts"
+    "db:seed-complete": "tsx prisma/seed-complete.ts",
+    "db:netlify-info": "./scripts/netlify-db-access.sh",
+    "db:reset-netlify": "echo 'Usa: DATABASE_URL=\"url-from-netlify\" npx prisma db push --force-reset'"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
