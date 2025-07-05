@@ -5,6 +5,8 @@ import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
 import { redisRateLimiter, getClientIdentifier, RATE_LIMIT_CONFIGS } from "./rate-limit-redis"
 import type { UserRole, DepartmentRole } from "@prisma/client"
+import { cookies } from "next/headers"
+import jwt from "jsonwebtoken"
 
 declare module "next-auth" {
   interface User {
@@ -132,6 +134,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token
     },
     async session({ session, token }) {
+      // Controlla se c'è un token di impersonificazione
+      const cookieStore = await cookies()
+      const impersonationToken = cookieStore.get('impersonation-token')?.value
+      
+      if (impersonationToken) {
+        try {
+          const decoded = jwt.verify(impersonationToken, process.env.AUTH_SECRET!) as any
+          if (decoded.isImpersonating && decoded.user) {
+            // Usa i dati dell'utente impersonato
+            session.user = {
+              id: decoded.user.id,
+              email: decoded.user.email,
+              name: decoded.user.name,
+              role: decoded.user.role,
+              departmentId: decoded.user.departmentId,
+              departmentRole: decoded.user.departmentRole || null
+            }
+            return session
+          }
+        } catch (error) {
+          console.error('Invalid impersonation token:', error)
+          // Rimuovi token non valido
+          cookieStore.delete('impersonation-token')
+        }
+      }
+      
+      // Comportamento normale se non c'è impersonificazione
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as UserRole

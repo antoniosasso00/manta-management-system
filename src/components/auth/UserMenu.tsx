@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   IconButton,
   Menu,
@@ -20,6 +20,7 @@ import {
   Logout as LogoutIcon,
   AdminPanelSettings as AdminIcon,
   Settings as SettingsIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material'
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -32,6 +33,19 @@ export function UserMenu() {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const [isImpersonating, setIsImpersonating] = useState(false)
+  
+  // Controlla se c'è un token di impersonificazione
+  useEffect(() => {
+    const checkImpersonation = async () => {
+      const response = await fetch('/api/admin/impersonate/check')
+      if (response.ok) {
+        const data = await response.json()
+        setIsImpersonating(data.isImpersonating)
+      }
+    }
+    checkImpersonation()
+  }, [])
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -69,6 +83,19 @@ export function UserMenu() {
         return 'Operatore'
       default:
         return role
+    }
+  }
+  
+  const handleStopImpersonation = async () => {
+    try {
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'DELETE'
+      })
+      if (response.ok) {
+        window.location.href = '/dashboard'
+      }
+    } catch (error) {
+      console.error('Error stopping impersonation:', error)
     }
   }
 
@@ -145,7 +172,7 @@ export function UserMenu() {
             {user.email}
           </Typography>
           <Chip 
-            label={getRoleLabel(user.role)} 
+            label={getRoleLabel(user.role) + (isImpersonating ? ' (Test)' : '')} 
             color={getRoleColor(user.role)}
             size="small"
           />
@@ -202,6 +229,28 @@ export function UserMenu() {
         ]}
 
         <Divider />
+        
+        {/* Stop Impersonation */}
+        {isImpersonating && [
+          <MenuItem 
+            key="stop-impersonation"
+            onClick={() => handleMenuAction(handleStopImpersonation)}
+            sx={{ 
+              color: 'warning.main',
+              minHeight: { xs: 48, sm: 'auto' },
+              bgcolor: 'warning.light',
+              '&:hover': {
+                bgcolor: 'warning.light'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <CloseIcon fontSize="small" color="warning" />
+            </ListItemIcon>
+            <ListItemText>Termina Impersonificazione</ListItemText>
+          </MenuItem>,
+          <Divider key="impersonation-divider" />
+        ]}
 
         {/* Logout */}
         <MenuItem 

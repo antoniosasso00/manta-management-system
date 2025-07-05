@@ -9,7 +9,18 @@ import {
   Typography,
   Grid,
   Chip,
-  Divider
+  Divider,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Autocomplete
 } from '@mui/material'
 import {
   AdminPanelSettings,
@@ -24,7 +35,9 @@ import {
   Error,
   CheckCircle,
   Warning,
-  AccessTime
+  AccessTime,
+  PersonAdd,
+  SwapHoriz
 } from '@mui/icons-material'
 import { 
   LinearProgress,
@@ -71,6 +84,16 @@ export default function AdminPage() {
   
   const [notifications, setNotifications] = useState<unknown[]>([])
   const [lastUpdate, setLastUpdate] = useState(new Date())
+  
+  // Impersonation state
+  const [impersonateDialog, setImpersonateDialog] = useState(false)
+  const [impersonateMode, setImpersonateMode] = useState<'existing' | 'custom'>('existing')
+  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [customRole, setCustomRole] = useState<string>('OPERATOR')
+  const [customDepartment, setCustomDepartment] = useState<string>('')
+  const [users, setUsers] = useState<any[]>([])
+  const [departments, setDepartments] = useState<any[]>([])
+  const [roles] = useState(['ADMIN', 'SUPERVISOR', 'OPERATOR'])
 
   // Real-time notifications loading
   const loadNotifications = useCallback(async () => {
@@ -91,12 +114,56 @@ export default function AdminPage() {
   useEffect(() => {
     loadAdminStats()
     loadNotifications()
+    loadUsersAndDepartments()
     
     // Polling ogni 30 secondi per notifiche real-time
     const interval = setInterval(loadNotifications, 30000)
     
     return () => clearInterval(interval)
   }, [loadNotifications])
+
+  const loadUsersAndDepartments = async () => {
+    try {
+      const response = await fetch('/api/admin/users/list')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.users || [])
+        setDepartments(data.departments || [])
+      }
+    } catch (error) {
+      console.error('Error loading users and departments:', error)
+    }
+  }
+
+  const handleImpersonate = async () => {
+    try {
+      const impersonationData = impersonateMode === 'existing' && selectedUser
+        ? {
+            userId: selectedUser.id,
+            role: selectedUser.role,
+            departmentId: selectedUser.department?.id
+          }
+        : {
+            role: customRole,
+            departmentId: customDepartment || null
+          }
+
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(impersonationData)
+      })
+
+      if (response.ok) {
+        // Reindirizza alla dashboard per applicare il nuovo ruolo
+        window.location.href = '/dashboard'
+      } else {
+        console.error('Errore durante impersonificazione')
+      }
+    } catch (error) {
+      console.error('Error impersonating:', error)
+    }
+  }
 
   const loadAdminStats = async () => {
     try {
@@ -194,11 +261,21 @@ export default function AdminPage() {
           <AdminPanelSettings />
           Pannello Amministrazione
         </Typography>
-        <Chip 
-          label="Sistema Operativo" 
-          color="success" 
-          variant="outlined"
-        />
+        <Box className="flex items-center gap-2">
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<SwapHoriz />}
+            onClick={() => setImpersonateDialog(true)}
+          >
+            Impersona Utente
+          </Button>
+          <Chip 
+            label="Sistema Operativo" 
+            color="success" 
+            variant="outlined"
+          />
+        </Box>
       </Box>
 
       {/* System Stats */}
@@ -386,24 +463,6 @@ export default function AdminPage() {
             </Alert>
           ))}
           
-          {/* Real-time notifications */}
-          {notifications.length > 0 ? (
-            notifications.map((notification, index) => (
-              <Alert 
-                key={notification.id || index} 
-                severity={notification.type || 'info'}
-                icon={notification.type === 'warning' ? <Warning /> : 
-                      notification.type === 'error' ? <Error /> : 
-                      notification.type === 'success' ? <CheckCircle /> : undefined}
-              >
-                <strong>{notification.title}:</strong> {notification.message}
-              </Alert>
-            ))
-          ) : (
-            <Alert severity="info">
-              <strong>Sistema operativo:</strong> Nessuna notifica in questo momento
-            </Alert>
-          )}
         </Stack>
       </Box>
 
@@ -462,6 +521,90 @@ export default function AdminPage() {
           </Grid>
         </CardContent>
       </Card>
+
+      {/* Impersonate Dialog */}
+      <Dialog open={impersonateDialog} onClose={() => setImpersonateDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Impersona Utente</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Mode Selection */}
+            <FormControl fullWidth>
+              <InputLabel>Modalità</InputLabel>
+              <Select
+                value={impersonateMode}
+                onChange={(e) => setImpersonateMode(e.target.value as 'existing' | 'custom')}
+                label="Modalità"
+              >
+                <MenuItem value="existing">Utente Esistente</MenuItem>
+                <MenuItem value="custom">Ruolo Personalizzato</MenuItem>
+              </Select>
+            </FormControl>
+
+            {impersonateMode === 'existing' ? (
+              <Autocomplete
+                options={users}
+                getOptionLabel={(option) => `${option.name} - ${option.email} (${option.role})`}
+                value={selectedUser}
+                onChange={(_, newValue) => setSelectedUser(newValue)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Seleziona Utente" fullWidth />
+                )}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props}>
+                    <Box>
+                      <Typography variant="body1">{option.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.email} - {option.role}
+                        {option.department && ` - ${option.department.name}`}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+              />
+            ) : (
+              <>
+                <FormControl fullWidth>
+                  <InputLabel>Ruolo</InputLabel>
+                  <Select
+                    value={customRole}
+                    onChange={(e) => setCustomRole(e.target.value)}
+                    label="Ruolo"
+                  >
+                    {roles.map((role) => (
+                      <MenuItem key={role} value={role}>{role}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth>
+                  <InputLabel>Reparto (opzionale)</InputLabel>
+                  <Select
+                    value={customDepartment}
+                    onChange={(e) => setCustomDepartment(e.target.value)}
+                    label="Reparto (opzionale)"
+                  >
+                    <MenuItem value="">Nessun reparto</MenuItem>
+                    {departments.map((dept) => (
+                      <MenuItem key={dept.id} value={dept.id}>{dept.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setImpersonateDialog(false)}>Annulla</Button>
+          <Button 
+            onClick={handleImpersonate} 
+            variant="contained" 
+            color="primary"
+            disabled={impersonateMode === 'existing' && !selectedUser}
+          >
+            Impersona
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

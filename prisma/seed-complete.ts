@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ODLStatus, Priority, LoadStatus, UserRole, DepartmentRole, DepartmentType } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import QRCode from 'qrcode'
 import { QRGenerator } from '../src/utils/qr-validation'
@@ -958,7 +958,7 @@ async function main() {
       partNumber: parts[0].partNumber,
       quantity: 2,
       priority: 'HIGH' as const,
-      status: 'IN_CLEANROOM',
+      status: ODLStatus.IN_CLEANROOM,
       gammaId: 'GM-ODL-001',
       curingCycleId: curingCycles[0].id,
       length: 2400, width: 800, height: 25, vacuumLines: 2,
@@ -969,7 +969,7 @@ async function main() {
       partNumber: parts[2].partNumber,
       quantity: 4,
       priority: 'NORMAL' as const,
-      status: 'IN_CLEANROOM',
+      status: ODLStatus.IN_CLEANROOM,
       gammaId: 'GM-ODL-002',
       curingCycleId: curingCycles[1].id,
       length: 1800, width: 300, height: 80, vacuumLines: 1,
@@ -980,7 +980,7 @@ async function main() {
       partNumber: parts[11].partNumber,
       quantity: 1,
       priority: 'URGENT' as const,
-      status: 'IN_CLEANROOM',
+      status: ODLStatus.IN_CLEANROOM,
       gammaId: 'GM-ODL-003',
       curingCycleId: curingCycles[4].id,
       length: 800, width: 800, height: 200, vacuumLines: 1,
@@ -1015,7 +1015,7 @@ async function main() {
         partId: parts[1].id, // A320 ala inferiore
         quantity: 4,
         priority: 'NORMAL' as const,
-        status: 'CLEANROOM_COMPLETED',
+        status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-021',
         gammaId: 'GM-ODL-002',
         curingCycleId: curingCycles[1].id,
@@ -1028,7 +1028,7 @@ async function main() {
         partId: parts[11].id, // Radome
         quantity: 1,
         priority: 'URGENT' as const,
-        status: 'IN_CLEANROOM',
+        status: ODLStatus.IN_CLEANROOM,
         qrCode: 'QR-ODL-24-022',
         gammaId: 'GM-ODL-003',
         curingCycleId: curingCycles[4].id,
@@ -1043,7 +1043,7 @@ async function main() {
         partId: parts[1].id, // A320 ala inferiore
         quantity: 2,
         priority: 'HIGH' as const,
-        status: 'CLEANROOM_COMPLETED',
+        status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-004',
         gammaId: 'GM-ODL-004',
         curingCycleId: curingCycles[0].id,
@@ -1056,7 +1056,7 @@ async function main() {
         partId: parts[4].id, // B777 longherone
         quantity: 1,
         priority: 'URGENT' as const,
-        status: 'CLEANROOM_COMPLETED',
+        status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-005',
         gammaId: 'GM-ODL-005',
         curingCycleId: curingCycles[2].id,
@@ -1069,7 +1069,7 @@ async function main() {
         partId: parts[7].id, // A330 stabilizzatore
         quantity: 1,
         priority: 'NORMAL' as const,
-        status: 'CLEANROOM_COMPLETED',
+        status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-006',
         gammaId: 'GM-ODL-006',
         curingCycleId: curingCycles[1].id,
@@ -1082,7 +1082,7 @@ async function main() {
         partId: parts[14].id, // Pannello interno
         quantity: 8,
         priority: 'LOW' as const,
-        status: 'CLEANROOM_COMPLETED',
+        status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-007',
         gammaId: 'GM-ODL-007',
         curingCycleId: curingCycles[4].id,
@@ -1097,7 +1097,7 @@ async function main() {
         partId: parts[9].id, // B787 fusoliera
         quantity: 1,
         priority: 'HIGH' as const,
-        status: 'IN_AUTOCLAVE',
+        status: ODLStatus.IN_AUTOCLAVE,
         qrCode: 'QR-ODL-24-008',
         gammaId: 'GM-ODL-008',
         curingCycleId: curingCycles[3].id,
@@ -1110,7 +1110,7 @@ async function main() {
         partId: parts[12].id, // Cofano motore
         quantity: 2,
         priority: 'NORMAL' as const,
-        status: 'IN_AUTOCLAVE',
+        status: ODLStatus.IN_AUTOCLAVE,
         qrCode: 'QR-ODL-24-009',
         gammaId: 'GM-ODL-009',
         curingCycleId: curingCycles[1].id,
@@ -1125,7 +1125,7 @@ async function main() {
         partId: parts[5].id, // B777 fusoliera
         quantity: 1,
         priority: 'HIGH' as const,
-        status: 'AUTOCLAVE_COMPLETED',
+        status: ODLStatus.AUTOCLAVE_COMPLETED,
         qrCode: 'QR-ODL-24-010',
         gammaId: 'GM-ODL-010',
         curingCycleId: curingCycles[2].id,
@@ -1138,7 +1138,7 @@ async function main() {
         partId: parts[3].id, // A320 winglet
         quantity: 4,
         priority: 'NORMAL' as const,
-        status: 'AUTOCLAVE_COMPLETED',
+        status: ODLStatus.AUTOCLAVE_COMPLETED,
         qrCode: 'QR-ODL-24-011',
         gammaId: 'GM-ODL-011',
         curingCycleId: curingCycles[3].id,
@@ -1153,7 +1153,7 @@ async function main() {
         partId: parts[6].id, // B777 stabilizzatore
         quantity: 1,
         priority: 'URGENT' as const,
-        status: 'IN_NDI',
+        status: ODLStatus.IN_NDI,
         qrCode: 'QR-ODL-24-012',
         gammaId: 'GM-ODL-012',
         curingCycleId: curingCycles[0].id,
@@ -1166,7 +1166,7 @@ async function main() {
         partId: parts[13].id, // Porta cargo
         quantity: 1,
         priority: 'HIGH' as const,
-        status: 'IN_NDI',
+        status: ODLStatus.IN_NDI,
         qrCode: 'QR-ODL-24-013',
         gammaId: 'GM-ODL-013',
         curingCycleId: curingCycles[0].id,
@@ -1181,7 +1181,7 @@ async function main() {
         partId: parts[8].id, // A330 deriva
         quantity: 2,
         priority: 'NORMAL' as const,
-        status: 'IN_CONTROLLO_QUALITA',
+        status: ODLStatus.IN_CONTROLLO_QUALITA,
         qrCode: 'QR-ODL-24-014',
         gammaId: 'GM-ODL-014',
         curingCycleId: curingCycles[1].id,
@@ -1196,7 +1196,7 @@ async function main() {
         partId: parts[10].id, // B787 ala centrale
         quantity: 1,
         priority: 'HIGH' as const,
-        status: 'COMPLETED',
+        status: ODLStatus.COMPLETED,
         qrCode: 'QR-ODL-24-015',
         gammaId: 'GM-ODL-015',
         curingCycleId: curingCycles[2].id,
@@ -1211,7 +1211,7 @@ async function main() {
         partId: parts[0].id, // A320 ala superiore
         quantity: 1,
         priority: 'LOW' as const,
-        status: 'ON_HOLD',
+        status: ODLStatus.ON_HOLD,
         qrCode: 'QR-ODL-24-016',
         gammaId: 'GM-ODL-016',
         curingCycleId: curingCycles[0].id,
@@ -1226,7 +1226,7 @@ async function main() {
         partId: parts[1].id, // A320 ala inferiore
         quantity: 3,
         priority: 'NORMAL' as const,
-        status: 'CREATED',
+        status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-017',
         gammaId: 'GM-ODL-017',
         curingCycleId: curingCycles[0].id,
@@ -1239,7 +1239,7 @@ async function main() {
         partId: parts[9].id, // B787 fusoliera
         quantity: 2,
         priority: 'HIGH' as const,
-        status: 'CREATED',
+        status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-018',
         gammaId: 'GM-ODL-018',
         curingCycleId: curingCycles[3].id,
@@ -1252,7 +1252,7 @@ async function main() {
         partId: parts[4].id, // B777 longherone
         quantity: 1,
         priority: 'URGENT' as const,
-        status: 'CREATED',
+        status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-019',
         gammaId: 'GM-ODL-019',
         curingCycleId: curingCycles[2].id,
@@ -1265,7 +1265,7 @@ async function main() {
         partId: parts[14].id, // Pannello interno
         quantity: 12,
         priority: 'LOW' as const,
-        status: 'CREATED',
+        status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-020',
         gammaId: 'GM-ODL-020',
         curingCycleId: curingCycles[4].id,
@@ -1288,7 +1288,7 @@ async function main() {
         curingCycleId: curingCycles[0].id,
         plannedStart: tomorrow,
         plannedEnd: new Date(tomorrow.getTime() + 4 * 60 * 60 * 1000),
-        status: 'DRAFT',
+        status: LoadStatus.DRAFT,
         layoutData: {
           efficiency: 0.85,
           totalArea: 8000000, // 4m x 2m
@@ -1310,7 +1310,7 @@ async function main() {
         plannedStart: new Date(now.getTime() - 2 * 60 * 60 * 1000),
         actualStart: new Date(now.getTime() - 2 * 60 * 60 * 1000),
         plannedEnd: new Date(now.getTime() + 1 * 60 * 60 * 1000),
-        status: 'IN_CURE',
+        status: LoadStatus.IN_CURE,
         layoutData: {
           efficiency: 0.72,
           totalArea: 12500000, // 5m x 2.5m
@@ -1332,7 +1332,7 @@ async function main() {
         actualStart: yesterday,
         plannedEnd: new Date(yesterday.getTime() + 6 * 60 * 60 * 1000),
         actualEnd: new Date(yesterday.getTime() + 6.5 * 60 * 60 * 1000),
-        status: 'COMPLETED',
+        status: LoadStatus.COMPLETED,
         layoutData: {
           efficiency: 0.90,
           totalArea: 6300000, // 3.5m x 1.8m
@@ -1349,7 +1349,7 @@ async function main() {
         curingCycleId: curingCycles[1].id,
         plannedStart: new Date(now.getTime() + 4 * 60 * 60 * 1000),
         plannedEnd: new Date(now.getTime() + 8 * 60 * 60 * 1000),
-        status: 'READY',
+        status: LoadStatus.READY,
         layoutData: {
           efficiency: 0.78,
           totalArea: 4500000, // 3m x 1.5m
@@ -1370,7 +1370,7 @@ async function main() {
         curingCycleId: curingCycles[4].id,
         plannedStart: new Date(tomorrow.getTime() + 8 * 60 * 60 * 1000),
         plannedEnd: new Date(tomorrow.getTime() + 12 * 60 * 60 * 1000),
-        status: 'DRAFT',
+        status: LoadStatus.DRAFT,
         layoutData: {
           efficiency: 0.65,
           totalArea: 6250000, // 2.5m x 2.5m
