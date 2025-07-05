@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { ODLService } from '@/domains/core/services/ODLService'
 import { createODLSchema, odlQuerySchema } from '@/domains/core/schemas/odl.schema'
 import { ZodError } from 'zod'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { z, ZodError } from 'zod'
 import { createToolWithPartsSchema, toolQuerySchema } from '@/domains/core/schemas/tool.schema'
 

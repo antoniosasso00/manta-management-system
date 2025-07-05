@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { QualityInspectionService } from '@/domains/quality/services/QualityInspectionService'
 import { QualityInspectionStartSchema } from '@/domains/quality/schemas/qualitySchemas'
 

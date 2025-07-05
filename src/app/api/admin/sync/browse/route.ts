@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { existsSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { z } from 'zod'

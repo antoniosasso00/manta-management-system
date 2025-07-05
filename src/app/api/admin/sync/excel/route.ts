@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { ExcelSyncService } from '@/services/excel-sync.service'
 import { z } from 'zod'
 

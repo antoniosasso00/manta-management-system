@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { UserRole, DepartmentRole } from '@prisma/client'
 import { redirect } from 'next/navigation'
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { TrackingService } from '@/domains/production'
 
 // GET /api/production/odl/department/[id] - Ottieni ODL per reparto

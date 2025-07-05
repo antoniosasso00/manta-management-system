@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { UserRole } from '@prisma/client'
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -226,8 +226,8 @@ async function cleanupOldBackups(retentionDays: number) {
   }
 }
 
-// Funzione per eseguire il backup automatico
-export async function performScheduledBackup() {
+// Funzione per eseguire il backup automatico (non export per route compatibility)
+async function performScheduledBackup() {
   try {
     const databaseUrl = process.env.DATABASE_URL
     if (!databaseUrl) {

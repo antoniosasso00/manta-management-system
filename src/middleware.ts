@@ -53,7 +53,7 @@ export default async function middleware(req: NextRequest) {
   // Dynamic import auth and CORS only when needed (non-edge runtime)
   try {
     const [{ auth }, { corsHandler, corsConfigs }] = await Promise.all([
-      import("@/lib/auth"),
+      import("@/lib/auth-node"),
       import("@/lib/cors-config")
     ])
     

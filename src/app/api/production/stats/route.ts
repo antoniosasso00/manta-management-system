@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { ODL_STATUS } from '@/utils/constants';
 

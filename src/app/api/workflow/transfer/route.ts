@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth-node';
 import { WorkflowService } from '@/domains/production/services/WorkflowService';
 import { z } from 'zod';
 import { withRateLimit, workflowRateLimiter } from '@/lib/rate-limit-middleware';

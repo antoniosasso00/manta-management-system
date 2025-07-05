@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { createManualEventSchema, productionEventFilterSchema } from '@/domains/production'
 import { TrackingService } from '@/domains/production'
 import { z } from 'zod'

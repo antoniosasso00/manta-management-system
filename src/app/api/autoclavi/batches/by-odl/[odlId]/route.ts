@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth-node';
 import { AutoclaviBatchService } from '@/services/autoclavi-batch.service';
 
 // GET /api/autoclavi/batches/by-odl/[odlId] - Trova batch contenente un ODL specifico

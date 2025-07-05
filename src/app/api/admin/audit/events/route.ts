@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { UserRole } from '@prisma/client';
 
