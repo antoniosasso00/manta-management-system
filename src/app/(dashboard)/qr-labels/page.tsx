@@ -1285,11 +1285,13 @@ export default function QRLabelsPage() {
                       label="Nome nuovo template"
                       placeholder="es. Etichette Produzione"
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          saveTemplate(e.currentTarget.value.trim())
-                          e.currentTarget.value = ''
+                        const input = e.target as HTMLInputElement
+                        if (e.key === 'Enter' && input.value.trim()) {
+                          saveTemplate(input.value.trim())
+                          input.value = ''
                         }
                       }}
+
                       InputProps={{
                         endAdornment: (
                           <Button
