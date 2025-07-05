@@ -87,8 +87,7 @@ export default function PartsPage() {
       defaultCuringCycleId: part.defaultCuringCycle ?? undefined,
       standardLength: part.standardLength ?? undefined,
       standardWidth: part.standardWidth ?? undefined,
-      standardHeight: part.standardHeight ?? undefined,
-      defaultVacuumLines: part.defaultVacuumLines ?? undefined
+      standardHeight: part.standardHeight ?? undefined
     })
     setFormOpen(true)
   }
@@ -191,14 +190,6 @@ export default function PartsPage() {
       type: 'text',
       required: true,
       placeholder: 'Descrizione della parte',
-      gridSize: 6
-    },
-    {
-      name: 'defaultVacuumLines',
-      label: 'Linee Vuoto Default',
-      type: 'number',
-      min: 1,
-      max: 10,
       gridSize: 6
     }
   ]

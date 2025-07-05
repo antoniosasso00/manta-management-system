@@ -1,19 +1,17 @@
 import { z } from 'zod'
 
-// Part Number format validation (8G5350A0...)
-const partNumberRegex = /^[A-Z0-9]{8,12}$/
+// Part Number format validation - alfanumerico flessibile
+const partNumberRegex = /^[A-Za-z0-9]+$/
 
 export const createPartSchema = z.object({
   partNumber: z.string()
-    .min(1, 'Part number is required')
-    .regex(partNumberRegex, 'Part number must be 8-12 alphanumeric characters (e.g. 8G5350A0)'),
+    .min(1, 'Il numero parte è obbligatorio')
+    .regex(partNumberRegex, 'Il numero parte deve contenere solo lettere e numeri'),
   description: z.string()
-    .min(1, 'Description is required')
-    .max(255, 'Description too long'),
+    .min(1, 'La descrizione è obbligatoria'),
   
   // Production specifications (optional, configurabili localmente)
   defaultCuringCycleId: z.string().cuid('Invalid curing cycle ID').optional(),
-  defaultVacuumLines: z.number().int().min(1).max(10).optional(),
 })
 
 export const updatePartSchema = createPartSchema.partial().extend({
