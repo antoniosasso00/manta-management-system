@@ -657,7 +657,7 @@ export default function QRLabelsPage() {
   // Table configuration
   const columns: Column<ODLForQR>[] = [
     {
-      id: 'select',
+      id: 'id' as keyof ODLForQR,
       label: '',
       minWidth: 60,
       format: (_value, row) => (

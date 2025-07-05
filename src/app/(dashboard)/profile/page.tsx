@@ -462,7 +462,7 @@ export default function ProfilePage() {
               </Box>
               
               <List>
-                {recentActivities.map((activity, index) => (
+                {recentActivities.map((activity: RecentActivity, index: number) => (
                   <Box key={activity.id}>
                     <ListItem sx={{ px: 0 }}>
                       <ListItemIcon>

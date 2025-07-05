@@ -8,10 +8,7 @@ export const createPartSchema = z.object({
     .min(1, 'Il numero parte è obbligatorio')
     .regex(partNumberRegex, 'Il numero parte deve contenere solo lettere e numeri'),
   description: z.string()
-    .min(1, 'La descrizione è obbligatoria'),
-  
-  // Production specifications (optional, configurabili localmente)
-  defaultCuringCycleId: z.string().cuid('Invalid curing cycle ID').optional(),
+    .min(1, 'La descrizione è obbligatoria')
 })
 
 export const updatePartSchema = createPartSchema.partial().extend({

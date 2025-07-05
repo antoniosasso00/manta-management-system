@@ -96,7 +96,7 @@ export default function ProductionPage() {
         const odlData = await odlResponse.json();
         setOdlList(odlData);
       } else {
-        console.error('Errore nel caricamento ODL produzione:', response.statusText)
+        console.error('Errore nel caricamento ODL produzione:', odlResponse.statusText)
         setOdlList([]);
       }
 
@@ -195,12 +195,26 @@ export default function ProductionPage() {
   const getStatusLabel = (status: ODLStatus) => {
     const labels: Record<ODLStatus, string> = {
       'CREATED': 'Creato',
+      'IN_HONEYCOMB': 'In Honeycomb',
+      'HONEYCOMB_COMPLETED': 'Honeycomb OK',
       'IN_CLEANROOM': 'In Clean Room',
       'CLEANROOM_COMPLETED': 'Clean Room OK',
+      'IN_CONTROLLO_NUMERICO': 'In Controllo Numerico',
+      'CONTROLLO_NUMERICO_COMPLETED': 'Controllo Numerico OK',
+      'IN_MONTAGGIO': 'In Montaggio',
+      'MONTAGGIO_COMPLETED': 'Montaggio OK',
       'IN_AUTOCLAVE': 'In Autoclavi',
       'AUTOCLAVE_COMPLETED': 'Autoclavi OK',
       'IN_NDI': 'In NDI',
+      'NDI_COMPLETED': 'NDI OK',
       'IN_RIFILATURA': 'In Rifilatura',
+      'RIFILATURA_COMPLETED': 'Rifilatura OK',
+      'IN_VERNICIATURA': 'In Verniciatura',
+      'VERNICIATURA_COMPLETED': 'Verniciatura OK',
+      'IN_MOTORI': 'In Motori',
+      'MOTORI_COMPLETED': 'Motori OK',
+      'IN_CONTROLLO_QUALITA': 'In Controllo Qualità',
+      'CONTROLLO_QUALITA_COMPLETED': 'Controllo Qualità OK',
       'COMPLETED': 'Completato',
       'ON_HOLD': 'In Attesa',
       'CANCELLED': 'Annullato'

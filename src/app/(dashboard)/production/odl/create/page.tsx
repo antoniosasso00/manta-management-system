@@ -372,7 +372,7 @@ export default function CreateODLPage() {
                             typeof option === 'string' ? option : `${option.partNumber} - ${option.description}`
                           }
                           isOptionEqualToValue={(option, value) => 
-                            (typeof option === 'string' ? option : option.id) === value
+                            option.id === (value?.id || value)
                           }
                           value={selectedPart}
                           onChange={(_, value) => handlePartSelection(value)}

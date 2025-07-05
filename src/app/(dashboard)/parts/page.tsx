@@ -31,15 +31,17 @@ export default function PartsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
-  // Form setup
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm<CreatePartInput | UpdatePartInput>({
-    resolver: zodResolver(isEditing ? updatePartSchema : createPartSchema)
+  // Form setup - separate create and update forms
+  const createForm = useForm<CreatePartInput>({
+    resolver: zodResolver(createPartSchema)
   })
+
+  const updateForm = useForm<UpdatePartInput>({
+    resolver: zodResolver(updatePartSchema)
+  })
+
+  // Use the appropriate form based on editing state
+  const { control, handleSubmit, reset, formState: { errors } } = isEditing ? updateForm : createForm
 
   // Fetch parts
   const fetchParts = useCallback(async () => {
@@ -74,20 +76,17 @@ export default function PartsPage() {
   const handleAdd = () => {
     setSelectedPart(null)
     setIsEditing(false)
-    reset({})
+    createForm.reset({})
     setFormOpen(true)
   }
 
   const handleEdit = (part: Part) => {
     setSelectedPart(part)
     setIsEditing(true)
-    reset({
+    updateForm.reset({
+      id: part.id,
       partNumber: part.partNumber,
-      description: part.description,
-      defaultCuringCycleId: part.defaultCuringCycle ?? undefined,
-      standardLength: part.standardLength ?? undefined,
-      standardWidth: part.standardWidth ?? undefined,
-      standardHeight: part.standardHeight ?? undefined
+      description: part.description
     })
     setFormOpen(true)
   }
@@ -264,7 +263,7 @@ export default function PartsPage() {
           <DialogContent>
             <FormBuilder
               fields={formFields}
-              control={control}
+              control={control as any}
               errors={errors}
               columns={2}
               spacing={3}

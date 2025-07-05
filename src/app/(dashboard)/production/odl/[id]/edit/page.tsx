@@ -25,16 +25,18 @@ import {
   Card,
   CardContent,
   Divider,
+  IconButton,
+  Tooltip
+} from '@mui/material'
+import {
   Timeline,
   TimelineItem,
   TimelineSeparator,
   TimelineConnector,
   TimelineContent,
   TimelineDot,
-  TimelineOppositeContent,
-  IconButton,
-  Tooltip
-} from '@mui/material'
+  TimelineOppositeContent
+} from '@mui/lab'
 import {
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -498,7 +500,7 @@ export default function EditODLPage() {
                           typeof option === 'string' ? option : `${option.partNumber} - ${option.description}`
                         }
                         isOptionEqualToValue={(option, value) => 
-                          (typeof option === 'string' ? option : option.id) === value
+                          option.id === (value?.id || value)
                         }
                         value={selectedPart}
                         onChange={(_, value) => handlePartSelection(value)}
@@ -737,7 +739,7 @@ export default function EditODLPage() {
                     </TimelineOppositeContent>
                     
                     <TimelineSeparator>
-                      <TimelineDot color="primary" size="small">
+                      <TimelineDot color="primary">
                         <EditIcon sx={{ fontSize: 16 }} />
                       </TimelineDot>
                       {index < changeLogs.length - 1 && <TimelineConnector />}

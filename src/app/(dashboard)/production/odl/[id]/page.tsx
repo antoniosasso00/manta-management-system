@@ -14,13 +14,6 @@ import {
   Button,
   IconButton,
   Tooltip,
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-  TimelineOppositeContent,
   Tab,
   Tabs,
   CircularProgress,
@@ -38,6 +31,15 @@ import {
   Avatar,
   Divider
 } from '@mui/material'
+import {
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineOppositeContent
+} from '@mui/lab'
 import {
   Edit as EditIcon,
   Print as PrintIcon,
