@@ -50,6 +50,7 @@ import {
   CheckCircle as CheckedIcon
 } from '@mui/icons-material'
 import { DataTable } from '@/components/atoms'
+import type { DataTableProps } from '@/components/atoms/DataTable'
 import { FilterPanel, FilterConfig, FilterValues } from '@/components/molecules'
 import type { Column } from '@/components/atoms/DataTable'
 import { useAuth } from '@/hooks/useAuth'
@@ -980,14 +981,15 @@ export default function QRLabelsPage() {
             <CircularProgress />
           </Box>
         ) : (
-          <DataTable
-            {...{
-              data: odls,
-              columns,
-              loading: false,
-              stickyHeader: true,
-              maxHeight: 600,
-            } as DataTableProps<ODLForQR>}
+          <DataTable<ODLForQR>
+            data={odls}
+            columns={columns}
+            loading={false}
+            totalCount={odls.length}
+            page={0}
+            rowsPerPage={odls.length}
+            onPageChange={() => {}}
+            onRowsPerPageChange={() => {}}
           />
         )}
       </Paper>
