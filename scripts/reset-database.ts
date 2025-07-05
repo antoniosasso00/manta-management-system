@@ -43,7 +43,6 @@ async function resetDatabase() {
     await prisma.part.deleteMany()
     
     // Departments and Users
-    await prisma.departmentUser.deleteMany()
     await prisma.department.deleteMany()
     
     // Curing Cycles and Autoclaves
@@ -51,7 +50,7 @@ async function resetDatabase() {
     await prisma.autoclave.deleteMany()
     
     // System Tables
-    await prisma.gammaSync.deleteMany()
+    await prisma.gammaSyncLog.deleteMany()
     await prisma.auditLog.deleteMany()
     
     // Auth Tables
