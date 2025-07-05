@@ -110,6 +110,7 @@ function PreviewQRCode({ odl, size, errorCorrection }: {
 }
 
 interface ODLForQR {
+  [key: string]: any // ← AGGIUNGI QUESTO
   id: string
   odlNumber: string
   qrCode?: string | null
@@ -127,6 +128,7 @@ interface ODLForQR {
   lastPrintedAt?: string
   printedBy?: string
 }
+
 
 interface PrintConfiguration {
   paperFormat: 'A4' | 'A5' | 'CUSTOM'
@@ -162,6 +164,7 @@ export default function QRLabelsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterValues, setFilterValues] = useState<FilterValues>({})
   const [printPreview, setPrintPreview] = useState(false)
+  const [filterPanelOpen, setFilterPanelOpen] = useState(true)
   
   // Print Configuration State
   const [configDialog, setConfigDialog] = useState(false)
@@ -952,15 +955,21 @@ export default function QRLabelsPage() {
           />
           
           <FilterPanel
+            open={filterPanelOpen}
+            onClose={() => setFilterPanelOpen(false)}
             filters={filters}
             values={filterValues}
             onChange={setFilterValues}
-            onApply={fetchOdls}
+            onApply={() => {
+              fetchOdls()
+              setFilterPanelOpen(false)
+            }}
             onReset={() => {
               setFilterValues({})
               fetchOdls()
             }}
           />
+
         </Stack>
       </Paper>
 
@@ -972,11 +981,13 @@ export default function QRLabelsPage() {
           </Box>
         ) : (
           <DataTable
-            data={odls}
-            columns={columns}
-            loading={false}
-            stickyHeader
-            maxHeight={600}
+            {...{
+              data: odls,
+              columns,
+              loading: false,
+              stickyHeader: true,
+              maxHeight: 600,
+            } as DataTableProps<ODLForQR>}
           />
         )}
       </Paper>
