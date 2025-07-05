@@ -239,12 +239,19 @@ export default function QRScannerPage() {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        await videoRef.current.play();
         
-        scanner.decodeFromVideoDevice(null, videoRef.current, (result) => {
+        // Ottieni l'ID del dispositivo video dalla stream
+        const videoTrack = stream.getVideoTracks()[0];
+        const deviceId = videoTrack.getSettings().deviceId || undefined;
+        
+        scanner.decodeFromVideoDevice(deviceId, videoRef.current, (result, error) => {
           if (result) {
             handleScanResult(result.getText());
             stopScanning();
+          }
+          if (error && !(error instanceof Error && error.message.includes('No barcode'))) {
+            console.error('Errore scansione:', error);
           }
         });
       }
@@ -274,6 +281,11 @@ export default function QRScannerPage() {
       
       if (qrData.type !== 'ODL') {
         throw new Error('QR Code non valido per ODL');
+      }
+      
+      // Vibrazione e feedback
+      if ('vibrate' in navigator) {
+        navigator.vibrate(200);
       }
       
       setScanResult(qrData);
@@ -535,6 +547,133 @@ export default function QRScannerPage() {
                       muted
                       playsInline
                     />
+                    
+                    {/* Scanner Overlay */}
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      pointerEvents: 'none'
+                    }}>
+                      {/* Dark overlay */}
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+                      }} />
+                      
+                      {/* Scan area */}
+                      <Box sx={{
+                        position: 'relative',
+                        width: isMobile ? '80%' : '60%',
+                        maxWidth: 300,
+                        aspectRatio: '1',
+                        borderRadius: 2
+                      }}>
+                        {/* Clear center area */}
+                        <Box sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: 'transparent',
+                          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
+                          borderRadius: 2
+                        }} />
+                        
+                        {/* Animated corners */}
+                        <Box sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          '&::before, &::after': {
+                            content: '""',
+                            position: 'absolute',
+                            width: 40,
+                            height: 40,
+                            border: '3px solid',
+                            borderColor: theme => theme.palette.primary.main
+                          },
+                          '&::before': {
+                            top: 0,
+                            left: 0,
+                            borderRight: 'none',
+                            borderBottom: 'none',
+                            borderTopLeftRadius: 8
+                          },
+                          '&::after': {
+                            top: 0,
+                            right: 0,
+                            borderLeft: 'none',
+                            borderBottom: 'none',
+                            borderTopRightRadius: 8
+                          }
+                        }} />
+                        
+                        <Box sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          '&::before, &::after': {
+                            content: '""',
+                            position: 'absolute',
+                            width: 40,
+                            height: 40,
+                            border: '3px solid',
+                            borderColor: theme => theme.palette.primary.main
+                          },
+                          '&::before': {
+                            bottom: 0,
+                            left: 0,
+                            borderRight: 'none',
+                            borderTop: 'none',
+                            borderBottomLeftRadius: 8
+                          },
+                          '&::after': {
+                            bottom: 0,
+                            right: 0,
+                            borderLeft: 'none',
+                            borderTop: 'none',
+                            borderBottomRightRadius: 8
+                          }
+                        }} />
+                        
+                        {/* Scanning line animation */}
+                        <Box sx={{
+                          position: 'absolute',
+                          left: '10%',
+                          right: '10%',
+                          height: 2,
+                          backgroundColor: theme => theme.palette.primary.main,
+                          boxShadow: theme => `0 0 10px ${theme.palette.primary.main}`,
+                          animation: 'scan 2s ease-in-out infinite',
+                          '@keyframes scan': {
+                            '0%': { top: '10%' },
+                            '50%': { top: '90%' },
+                            '100%': { top: '10%' }
+                          }
+                        }} />
+                      </Box>
+                      
+                      {/* Instructions */}
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          position: 'absolute',
+                          bottom: '10%',
+                          color: 'white',
+                          textAlign: 'center',
+                          px: 2,
+                          textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+                        }}
+                      >
+                        Inquadra il QR code nell'area di scansione
+                      </Typography>
+                    </Box>
                   </Box>
                   <Button
                     variant="contained"
