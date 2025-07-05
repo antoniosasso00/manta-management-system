@@ -37,6 +37,16 @@ import { useAuth } from '@/hooks/useAuth'
 import { useDashboardKPI } from '@/hooks/useRealTimeUpdates'
 import Link from 'next/link'
 
+interface DashboardNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  priority: string;
+  createdAt: Date;
+  timestamp?: string;
+  link: string;
+}
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth()
@@ -332,7 +342,7 @@ export default function DashboardPage() {
                 <Badge badgeContent={notifications.length} color="primary" sx={{ ml: 2 }} />
               </Typography>
               <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
-                {notifications.map((notification) => (
+                {notifications.map((notification: DashboardNotification) => (
                   <Alert 
                     key={notification.id}
                     severity={notification.type as any}

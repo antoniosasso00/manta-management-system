@@ -232,13 +232,27 @@ export default function MyDepartmentPage() {
 
   const getStatusColor = (status: ODLStatus) => {
     switch (status) {
+      case 'IN_HONEYCOMB':
       case 'IN_CLEANROOM':
       case 'IN_AUTOCLAVE':
       case 'IN_NDI':
       case 'IN_RIFILATURA':
+      case 'IN_CONTROLLO_NUMERICO':
+      case 'IN_MONTAGGIO':
+      case 'IN_VERNICIATURA':
+      case 'IN_MOTORI':
+      case 'IN_CONTROLLO_QUALITA':
         return 'primary';
+      case 'HONEYCOMB_COMPLETED':
       case 'CLEANROOM_COMPLETED':
       case 'AUTOCLAVE_COMPLETED':
+      case 'RIFILATURA_COMPLETED':
+      case 'CONTROLLO_NUMERICO_COMPLETED':
+      case 'MONTAGGIO_COMPLETED':
+      case 'NDI_COMPLETED':
+      case 'VERNICIATURA_COMPLETED':
+      case 'MOTORI_COMPLETED':
+      case 'CONTROLLO_QUALITA_COMPLETED':
         return 'success';
       case 'COMPLETED':
         return 'success';
