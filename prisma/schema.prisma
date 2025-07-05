@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -9,42 +9,32 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// User Management
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
-  name          String?
-  password      String
-  role          UserRole        @default(OPERATOR)
-  isActive      Boolean         @default(true)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  
-  // Department-specific role assignment
-  departmentId     String?          // Reparto assegnato (null per ADMIN globali)
-  departmentRole   DepartmentRole?  // Ruolo specifico nel reparto
-  
-  // Relations
-  sessions      Session[]
-  accounts      Account[]
-  odlEvents     ProductionEvent[]
-  passwordResetTokens PasswordResetToken[]
-  auditLogs     AuditLog[]
-  department    Department?      @relation(fields: [departmentId], references: [id])
-  
-  // Quality Control Relations
-  qualityInspections QualityInspection[] @relation("QualityInspector")
-  qualitySignatures QualityInspection[] @relation("QualitySigner")
-  nonConformityReports NonConformity[] @relation("NCReporter")
-  nonConformityAssignments NonConformity[] @relation("NCAssignee")
-  capaAssignments CorrectiveAction[] @relation("CAPAAssignee")
-  capaVerifications CorrectiveAction[] @relation("CAPAVerifier")
-  certificateIssued QualityCertificate[] @relation("CertificateIssuer")
-  certificateApproved QualityCertificate[] @relation("CertificateApprover")
-  
-  // Department Relations
-  // Future: department-specific relations when needed
-  
+  id                       String               @id @default(cuid())
+  email                    String               @unique
+  name                     String?
+  password                 String
+  role                     UserRole             @default(OPERATOR)
+  isActive                 Boolean              @default(true)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  departmentId             String?
+  departmentRole           DepartmentRole?
+  accounts                 Account[]
+  auditLogs                AuditLog[]
+  capaAssignments          CorrectiveAction[]   @relation("CAPAAssignee")
+  capaVerifications        CorrectiveAction[]   @relation("CAPAVerifier")
+  nonConformityAssignments NonConformity[]      @relation("NCAssignee")
+  nonConformityReports     NonConformity[]      @relation("NCReporter")
+  passwordResetTokens      PasswordResetToken[]
+  odlEvents                ProductionEvent[]
+  certificateApproved      QualityCertificate[] @relation("CertificateApprover")
+  certificateIssued        QualityCertificate[] @relation("CertificateIssuer")
+  qualityInspections       QualityInspection[]  @relation("QualityInspector")
+  qualitySignatures        QualityInspection[]  @relation("QualitySigner")
+  sessions                 Session[]
+  department               Department?          @relation(fields: [departmentId], references: [id])
+
   @@index([email, isActive])
   @@index([role])
   @@index([departmentId, departmentRole])
@@ -52,7 +42,6 @@ model User {
   @@map("users")
 }
 
-// Password Reset Tokens
 model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
@@ -60,9 +49,8 @@ model PasswordResetToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
   used      Boolean  @default(false)
-  
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([token])
   @@index([userId])
   @@index([expiresAt, used])
@@ -70,34 +58,20 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
-enum UserRole {
-  ADMIN
-  SUPERVISOR
-  OPERATOR
-}
-
-enum DepartmentRole {
-  CAPO_REPARTO      // Responsabile completo del reparto
-  CAPO_TURNO        // Responsabile turno con supervisione operatori
-  OPERATORE         // Operatore standard del reparto
-}
-
-// NextAuth models
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -116,86 +90,499 @@ model Session {
   @@map("sessions")
 }
 
-// Parts (Master Data - Aggregate Root)
 model Part {
-  id              String           @id @default(cuid())
-  partNumber      String           @unique
-  description     String
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
-  // Gamma MES sync tracking
-  gammaId         String?          // ID originale da Gamma MES
-  lastSyncAt      DateTime?        // Ultima sincronizzazione
-  syncStatus      SyncStatus       @default(SUCCESS)
-  
-  // Production specifications (configurabili localmente)
-  defaultCuringCycleId String?     // Reference to CuringCycle
+  id                   String                 @id @default(cuid())
+  partNumber           String                 @unique
+  description          String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  gammaId              String?
+  lastSyncAt           DateTime?
+  syncStatus           SyncStatus             @default(SUCCESS)
+  defaultCuringCycleId String?
   defaultVacuumLines   Int?
-  
-  // Relations
-  odls               ODL[]
-  defaultCuringCycle CuringCycle?  @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
-  partTools          PartTool[]
-  qualityPlans       QualityControlPlan[]
-  
-  // Department Extensions (One-to-One Optional)
-  honeycombConfig    PartHoneycomb? @relation("PartHoneycombConfig")
-  cncConfig          PartControlloNumerico? @relation("PartCNCConfig")
-  assemblyConfig     PartMontaggio? @relation("PartAssemblyConfig")
-  coatingConfig      PartVerniciatura? @relation("PartCoatingConfig")
-  engineConfig       PartMotori? @relation("PartEngineConfig")
-  
+  odls                 ODL[]
+  cncConfig            PartControlloNumerico? @relation("PartCNCConfig")
+  honeycombConfig      PartHoneycomb?         @relation("PartHoneycombConfig")
+  assemblyConfig       PartMontaggio?         @relation("PartAssemblyConfig")
+  engineConfig         PartMotori?            @relation("PartEngineConfig")
+  partTools            PartTool[]
+  coatingConfig        PartVerniciatura?      @relation("PartCoatingConfig")
+  defaultCuringCycle   CuringCycle?           @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
+  qualityPlans         QualityControlPlan[]
+
   @@index([partNumber])
   @@index([gammaId])
   @@index([defaultCuringCycleId])
   @@map("parts")
 }
 
-// ODL (Work Orders)
 model ODL {
-  id              String           @id @default(cuid())
-  odlNumber       String           @unique
-  partId          String
-  quantity        Int
-  priority        Priority         @default(NORMAL)
-  status          ODLStatus        @default(CREATED)
-  qrCode          String           @unique
-  expectedCompletionDate DateTime?  // ECD - Data di completamento prevista
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
-  // Gamma MES sync tracking
-  gammaId         String?          // ID originale da Gamma MES
-  lastSyncAt      DateTime?        // Ultima sincronizzazione
-  syncStatus      SyncStatus       @default(SUCCESS)
-  
-  // Override dimensions for autoclave optimization (if different from standard)
-  length          Float?
-  width           Float?
-  height          Float?
-  
-  // Override production data (if different from standard)
-  curingCycleId   String?
-  vacuumLines     Int?
-  
-  // Relations
-  part            Part             @relation(fields: [partId], references: [id])
-  curingCycle     CuringCycle?     @relation("ODLCuringCycle", fields: [curingCycleId], references: [id])
-  events          ProductionEvent[]
-  autoclaveLoadItems AutoclaveLoadItem[]
-  qualityInspections QualityInspection[]
-  nonConformities NonConformity[]
-  qualityCertificates QualityCertificate[]
-  
-  // Ottimizzazione indici - rimosse ridondanze e aggiunti indici composti strategici
-  @@index([qrCode]) // Unique constraint già presente, indice automatico
-  @@index([partId, status]) // Query frequent per parti in uno specifico stato
-  @@index([status, priority, createdAt]) // Dashboard queries con filtri multipli
-  @@index([gammaId]) // Sync operations
-  @@index([curingCycleId]) // Autoclave batch operations
-  @@index([createdAt]) // Time-based queries
+  id                     String               @id @default(cuid())
+  odlNumber              String               @unique
+  partId                 String
+  quantity               Int
+  priority               Priority             @default(NORMAL)
+  status                 ODLStatus            @default(CREATED)
+  qrCode                 String               @unique
+  expectedCompletionDate DateTime?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  gammaId                String?
+  lastSyncAt             DateTime?
+  syncStatus             SyncStatus           @default(SUCCESS)
+  length                 Float?
+  width                  Float?
+  height                 Float?
+  curingCycleId          String?
+  vacuumLines            Int?
+  autoclaveLoadItems     AutoclaveLoadItem[]
+  nonConformities        NonConformity[]
+  curingCycle            CuringCycle?         @relation("ODLCuringCycle", fields: [curingCycleId], references: [id])
+  part                   Part                 @relation(fields: [partId], references: [id])
+  events                 ProductionEvent[]
+  qualityCertificates    QualityCertificate[]
+  qualityInspections     QualityInspection[]
+
+  @@index([qrCode])
+  @@index([partId, status])
+  @@index([status, priority, createdAt])
+  @@index([gammaId])
+  @@index([curingCycleId])
+  @@index([createdAt])
   @@map("odls")
+}
+
+model ProductionEvent {
+  id           String     @id @default(cuid())
+  odlId        String
+  departmentId String
+  eventType    EventType
+  timestamp    DateTime   @default(now())
+  userId       String
+  notes        String?
+  duration     Int?
+  isAutomatic  Boolean    @default(false)
+  department   Department @relation(fields: [departmentId], references: [id])
+  odl          ODL        @relation(fields: [odlId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+
+  @@index([odlId, timestamp])
+  @@index([departmentId, eventType, timestamp])
+  @@index([userId, timestamp])
+  @@index([timestamp, isAutomatic])
+  @@index([odlId, departmentId, eventType])
+  @@map("production_events")
+}
+
+model Department {
+  id         String            @id @default(cuid())
+  code       String            @unique
+  name       String
+  type       DepartmentType
+  isActive   Boolean           @default(true)
+  autoclaves Autoclave[]
+  events     ProductionEvent[]
+  users      User[]
+
+  @@map("departments")
+}
+
+model Autoclave {
+  id           String          @id @default(cuid())
+  code         String          @unique
+  name         String
+  departmentId String
+  maxLength    Float
+  maxWidth     Float
+  maxHeight    Float
+  vacuumLines  Int
+  isActive     Boolean         @default(true)
+  loads        AutoclaveLoad[]
+  department   Department      @relation(fields: [departmentId], references: [id])
+
+  @@map("autoclaves")
+}
+
+model AutoclaveLoad {
+  id            String              @id @default(cuid())
+  loadNumber    String              @unique
+  autoclaveId   String
+  curingCycleId String
+  plannedStart  DateTime
+  actualStart   DateTime?
+  plannedEnd    DateTime
+  actualEnd     DateTime?
+  status        LoadStatus          @default(DRAFT)
+  layoutData    Json?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  loadItems     AutoclaveLoadItem[]
+  autoclave     Autoclave           @relation(fields: [autoclaveId], references: [id])
+  curingCycle   CuringCycle         @relation(fields: [curingCycleId], references: [id])
+
+  @@index([autoclaveId, status, plannedStart])
+  @@index([status, plannedStart])
+  @@index([curingCycleId, status])
+  @@index([plannedStart, plannedEnd])
+  @@map("autoclave_loads")
+}
+
+model AutoclaveLoadItem {
+  id              String        @id @default(cuid())
+  odlId           String
+  autoclaveLoadId String
+  position        Json?
+  addedAt         DateTime      @default(now())
+  previousStatus  ODLStatus?
+  autoclaveLoad   AutoclaveLoad @relation(fields: [autoclaveLoadId], references: [id], onDelete: Cascade)
+  odl             ODL           @relation(fields: [odlId], references: [id], onDelete: Cascade)
+
+  @@unique([odlId, autoclaveLoadId])
+  @@index([autoclaveLoadId])
+  @@map("autoclave_load_items")
+}
+
+model GammaSyncLog {
+  id             String     @id @default(cuid())
+  fileName       String
+  fileType       String
+  entityType     String
+  syncStatus     SyncStatus
+  recordsRead    Int        @default(0)
+  recordsSynced  Int        @default(0)
+  recordsSkipped Int        @default(0)
+  errorMessage   String?
+  syncedAt       DateTime   @default(now())
+
+  @@index([fileType, syncedAt])
+  @@map("gamma_sync_logs")
+}
+
+model Tool {
+  id             String     @id @default(cuid())
+  toolPartNumber String     @unique
+  description    String?
+  base           Float
+  height         Float
+  weight         Float?
+  material       String
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  partTools      PartTool[]
+
+  @@index([toolPartNumber])
+  @@map("tools")
+}
+
+model PartTool {
+  id     String @id @default(cuid())
+  partId String
+  toolId String
+  part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@unique([partId, toolId])
+  @@index([partId])
+  @@index([toolId])
+  @@map("part_tools")
+}
+
+model CuringCycle {
+  id                String          @id @default(cuid())
+  code              String          @unique
+  name              String
+  description       String?
+  phase1Temperature Float
+  phase1Pressure    Float
+  phase1Duration    Int
+  phase2Temperature Float?
+  phase2Pressure    Float?
+  phase2Duration    Int?
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  autoclaveLoads    AutoclaveLoad[]
+  odls              ODL[]           @relation("ODLCuringCycle")
+  defaultParts      Part[]          @relation("DefaultCuringCycle")
+
+  @@index([code])
+  @@map("curing_cycles")
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  action     AuditAction
+  resource   String
+  resourceId String?
+  userId     String
+  userEmail  String
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@index([resource, resourceId, timestamp])
+  @@index([action, timestamp])
+  @@index([userId, timestamp])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model QualityControlPlan {
+  id                 String              @id @default(cuid())
+  partId             String
+  version            String              @default("1.0")
+  title              String
+  description        String?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          String
+  inspectionType     QCInspectionType
+  frequency          QCFrequency
+  sampleSize         Int                 @default(1)
+  acceptanceCriteria Json
+  part               Part                @relation(fields: [partId], references: [id])
+  inspections        QualityInspection[]
+
+  @@index([partId, isActive])
+  @@index([inspectionType, isActive])
+  @@index([createdAt])
+  @@map("quality_control_plans")
+}
+
+model QualityInspection {
+  id                String             @id @default(cuid())
+  planId            String
+  odlId             String
+  inspectorId       String
+  status            QCStatus           @default(PENDING)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  result            QCResult?
+  measurements      Json?
+  notes             String?
+  attachments       String[]           @default([])
+  certificateNumber String?            @unique
+  signedBy          String?
+  signedAt          DateTime?
+  nonConformities   NonConformity[]
+  inspector         User               @relation("QualityInspector", fields: [inspectorId], references: [id])
+  odl               ODL                @relation(fields: [odlId], references: [id])
+  plan              QualityControlPlan @relation(fields: [planId], references: [id])
+  signer            User?              @relation("QualitySigner", fields: [signedBy], references: [id])
+
+  @@index([odlId, status])
+  @@index([inspectorId, status])
+  @@index([completedAt])
+  @@index([certificateNumber])
+  @@map("quality_inspections")
+}
+
+model NonConformity {
+  id           String             @id @default(cuid())
+  inspectionId String?
+  odlId        String
+  reportedBy   String
+  type         NCType
+  severity     NCSeverity
+  category     NCCategory
+  title        String
+  description  String
+  rootCause    String?
+  status       NCStatus           @default(OPEN)
+  detectedAt   DateTime           @default(now())
+  assignedTo   String?
+  dueDate      DateTime?
+  actions      CorrectiveAction[]
+  assignee     User?              @relation("NCAssignee", fields: [assignedTo], references: [id])
+  inspection   QualityInspection? @relation(fields: [inspectionId], references: [id])
+  odl          ODL                @relation(fields: [odlId], references: [id])
+  reporter     User               @relation("NCReporter", fields: [reportedBy], references: [id])
+
+  @@index([odlId, status])
+  @@index([assignedTo, status])
+  @@index([severity, status])
+  @@index([detectedAt])
+  @@map("non_conformities")
+}
+
+model CorrectiveAction {
+  id              String        @id @default(cuid())
+  nonConformityId String
+  type            CAPAType
+  title           String
+  description     String
+  plannedAction   String
+  dueDate         DateTime
+  assignedTo      String
+  status          CAPAStatus    @default(PLANNED)
+  actualAction    String?
+  completedAt     DateTime?
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  effectiveness   String?
+  followUpDate    DateTime?
+  assignee        User          @relation("CAPAAssignee", fields: [assignedTo], references: [id])
+  nonConformity   NonConformity @relation(fields: [nonConformityId], references: [id])
+  verifier        User?         @relation("CAPAVerifier", fields: [verifiedBy], references: [id])
+
+  @@index([nonConformityId])
+  @@index([assignedTo, status])
+  @@index([dueDate, status])
+  @@index([completedAt])
+  @@map("corrective_actions")
+}
+
+model QualityCertificate {
+  id                String    @id @default(cuid())
+  odlId             String
+  certificateNumber String    @unique
+  title             String
+  description       String?
+  conformityStatus  Boolean   @default(false)
+  standardsRef      String[]  @default([])
+  issuedBy          String
+  approvedBy        String?
+  issuedAt          DateTime  @default(now())
+  approvedAt        DateTime?
+  documentPath      String?
+  approver          User?     @relation("CertificateApprover", fields: [approvedBy], references: [id])
+  issuer            User      @relation("CertificateIssuer", fields: [issuedBy], references: [id])
+  odl               ODL       @relation(fields: [odlId], references: [id])
+
+  @@index([odlId])
+  @@index([certificateNumber])
+  @@index([issuedAt])
+  @@index([conformityStatus])
+  @@map("quality_certificates")
+}
+
+model PartHoneycomb {
+  id                  String        @id @default(cuid())
+  partId              String        @unique
+  coreType            HoneycombType
+  cellSize            Float
+  coreDensity         Float
+  coreThickness       Float
+  skinMaterial        String?
+  skinThickness       Float?
+  adhesiveType        String
+  cureTemperature     Float
+  cureTime            Int
+  pressure            Float
+  bondStrength        Float?
+  compressionStrength Float?
+  setupTimeMinutes    Int?
+  cycleTimeMinutes    Int?
+  skillLevel          SkillLevel    @default(BASIC)
+  part                Part          @relation("PartHoneycombConfig", fields: [partId], references: [id])
+
+  @@index([partId])
+  @@index([coreType])
+  @@map("part_honeycomb")
+}
+
+model PartControlloNumerico {
+  id                 String          @id @default(cuid())
+  partId             String          @unique
+  materialType       CNCMaterialType
+  toolingRequired    String[]
+  programmingTime    Int?
+  setupTime          Int?
+  cycleTime          Int?
+  toleranceClass     ToleranceClass  @default(STANDARD)
+  surfaceFinish      String?
+  compatibleMachines String[]
+  priority           Int             @default(1)
+  dimensionalChecks  Json
+  requiredInspection String?
+  part               Part            @relation("PartCNCConfig", fields: [partId], references: [id])
+
+  @@index([partId])
+  @@index([materialType])
+  @@map("part_controllo_numerico")
+}
+
+model PartMontaggio {
+  id               String       @id @default(cuid())
+  partId           String       @unique
+  assemblyType     AssemblyType
+  componentCount   Int
+  assemblyTime     Int?
+  testingTime      Int?
+  requiredParts    Json
+  requiredTools    String[]
+  requiredFixtures String[]
+  assemblySequence Json
+  testProcedure    String?
+  qualityChecks    String[]
+  part             Part         @relation("PartAssemblyConfig", fields: [partId], references: [id])
+
+  @@index([partId])
+  @@index([assemblyType])
+  @@map("part_montaggio")
+}
+
+model PartVerniciatura {
+  id               String          @id @default(cuid())
+  partId           String          @unique
+  coatingType      CoatingType
+  primerRequired   Boolean         @default(false)
+  coatLayers       Int             @default(1)
+  surfacePrep      SurfacePrepType
+  cleaningRequired Boolean         @default(true)
+  maskingRequired  Boolean         @default(false)
+  sprayPattern     String?
+  cureTemperature  Float?
+  cureTime         Int?
+  dryTime          Int
+  thicknessCheck   Boolean         @default(true)
+  adhesionTest     Boolean         @default(false)
+  colorMatch       String?
+  part             Part            @relation("PartCoatingConfig", fields: [partId], references: [id])
+
+  @@index([partId])
+  @@index([coatingType])
+  @@map("part_verniciatura")
+}
+
+model PartMotori {
+  id               String     @id @default(cuid())
+  partId           String     @unique
+  engineType       EngineType
+  powerRating      Float?
+  rpmRange         String?
+  fuelType         FuelType?
+  assemblyTime     Int?
+  testingTime      Int?
+  burnInTime       Int?
+  compressionTest  Boolean    @default(false)
+  leakTest         Boolean    @default(true)
+  performanceTest  Boolean    @default(true)
+  vibrationTest    Boolean    @default(false)
+  certificationReq String[]
+  documentationReq String[]
+  part             Part       @relation("PartEngineConfig", fields: [partId], references: [id])
+
+  @@index([partId])
+  @@index([engineType])
+  @@map("part_motori")
+}
+
+enum UserRole {
+  ADMIN
+  SUPERVISOR
+  OPERATOR
+}
+
+enum DepartmentRole {
+  CAPO_REPARTO
+  CAPO_TURNO
+  OPERATORE
 }
 
 enum Priority {
@@ -207,63 +594,27 @@ enum Priority {
 
 enum ODLStatus {
   CREATED
-  // Honeycomb processing
   IN_HONEYCOMB
   HONEYCOMB_COMPLETED
-  // Clean room processing
   IN_CLEANROOM
   CLEANROOM_COMPLETED
-  // CNC processing
   IN_CONTROLLO_NUMERICO
   CONTROLLO_NUMERICO_COMPLETED
-  // Assembly processing
   IN_MONTAGGIO
   MONTAGGIO_COMPLETED
-  // Autoclave processing
   IN_AUTOCLAVE
   AUTOCLAVE_COMPLETED
-  // NDI processing
   IN_NDI
   NDI_COMPLETED
-  // Coating processing
   IN_VERNICIATURA
   VERNICIATURA_COMPLETED
-  // Motor processing
   IN_MOTORI
   MOTORI_COMPLETED
-  // Quality control
   IN_CONTROLLO_QUALITA
   CONTROLLO_QUALITA_COMPLETED
-  // Final states
   COMPLETED
   ON_HOLD
   CANCELLED
-}
-
-// Production Events (tracking through departments)
-model ProductionEvent {
-  id            String          @id @default(cuid())
-  odlId         String
-  departmentId  String
-  eventType     EventType
-  timestamp     DateTime        @default(now())
-  userId        String
-  notes         String?
-  duration      Int?            // Durata timer in millisecondi
-  isAutomatic   Boolean         @default(false) // Per trasferimenti automatici
-  
-  // Relations
-  odl           ODL             @relation(fields: [odlId], references: [id])
-  department    Department      @relation(fields: [departmentId], references: [id])
-  user          User            @relation(fields: [userId], references: [id])
-  
-  // Ottimizzazione indici ProductionEvent per performance queries
-  @@index([odlId, timestamp]) // Timeline eventi per ODL specifico
-  @@index([departmentId, eventType, timestamp]) // Query eventi per reparto e tipo
-  @@index([userId, timestamp]) // Audit trail per utente
-  @@index([timestamp, isAutomatic]) // Separare eventi automatici/manuali
-  @@index([odlId, departmentId, eventType]) // Stato corrente ODL in reparto
-  @@map("production_events")
 }
 
 enum EventType {
@@ -274,219 +625,32 @@ enum EventType {
   NOTE
 }
 
-// Departments
-model Department {
-  id            String           @id @default(cuid())
-  code          String           @unique
-  name          String
-  type          DepartmentType
-  isActive      Boolean          @default(true)
-  
-  // Relations
-  events        ProductionEvent[]
-  autoclaves    Autoclave[]
-  users         User[]           // Utenti assegnati al reparto
-  
-  @@map("departments")
-}
-
 enum DepartmentType {
-  HONEYCOMB          // HC - Lavorazione honeycomb cores
-  CLEANROOM          // CR - Camera bianca per laminazione
-  CONTROLLO_NUMERICO // CN - Lavorazioni CNC
-  MONTAGGIO          // RM - Assemblaggio componenti
-  AUTOCLAVE          // AC - Curing con cicli temperatura/pressione
-  NDI                // ND - Controlli non distruttivi
-  VERNICIATURA       // VR - Verniciatura/coating
-  MOTORI             // MT - Lavorazioni motori
-  CONTROLLO_QUALITA  // CQ - Controllo qualità finale
-  OTHER              // Categoria per reparti aggiuntivi
-}
-
-// Autoclave specific models
-model Autoclave {
-  id            String           @id @default(cuid())
-  code          String           @unique
-  name          String
-  departmentId  String
-  maxLength     Float
-  maxWidth      Float
-  maxHeight     Float
-  vacuumLines   Int
-  isActive      Boolean          @default(true)
-  
-  // Relations
-  department    Department       @relation(fields: [departmentId], references: [id])
-  loads         AutoclaveLoad[]
-  
-  @@map("autoclaves")
-}
-
-model AutoclaveLoad {
-  id            String           @id @default(cuid())
-  loadNumber    String           @unique
-  autoclaveId   String
-  curingCycleId String
-  plannedStart  DateTime
-  actualStart   DateTime?
-  plannedEnd    DateTime
-  actualEnd     DateTime?
-  status        LoadStatus       @default(DRAFT)
-  layoutData    Json?            // 2D layout optimization result
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  
-  // Relations
-  autoclave     Autoclave        @relation(fields: [autoclaveId], references: [id])
-  curingCycle   CuringCycle      @relation(fields: [curingCycleId], references: [id])
-  loadItems     AutoclaveLoadItem[]
-  
-  // Ottimizzazione indici AutoclaveLoad per scheduling efficiente
-  @@index([autoclaveId, status, plannedStart]) // Planning autoclave specifiche
-  @@index([status, plannedStart]) // Global planning view
-  @@index([curingCycleId, status]) // Batch per ciclo di cura
-  @@index([plannedStart, plannedEnd]) // Time window queries
-  @@map("autoclave_loads")
-}
-
-// Junction table for many-to-many relationship between ODL and AutoclaveLoad
-model AutoclaveLoadItem {
-  id              String           @id @default(cuid())
-  odlId           String
-  autoclaveLoadId String
-  position        Json?            // 2D position data in autoclave layout
-  addedAt         DateTime         @default(now())
-  previousStatus  ODLStatus?       // Stato ODL prima di entrare nel batch (per ripristino)
-  
-  // Relations
-  odl             ODL              @relation(fields: [odlId], references: [id], onDelete: Cascade)
-  autoclaveLoad   AutoclaveLoad    @relation(fields: [autoclaveLoadId], references: [id], onDelete: Cascade)
-  
-  @@unique([odlId, autoclaveLoadId])
-  @@index([autoclaveLoadId])
-  @@map("autoclave_load_items")
+  HONEYCOMB
+  CLEANROOM
+  CONTROLLO_NUMERICO
+  MONTAGGIO
+  AUTOCLAVE
+  NDI
+  VERNICIATURA
+  MOTORI
+  CONTROLLO_QUALITA
+  OTHER
 }
 
 enum LoadStatus {
-  DRAFT         // Creazione in corso - modificabile
-  READY         // Pronto per avvio - modificabile  
-  IN_CURE       // In cura - modificabile
-  COMPLETED     // Cura completata - modificabile
-  RELEASED      // ODL rilasciati al reparto successivo
-  CANCELLED     // Annullato
-}
-
-// Gamma MES Sync tracking
-model GammaSyncLog {
-  id            String           @id @default(cuid())
-  fileName      String
-  fileType      String           // "PARTS", "ODL", "PRODUCTION_DATA"
-  entityType    String           // "Part", "ODL"
-  syncStatus    SyncStatus
-  recordsRead   Int              @default(0)
-  recordsSynced Int              @default(0)
-  recordsSkipped Int             @default(0)
-  errorMessage  String?
-  syncedAt      DateTime         @default(now())
-  
-  @@index([fileType, syncedAt])
-  @@map("gamma_sync_logs")
+  DRAFT
+  READY
+  IN_CURE
+  COMPLETED
+  RELEASED
+  CANCELLED
 }
 
 enum SyncStatus {
   SUCCESS
   PARTIAL
   FAILED
-}
-
-// Tool Management (Utensili di Laminazione)
-model Tool {
-  id              String    @id @default(cuid())
-  toolPartNumber  String    @unique
-  description     String?   // Descrizione breve (opzionale)
-  base            Float     // Dimensioni base in mm
-  height          Float     // Altezza in mm
-  weight          Float?    // Peso in kg (opzionale)
-  material        String    // Materiale
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  // Relations
-  partTools       PartTool[]
-  
-  @@index([toolPartNumber])
-  @@map("tools")
-}
-
-// Junction table for many-to-many relationship between Part and Tool
-model PartTool {
-  id       String @id @default(cuid())
-  partId   String
-  toolId   String
-  
-  // Relations
-  part     Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
-  tool     Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
-  
-  @@unique([partId, toolId])
-  @@index([partId])
-  @@index([toolId])
-  @@map("part_tools")
-}
-
-// Curing Cycles (Cicli di Cura)
-model CuringCycle {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  name        String
-  description String?
-  
-  // Prima stasi (obbligatoria)
-  phase1Temperature Float
-  phase1Pressure    Float
-  phase1Duration    Int   // in minuti
-  
-  // Seconda stasi (opzionale)
-  phase2Temperature Float?
-  phase2Pressure    Float?
-  phase2Duration    Int?   // in minuti
-  
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  // Relations
-  defaultParts    Part[]        @relation("DefaultCuringCycle")
-  odls            ODL[]         @relation("ODLCuringCycle")
-  autoclaveLoads  AutoclaveLoad[]
-  
-  @@index([code])
-  @@map("curing_cycles")
-}
-
-// Audit Log for Admin Actions
-model AuditLog {
-  id          String      @id @default(cuid())
-  action      AuditAction
-  resource    String      // e.g., "User", "Department", "ODL"
-  resourceId  String?     // ID dell'entità modificata
-  userId      String      // Admin che ha eseguito l'azione
-  userEmail   String      // Email dell'admin (per sicurezza)
-  details     Json?       // Dettagli dell'azione (before/after per update)
-  ipAddress   String?     // IP da cui è stata eseguita l'azione
-  userAgent   String?     // User agent del browser
-  timestamp   DateTime    @default(now())
-  
-  // Relations
-  user        User        @relation(fields: [userId], references: [id])
-  
-  // Ottimizzazione indici AuditLog per audit e compliance
-  @@index([resource, resourceId, timestamp]) // Audit trail per entità specifica
-  @@index([action, timestamp]) // Query per tipo di azione
-  @@index([userId, timestamp]) // Query per utente
-  @@index([timestamp]) // Cleanup e archivio cronologico
-  @@map("audit_logs")
 }
 
 enum AuditAction {
@@ -502,517 +666,160 @@ enum AuditAction {
   PASSWORD_RESET
 }
 
-// ==================== CONTROLLO QUALITA MODELS ====================
-
-// Piani di Controllo - Definiscono i controlli da eseguire per ogni parte
-model QualityControlPlan {
-  id            String        @id @default(cuid())
-  partId        String
-  version       String        @default("1.0")
-  title         String
-  description   String?
-  isActive      Boolean       @default(true)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  createdBy     String        // User ID
-  
-  // Parametri di controllo
-  inspectionType    QCInspectionType
-  frequency         QCFrequency
-  sampleSize        Int           @default(1)
-  acceptanceCriteria Json        // Criteri di accettazione strutturati
-  
-  // Relations
-  part          Part          @relation(fields: [partId], references: [id])
-  inspections   QualityInspection[]
-  
-  @@index([partId, isActive])
-  @@index([inspectionType, isActive])
-  @@index([createdAt])
-  @@map("quality_control_plans")
-}
-
-// Ispezioni di Qualità - Controlli eseguiti su ODL specifici
-model QualityInspection {
-  id            String        @id @default(cuid())
-  planId        String
-  odlId         String
-  inspectorId   String        // User ID dell'ispettore
-  
-  // Stato ispezione
-  status        QCStatus      @default(PENDING)
-  startedAt     DateTime?
-  completedAt   DateTime?
-  
-  // Risultati
-  result        QCResult?
-  measurements  Json?         // Misure effettuate
-  notes         String?
-  attachments   String[]      @default([]) // File paths/URLs
-  
-  // Certificazione
-  certificateNumber String?   @unique
-  signedBy      String?       // User ID che ha firmato
-  signedAt      DateTime?
-  
-  // Relations
-  plan          QualityControlPlan @relation(fields: [planId], references: [id])
-  odl           ODL           @relation(fields: [odlId], references: [id])
-  inspector     User          @relation("QualityInspector", fields: [inspectorId], references: [id])
-  signer        User?         @relation("QualitySigner", fields: [signedBy], references: [id])
-  nonConformities NonConformity[]
-  
-  @@index([odlId, status])
-  @@index([inspectorId, status])
-  @@index([completedAt])
-  @@index([certificateNumber])
-  @@map("quality_inspections")
-}
-
-// Non Conformità - Registrazione di problemi di qualità
-model NonConformity {
-  id            String        @id @default(cuid())
-  inspectionId  String?       // Può essere null se NC rilevata fuori da ispezione
-  odlId         String
-  reportedBy    String        // User ID
-  
-  // Classificazione
-  type          NCType
-  severity      NCSeverity
-  category      NCCategory
-  
-  // Descrizione
-  title         String
-  description   String
-  rootCause     String?
-  
-  // Stato
-  status        NCStatus      @default(OPEN)
-  detectedAt    DateTime      @default(now())
-  
-  // Gestione
-  assignedTo    String?       // User ID responsabile
-  dueDate       DateTime?
-  
-  // Relations
-  inspection    QualityInspection? @relation(fields: [inspectionId], references: [id])
-  odl           ODL           @relation(fields: [odlId], references: [id])
-  reporter      User          @relation("NCReporter", fields: [reportedBy], references: [id])
-  assignee      User?         @relation("NCAssignee", fields: [assignedTo], references: [id])
-  actions       CorrectiveAction[]
-  
-  @@index([odlId, status])
-  @@index([assignedTo, status])
-  @@index([severity, status])
-  @@index([detectedAt])
-  @@map("non_conformities")
-}
-
-// Azioni Correttive - CAPA (Corrective and Preventive Actions)
-model CorrectiveAction {
-  id            String        @id @default(cuid())
-  nonConformityId String
-  type          CAPAType
-  
-  // Descrizione
-  title         String
-  description   String
-  
-  // Pianificazione
-  plannedAction String
-  dueDate       DateTime
-  assignedTo    String        // User ID
-  
-  // Esecuzione
-  status        CAPAStatus    @default(PLANNED)
-  actualAction  String?
-  completedAt   DateTime?
-  verifiedBy    String?       // User ID
-  verifiedAt    DateTime?
-  
-  // Efficacia
-  effectiveness String?       // Valutazione efficacia
-  followUpDate  DateTime?
-  
-  // Relations
-  nonConformity NonConformity @relation(fields: [nonConformityId], references: [id])
-  assignee      User          @relation("CAPAAssignee", fields: [assignedTo], references: [id])
-  verifier      User?         @relation("CAPAVerifier", fields: [verifiedBy], references: [id])
-  
-  @@index([nonConformityId])
-  @@index([assignedTo, status])
-  @@index([dueDate, status])
-  @@index([completedAt])
-  @@map("corrective_actions")
-}
-
-// Certificati di Qualità - Documenti finali
-model QualityCertificate {
-  id            String        @id @default(cuid())
-  odlId         String
-  certificateNumber String    @unique
-  
-  // Contenuto
-  title         String
-  description   String?
-  
-  // Conformità
-  conformityStatus Boolean    @default(false)
-  standardsRef  String[]     @default([]) // Riferimenti normativi
-  
-  // Firme
-  issuedBy      String        // User ID
-  approvedBy    String?       // User ID
-  issuedAt      DateTime      @default(now())
-  approvedAt    DateTime?
-  
-  // Documento
-  documentPath  String?       // Path del PDF generato
-  
-  // Relations
-  odl           ODL           @relation(fields: [odlId], references: [id])
-  issuer        User          @relation("CertificateIssuer", fields: [issuedBy], references: [id])
-  approver      User?         @relation("CertificateApprover", fields: [approvedBy], references: [id])
-  
-  @@index([odlId])
-  @@index([certificateNumber])
-  @@index([issuedAt])
-  @@index([conformityStatus])
-  @@map("quality_certificates")
-}
-
-// ==================== CONTROLLO QUALITA ENUMS ====================
-
 enum QCInspectionType {
-  DIMENSIONAL      // Controllo dimensionale
-  VISUAL           // Controllo visivo
-  FUNCTIONAL       // Test funzionale
-  MATERIAL         // Controllo materiale
-  SURFACE          // Controllo superficie
-  ASSEMBLY         // Controllo assemblaggio
-  FINAL            // Controllo finale
+  DIMENSIONAL
+  VISUAL
+  FUNCTIONAL
+  MATERIAL
+  SURFACE
+  ASSEMBLY
+  FINAL
 }
 
 enum QCFrequency {
-  EVERY_PIECE      // Ogni pezzo
-  FIRST_PIECE      // Primo pezzo
-  SAMPLE           // Campionamento
-  PERIODIC         // Periodico
-  FINAL_ONLY       // Solo finale
+  EVERY_PIECE
+  FIRST_PIECE
+  SAMPLE
+  PERIODIC
+  FINAL_ONLY
 }
 
 enum QCStatus {
-  PENDING          // In attesa
-  IN_PROGRESS      // In corso
-  COMPLETED        // Completato
-  ON_HOLD          // In sospeso
-  CANCELLED        // Annullato
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
 }
 
 enum QCResult {
-  PASS             // Conforme
-  FAIL             // Non conforme
-  CONDITIONAL      // Conforme con riserva
-  RECHECK          // Da ricontrollare
+  PASS
+  FAIL
+  CONDITIONAL
+  RECHECK
 }
 
 enum NCType {
-  DIMENSIONAL      // Difetto dimensionale
-  VISUAL           // Difetto visivo
-  FUNCTIONAL       // Difetto funzionale
-  MATERIAL         // Difetto materiale
-  PROCESS          // Difetto di processo
-  DOCUMENTATION    // Difetto documentale
+  DIMENSIONAL
+  VISUAL
+  FUNCTIONAL
+  MATERIAL
+  PROCESS
+  DOCUMENTATION
 }
 
 enum NCSeverity {
-  CRITICAL         // Critico - blocca produzione
-  MAJOR            // Maggiore - richiede azione
-  MINOR            // Minore - da monitorare
-  COSMETIC         // Estetico - non blocca
+  CRITICAL
+  MAJOR
+  MINOR
+  COSMETIC
 }
 
 enum NCCategory {
-  CUSTOMER_IMPACT  // Impatto cliente
-  SAFETY           // Sicurezza
-  REGULATORY       // Normativo
-  INTERNAL         // Interno
-  SUPPLIER         // Fornitore
+  CUSTOMER_IMPACT
+  SAFETY
+  REGULATORY
+  INTERNAL
+  SUPPLIER
 }
 
 enum NCStatus {
-  OPEN             // Aperto
-  ASSIGNED         // Assegnato
-  IN_PROGRESS      // In corso
-  RESOLVED         // Risolto
-  VERIFIED         // Verificato
-  CLOSED           // Chiuso
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  VERIFIED
+  CLOSED
 }
 
 enum CAPAType {
-  CORRECTIVE       // Azione correttiva
-  PREVENTIVE       // Azione preventiva
-  IMPROVEMENT      // Miglioramento
+  CORRECTIVE
+  PREVENTIVE
+  IMPROVEMENT
 }
 
 enum CAPAStatus {
-  PLANNED          // Pianificato
-  IN_PROGRESS      // In corso
-  COMPLETED        // Completato
-  VERIFIED         // Verificato
-  CLOSED           // Chiuso
-  OVERDUE          // Scaduto
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  CLOSED
+  OVERDUE
 }
 
-// ==================== DEPARTMENT EXTENSION TABLES (Pattern CLAUDE.md) ====================
-
-// Honeycomb Department Extensions
-model PartHoneycomb {
-  id                String        @id @default(cuid())
-  partId            String        @unique
-  
-  // Specifiche core honeycomb
-  coreType          HoneycombType
-  cellSize          Float         // Dimensione cella in mm
-  coreDensity       Float         // Densità core kg/m³
-  coreThickness     Float         // Spessore core in mm
-  
-  // Specifiche skin
-  skinMaterial      String?       // Materiale skin (es. CFRP, Alluminio)
-  skinThickness     Float?        // Spessore skin singolo in mm
-  
-  // Processo produzione
-  adhesiveType      String        // Tipo adesivo per bonding
-  cureTemperature   Float         // Temperatura cura °C
-  cureTime          Int           // Tempo cura in minuti
-  pressure          Float         // Pressione applicata bar
-  
-  // Controlli qualità standard
-  bondStrength      Float?        // Resistenza bond N/mm²
-  compressionStrength Float?      // Resistenza compressione MPa
-  
-  // Timing e setup
-  setupTimeMinutes  Int?          // Tempo setup standard
-  cycleTimeMinutes  Int?          // Tempo ciclo standard
-  skillLevel        SkillLevel    @default(BASIC)
-  
-  // Relations
-  part              Part          @relation("PartHoneycombConfig", fields: [partId], references: [id])
-  
-  @@index([partId])
-  @@index([coreType])
-  @@map("part_honeycomb")
-}
-
-// Controllo Numerico Department Extensions  
-model PartControlloNumerico {
-  id                String        @id @default(cuid())
-  partId            String        @unique
-  
-  // Specifiche lavorazione CNC
-  materialType      CNCMaterialType
-  toolingRequired   String[]      // Tools necessari
-  programmingTime   Int?          // Tempo programmazione minuti
-  setupTime         Int?          // Tempo setup macchina minuti
-  cycleTime         Int?          // Tempo ciclo standard minuti
-  
-  // Tolleranze
-  toleranceClass    ToleranceClass @default(STANDARD)
-  surfaceFinish     String?       // Ra richiesta
-  
-  // Macchine compatibili
-  compatibleMachines String[]     // Codici macchine CNC
-  priority          Int           @default(1)
-  
-  // Controlli qualità
-  dimensionalChecks Json          // Punti controllo dimensionale
-  requiredInspection String?      // Tipo ispezione richiesta
-  
-  // Relations
-  part              Part          @relation("PartCNCConfig", fields: [partId], references: [id])
-  
-  @@index([partId])
-  @@index([materialType])
-  @@map("part_controllo_numerico")
-}
-
-// Montaggio Department Extensions
-model PartMontaggio {
-  id                String        @id @default(cuid())
-  partId            String        @unique
-  
-  // Specifiche assemblaggio
-  assemblyType      AssemblyType
-  componentCount    Int           // Numero componenti
-  assemblyTime      Int?          // Tempo assemblaggio minuti
-  testingTime       Int?          // Tempo test funzionali
-  
-  // Distinta base
-  requiredParts     Json          // {"partNumber": "qty", ...}
-  requiredTools     String[]      // Utensili necessari
-  requiredFixtures  String[]      // Attrezzature necessarie
-  
-  // Istruzioni
-  assemblySequence  Json          // Sequenza step assemblaggio
-  testProcedure     String?       // Procedura test finale
-  qualityChecks     String[]      // Controlli qualità richiesti
-  
-  // Relations
-  part              Part          @relation("PartAssemblyConfig", fields: [partId], references: [id])
-  
-  @@index([partId])
-  @@index([assemblyType])
-  @@map("part_montaggio")
-}
-
-// Verniciatura Department Extensions
-model PartVerniciatura {
-  id                String        @id @default(cuid())
-  partId            String        @unique
-  
-  // Specifiche verniciatura
-  coatingType       CoatingType
-  primerRequired    Boolean       @default(false)
-  coatLayers        Int           @default(1)
-  
-  // Preparazione superficie
-  surfacePrep       SurfacePrepType
-  cleaningRequired  Boolean       @default(true)
-  maskingRequired   Boolean       @default(false)
-  
-  // Processo
-  sprayPattern      String?       // Pattern spruzzatura
-  cureTemperature   Float?        // Temperatura cura se richiesta
-  cureTime          Int?          // Tempo cura minuti
-  dryTime           Int           // Tempo asciugatura minuti
-  
-  // Controlli qualità
-  thicknessCheck    Boolean       @default(true)
-  adhesionTest      Boolean       @default(false)
-  colorMatch        String?       // Codice colore riferimento
-  
-  // Relations
-  part              Part          @relation("PartCoatingConfig", fields: [partId], references: [id])
-  
-  @@index([partId])
-  @@index([coatingType])
-  @@map("part_verniciatura")
-}
-
-// Motori Department Extensions
-model PartMotori {
-  id                String        @id @default(cuid())
-  partId            String        @unique
-  
-  // Specifiche motore
-  engineType        EngineType
-  powerRating       Float?        // Potenza HP/kW
-  rpmRange          String?       // Range RPM operativo
-  fuelType          FuelType?     // Tipo carburante
-  
-  // Assemblaggio
-  assemblyTime      Int?          // Tempo assemblaggio ore
-  testingTime       Int?          // Tempo test funzionali ore
-  burnInTime        Int?          // Tempo rodaggio ore
-  
-  // Test richiesti
-  compressionTest   Boolean       @default(false)
-  leakTest          Boolean       @default(true)
-  performanceTest   Boolean       @default(true)
-  vibrationTest     Boolean       @default(false)
-  
-  // Certificazioni
-  certificationReq  String[]      // Certificazioni richieste
-  documentationReq  String[]      // Documentazione richiesta
-  
-  // Relations
-  part              Part          @relation("PartEngineConfig", fields: [partId], references: [id])
-  
-  @@index([partId])
-  @@index([engineType])
-  @@map("part_motori")
-}
-
-// ==================== DEPARTMENT EXTENSION ENUMS ====================
-
-// Honeycomb
 enum HoneycombType {
-  ALUMINUM_3_16    // Alluminio 3/16"
-  ALUMINUM_1_4     // Alluminio 1/4"
-  ALUMINUM_3_8     // Alluminio 3/8"
-  NOMEX_3_16       // Nomex 3/16"
-  NOMEX_1_4        // Nomex 1/4"
-  NOMEX_3_8        // Nomex 3/8"
-  CARBON_3_16      // Carbon fiber 3/16"
-  CARBON_1_4       // Carbon fiber 1/4"
+  ALUMINUM_3_16
+  ALUMINUM_1_4
+  ALUMINUM_3_8
+  NOMEX_3_16
+  NOMEX_1_4
+  NOMEX_3_8
+  CARBON_3_16
+  CARBON_1_4
 }
 
 enum SkillLevel {
-  BASIC            // Livello base
-  INTERMEDIATE     // Livello intermedio
-  ADVANCED         // Livello avanzato
-  EXPERT           // Livello esperto
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
 }
 
-// Controllo Numerico
 enum CNCMaterialType {
-  ALUMINUM         // Alluminio
-  CARBON_FIBER     // Fibra di carbonio
-  STEEL            // Acciaio
-  TITANIUM         // Titanio
-  COMPOSITE        // Composito
-  PLASTIC          // Plastica
+  ALUMINUM
+  CARBON_FIBER
+  STEEL
+  TITANIUM
+  COMPOSITE
+  PLASTIC
 }
 
 enum ToleranceClass {
-  ROUGH            // Grossolana
-  STANDARD         // Standard
-  FINE             // Fine
-  PRECISION        // Precisione
-  HIGH_PRECISION   // Alta precisione
+  ROUGH
+  STANDARD
+  FINE
+  PRECISION
+  HIGH_PRECISION
 }
 
-// Montaggio
 enum AssemblyType {
-  MECHANICAL       // Assemblaggio meccanico
-  BONDED          // Assemblaggio incollato
-  WELDED          // Assemblaggio saldato
-  RIVETED         // Assemblaggio ribattinato
-  HYBRID          // Assemblaggio ibrido
+  MECHANICAL
+  BONDED
+  WELDED
+  RIVETED
+  HYBRID
 }
 
-// Verniciatura
 enum CoatingType {
-  PRIMER          // Primer
-  BASE_COAT       // Vernice base
-  CLEAR_COAT      // Vernice trasparente
-  POWDER_COAT     // Verniciatura a polvere
-  ANODIZING       // Anodizzazione
-  CHEMICAL_CONVERSION // Conversione chimica
+  PRIMER
+  BASE_COAT
+  CLEAR_COAT
+  POWDER_COAT
+  ANODIZING
+  CHEMICAL_CONVERSION
 }
 
 enum SurfacePrepType {
-  DEGREASING      // Sgrassaggio
-  SANDING         // Carteggiatura
-  BLASTING        // Sabbiatura
-  ETCHING         // Mordenzatura
-  POLISHING       // Lucidatura
+  DEGREASING
+  SANDING
+  BLASTING
+  ETCHING
+  POLISHING
 }
 
-// Motori
 enum EngineType {
-  PISTON          // Motore a pistoni
-  TURBOPROP       // Turboelica
-  TURBOJET        // Turbogetto
-  TURBOFAN        // Turbofan
-  ELECTRIC        // Elettrico
-  HYBRID          // Ibrido
+  PISTON
+  TURBOPROP
+  TURBOJET
+  TURBOFAN
+  ELECTRIC
+  HYBRID
 }
 
 enum FuelType {
-  AVGAS_100LL     // Avgas 100LL
-  JET_A1          // Jet A-1
-  DIESEL          // Diesel
-  ELECTRIC        // Elettrico
-  HYDROGEN        // Idrogeno
+  AVGAS_100LL
+  JET_A1
+  DIESEL
+  ELECTRIC
+  HYDROGEN
 }

@@ -20,9 +20,9 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // For Netlify, we need to handle auth differently to avoid Prisma edge runtime issues
+  // For Netlify edge runtime, use simple cookie-based auth check
   if (process.env.NETLIFY) {
-    // Simple auth check based on session cookie
+    // Simple cookie check for edge runtime
     const sessionToken = req.cookies.get('authjs.session-token')?.value || 
                        req.cookies.get('__Secure-authjs.session-token')?.value
     
