@@ -84,21 +84,24 @@ export default function DashboardPage() {
       description: 'Scansiona codici QR per tracciamento',
       icon: QrCodeScanner,
       href: '/qr-scanner',
-      color: 'info'
+      color: 'info',
+      featured: false
     },
     {
       title: 'Stampa Etichette',
       description: 'Genera e stampa etichette QR',
       icon: Print,
       href: '/qr-labels',
-      color: 'success'
+      color: 'success',
+      featured: false
     },
     {
       title: 'Il Mio Reparto',
       description: 'Dashboard operatore con KPI',
       icon: Dashboard,
       href: '/my-department',
-      color: 'warning'
+      color: 'warning',
+      featured: false
     }
   ]
 
@@ -108,21 +111,24 @@ export default function DashboardPage() {
       description: 'Amministrazione utenti e ruoli',
       icon: People,
       href: '/admin/users',
-      color: 'error'
+      color: 'error',
+      featured: false
     },
     {
       title: 'Monitoraggio',
       description: 'Audit e performance del sistema',
       icon: BarChart,
       href: '/admin/monitoring',
-      color: 'secondary'
+      color: 'secondary',
+      featured: false
     },
     {
       title: 'Impostazioni',
       description: 'Configurazione sistema',
       icon: Settings,
       href: '/admin/settings',
-      color: 'info'
+      color: 'info',
+      featured: false
     }
   ]
 
