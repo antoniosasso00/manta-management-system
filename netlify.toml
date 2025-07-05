@@ -6,7 +6,6 @@
   NODE_VERSION = "20"
   
 [context.production.environment]
-  NODE_ENV = "production"
   DATABASE_POOLING = "true"
   DATABASE_MAX_CONNECTIONS = "25"
 
