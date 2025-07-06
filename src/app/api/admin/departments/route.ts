@@ -6,6 +6,7 @@ import { z } from 'zod';
 const departmentSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   code: z.string().min(1, 'Code is required').max(10, 'Code must be max 10 characters'),
+  type: z.enum(['HONEYCOMB', 'CLEANROOM', 'CONTROLLO_NUMERICO', 'MONTAGGIO', 'AUTOCLAVE', 'NDI', 'VERNICIATURA', 'MOTORI', 'CONTROLLO_QUALITA', 'OTHER']).default('OTHER'),
   description: z.string().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE')
 });
@@ -67,9 +68,7 @@ export async function GET(request: NextRequest) {
           currentOperators: dept._count.users,
           totalCapacity: dept._count.users > 0 ? dept._count.users + 2 : 5, // Simple capacity calculation
           efficiency: Math.round(efficiency * 10) / 10,
-          completedToday,
-          createdAt: dept.createdAt,
-          updatedAt: dept.updatedAt
+          completedToday
         };
       })
     );
@@ -116,7 +115,12 @@ export async function POST(request: NextRequest) {
     }
 
     const department = await prisma.department.create({
-      data: validated
+      data: {
+        name: validated.name,
+        code: validated.code,
+        type: validated.type,
+        isActive: validated.status === 'ACTIVE'
+      }
     });
 
     return NextResponse.json(department, { status: 201 });

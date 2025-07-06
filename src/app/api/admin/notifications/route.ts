@@ -21,11 +21,13 @@ export async function GET(request: NextRequest) {
     // Get delayed ODL (more than 4 hours in current department)
     const delayedODL = await prisma.oDL.findMany({
       where: {
-        status: 'IN_PROGRESS',
+        status: {
+          in: ['IN_HONEYCOMB', 'IN_CLEANROOM', 'IN_CONTROLLO_NUMERICO', 'IN_MONTAGGIO', 'IN_AUTOCLAVE', 'IN_NDI', 'IN_VERNICIATURA', 'IN_MOTORI', 'IN_CONTROLLO_QUALITA']
+        },
         updatedAt: { lt: new Date(now.getTime() - 4 * 60 * 60 * 1000) }
       },
       include: {
-        currentDepartment: { select: { name: true } }
+        part: { select: { partNumber: true } }
       },
       take: 5
     });
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
     const completedBatches = await prisma.autoclaveLoad.findMany({
       where: {
         status: 'COMPLETED',
-        completedAt: { gte: last24Hours }
+        actualEnd: { gte: last24Hours }
       },
       include: {
         autoclave: { select: { name: true } },

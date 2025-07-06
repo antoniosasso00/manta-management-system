@@ -71,44 +71,53 @@ export const PRODUCTION_SHIFTS = {
   AFTERNOON: { start: '14:00', end: '22:00', name: 'Afternoon (14-22)' },
 } as const
 
-// Department types
+// Department types (ordered by main production flow)
 export const DEPARTMENT_TYPES = {
-  HONEYCOMB: 'HONEYCOMB',
+  // Main production flow
   CLEANROOM: 'CLEANROOM',
-  CONTROLLO_NUMERICO: 'CONTROLLO_NUMERICO',
-  MONTAGGIO: 'MONTAGGIO',
   AUTOCLAVE: 'AUTOCLAVE',
+  CONTROLLO_NUMERICO: 'CONTROLLO_NUMERICO',
   NDI: 'NDI',
+  MONTAGGIO: 'MONTAGGIO',
   VERNICIATURA: 'VERNICIATURA',
+  // Separate/independent processes
+  HONEYCOMB: 'HONEYCOMB',
   MOTORI: 'MOTORI',
+  // Quality control
   CONTROLLO_QUALITA: 'CONTROLLO_QUALITA',
   OTHER: 'OTHER',
 } as const
 
-// Department display names (Italian)
+// Department display names (Italian - ordered by main production flow)
 export const DEPARTMENT_DISPLAY_NAMES = {
-  HONEYCOMB: 'Honeycomb',
+  // Main production flow
   CLEANROOM: 'Clean Room',
-  CONTROLLO_NUMERICO: 'Controllo Numerico',
-  MONTAGGIO: 'Montaggio',
   AUTOCLAVE: 'Autoclavi',
+  CONTROLLO_NUMERICO: 'Controllo Numerico',
   NDI: 'NDI',
+  MONTAGGIO: 'Montaggio',
   VERNICIATURA: 'Verniciatura',
+  // Separate/independent processes
+  HONEYCOMB: 'Honeycomb',
   MOTORI: 'Motori',
+  // Quality control
   CONTROLLO_QUALITA: 'Controllo Qualità',
   OTHER: 'Altro',
 } as const
 
-// Department codes (Short)
+// Department codes (Short - ordered by main production flow)
 export const DEPARTMENT_CODES = {
-  HONEYCOMB: 'HC',
+  // Main production flow
   CLEANROOM: 'CR',
-  CONTROLLO_NUMERICO: 'CN',
-  MONTAGGIO: 'RM',
   AUTOCLAVE: 'AC',
+  CONTROLLO_NUMERICO: 'CN',
   NDI: 'ND',
+  MONTAGGIO: 'RM',
   VERNICIATURA: 'VR',
+  // Separate/independent processes
+  HONEYCOMB: 'HC',
   MOTORI: 'MT',
+  // Quality control
   CONTROLLO_QUALITA: 'CQ',
   OTHER: 'OT',
 } as const

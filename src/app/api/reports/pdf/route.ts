@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
           status: true,
           priority: true,
           quantity: true,
-          dueDate: true,
+          expectedCompletionDate: true,
           createdAt: true,
           part: {
             select: {
@@ -60,9 +60,16 @@ export async function POST(request: NextRequest) {
               description: true
             }
           },
-          currentDepartment: {
+          events: {
+            where: { eventType: 'ENTRY' },
+            orderBy: { timestamp: 'desc' },
+            take: 1,
             select: {
-              name: true
+              department: {
+                select: {
+                  name: true
+                }
+              }
             }
           }
         }
@@ -89,7 +96,7 @@ export async function POST(request: NextRequest) {
           status: true,
           priority: true,
           quantity: true,
-          dueDate: true,
+          expectedCompletionDate: true,
           createdAt: true,
           part: {
             select: {
@@ -97,9 +104,16 @@ export async function POST(request: NextRequest) {
               description: true
             }
           },
-          currentDepartment: {
+          events: {
+            where: { eventType: 'ENTRY' },
+            orderBy: { timestamp: 'desc' },
+            take: 1,
             select: {
-              name: true
+              department: {
+                select: {
+                  name: true
+                }
+              }
             }
           }
         },
@@ -112,9 +126,14 @@ export async function POST(request: NextRequest) {
       // All ODLs (with potential filters based on user role)
       const whereClause: any = {}
       
-      // If not admin, filter by user's department
+      // If not admin, filter by user's department through events
       if (session.user.role !== 'ADMIN' && session.user.departmentId) {
-        whereClause.currentDepartmentId = session.user.departmentId
+        whereClause.events = {
+          some: {
+            eventType: 'ENTRY',
+            departmentId: session.user.departmentId
+          }
+        }
       }
 
       odls = await prisma.oDL.findMany({
@@ -126,7 +145,7 @@ export async function POST(request: NextRequest) {
           status: true,
           priority: true,
           quantity: true,
-          dueDate: true,
+          expectedCompletionDate: true,
           createdAt: true,
           part: {
             select: {
@@ -134,9 +153,16 @@ export async function POST(request: NextRequest) {
               description: true
             }
           },
-          currentDepartment: {
+          events: {
+            where: { eventType: 'ENTRY' },
+            orderBy: { timestamp: 'desc' },
+            take: 1,
             select: {
-              name: true
+              department: {
+                select: {
+                  name: true
+                }
+              }
             }
           }
         },

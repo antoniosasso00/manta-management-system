@@ -59,7 +59,8 @@
       "Bash(cp:*)",
       "Bash(npx next dev:*)",
       "Bash(timeout 15 npm run dev -- -p 3001)",
-      "Bash(./scripts/migrate-grid-v7.sh:*)"
+      "Bash(./scripts/migrate-grid-v7.sh:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   }

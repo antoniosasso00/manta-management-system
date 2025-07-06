@@ -5,25 +5,25 @@ import { Container } from '@mui/material'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 import { ProductionDashboard } from '@/components/organisms'
 
-export default function ControlloNumericoPage() {
+export default function AutoclavePage() {
   const [departmentId, setDepartmentId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Carica il reparto Controllo Numerico
+    // Carica il reparto Autoclave
     const fetchDepartment = async () => {
       try {
         const response = await fetch('/api/departments')
         if (!response.ok) throw new Error('Errore nel caricamento reparti')
         
         const { departments } = await response.json()
-        const cncDept = departments.find((d: { code: string }) => d.code === 'CN')
+        const autoclave = departments.find((d: { code: string }) => d.code === 'AC')
         
-        if (cncDept) {
-          setDepartmentId(cncDept.id)
+        if (autoclave) {
+          setDepartmentId(autoclave.id)
         } else {
-          setError('Reparto Controllo Numerico non trovato')
+          setError('Reparto Autoclave non trovato')
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Errore sconosciuto')
@@ -48,8 +48,8 @@ export default function ControlloNumericoPage() {
         ) : departmentId ? (
           <ProductionDashboard
             departmentId={departmentId}
-            departmentName="Controllo Numerico - CNC"
-            departmentCode="CN"
+            departmentName="Autoclavi - Cura"
+            departmentCode="AC"
           />
         ) : null}
       </Container>

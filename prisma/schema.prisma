@@ -628,16 +628,16 @@ enum EventType {
 }
 
 enum DepartmentType {
-  HONEYCOMB
-  CLEANROOM
-  CONTROLLO_NUMERICO
-  MONTAGGIO
-  AUTOCLAVE
-  NDI
-  VERNICIATURA
-  MOTORI
-  CONTROLLO_QUALITA
-  OTHER
+  HONEYCOMB              // Separate process - honeycomb core preparation
+  CLEANROOM              // Main flow #1 - clean room lamination
+  CONTROLLO_NUMERICO     // Main flow #3 - CNC machining
+  MONTAGGIO              // Main flow #5 - assembly
+  AUTOCLAVE              // Main flow #2 - curing process
+  NDI                    // Main flow #4 - non-destructive inspection
+  VERNICIATURA           // Main flow #6 - coating/painting
+  MOTORI                 // Separate process - motor assembly
+  CONTROLLO_QUALITA      // Quality control
+  OTHER                  // Generic/other departments
 }
 
 enum LoadStatus {
