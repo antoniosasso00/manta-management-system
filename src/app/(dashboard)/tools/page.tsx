@@ -60,7 +60,7 @@ export default function ToolsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [toolFormOpen, setToolFormOpen] = useState(false)
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
+  const [selectedTool, setSelectedTool] = useState<any>(null)
 
   useEffect(() => {
     loadTools()
@@ -137,7 +137,7 @@ export default function ToolsPage() {
       filtered = filtered.filter(tool =>
         tool.toolPartNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (tool.description && tool.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        tool.material.toLowerCase().includes(searchTerm.toLowerCase())
+        tool.material?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -166,10 +166,18 @@ export default function ToolsPage() {
   }
 
   const handleEditTool = (tool: Tool) => {
-    setSelectedTool({
-      ...tool,
-      associatedParts: tool.parts
-    })
+    const toolForForm = {
+      id: tool.id,
+      toolPartNumber: tool.toolPartNumber,
+      description: tool.description,
+      base: tool.base,
+      height: tool.height,
+      weight: tool.weight,
+      material: tool.material,
+      isActive: tool.isActive,
+      associatedParts: tool.parts || []
+    }
+    setSelectedTool(toolForForm)
     setToolFormOpen(true)
   }
 

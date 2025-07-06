@@ -35,14 +35,12 @@ export async function GET(
             name: true,
             email: true,
             role: true,
-            departmentRole: true,
-            status: true
+            departmentRole: true
           }
         },
         _count: {
           select: {
-            users: true,
-            productionEvents: true
+            users: true
           }
         }
       }
@@ -148,8 +146,7 @@ export async function DELETE(
     const department = await prisma.department.findUnique({
       where: { id: resolvedParams.id },
       include: {
-        users: true,
-        productionEvents: true
+        users: true
       }
     });
 
@@ -165,7 +162,12 @@ export async function DELETE(
       );
     }
 
-    if (department.productionEvents.length > 0) {
+    // Check for production events separately
+    const eventCount = await prisma.productionEvent.count({
+      where: { departmentId: resolvedParams.id }
+    });
+    
+    if (eventCount > 0) {
       return NextResponse.json(
         { error: 'Cannot delete department with production events' },
         { status: 400 }

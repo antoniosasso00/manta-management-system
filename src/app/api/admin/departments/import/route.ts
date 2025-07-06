@@ -44,9 +44,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Import departments
+    // Import departments with default type
+    const departmentsWithType = validated.departments.map(dept => ({
+      ...dept,
+      type: 'OTHER' as const
+    }));
+    
     const created = await prisma.department.createMany({
-      data: validated.departments
+      data: departmentsWithType
     });
 
     return NextResponse.json({

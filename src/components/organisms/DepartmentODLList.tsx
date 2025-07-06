@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { ODLCard } from '@/components/molecules'
 import { ConfirmActionDialog } from '@/components/atoms'
+import ManualStatusChanger from './ManualStatusChanger'
 import { DepartmentODLList as DepartmentODLListType, CreateManualEvent } from '@/domains/production'
 import { EventType } from '@prisma/client'
 
@@ -22,6 +23,7 @@ interface DepartmentODLListProps {
   error?: string
   onTrackingEvent: (data: CreateManualEvent) => Promise<void>
   onRefresh?: () => void
+  departmentName?: string
 }
 
 export function DepartmentODLList({ 
@@ -30,7 +32,8 @@ export function DepartmentODLList({
   loading = false,
   error,
   onTrackingEvent,
-  onRefresh
+  onRefresh,
+  departmentName
 }: DepartmentODLListProps) {
   const [tabValue, setTabValue] = useState(0)
   const [pendingAction, setPendingAction] = useState<{ odlId: string; action: EventType } | null>(null)
@@ -159,6 +162,11 @@ export function DepartmentODLList({
                 odl={odl}
                 onAction={handleAction}
                 loading={loading}
+              />
+              <ManualStatusChanger
+                odl={odl}
+                onStatusChanged={() => onRefresh?.()}
+                departmentContext={departmentName}
               />
             </Box>
           ))

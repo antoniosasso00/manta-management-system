@@ -167,6 +167,7 @@ export function ProductionDashboard({
             error={error || undefined}
             onTrackingEvent={handleTrackingEvent}
             onRefresh={fetchData}
+            departmentName={departmentName}
           />
         </Paper>
       </Box>

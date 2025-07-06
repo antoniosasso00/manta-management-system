@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Fragment as React } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import {
   Box,
   Paper,
@@ -19,7 +19,6 @@ import {
   Fab,
   Tabs,
   Tab,
-  SwipeableViews,
   useTheme,
   useMediaQuery,
   Dialog,
@@ -46,6 +45,7 @@ import {
   Sync,
 } from '@mui/icons-material';
 import { useAuth } from '@/hooks/useAuth';
+import { TabContext, TabList } from '@mui/lab'
 
 // QR Scanner con @zxing/browser
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -263,7 +263,7 @@ export default function QRScannerPage() {
 
   const stopScanning = () => {
     if (scannerRef.current) {
-      scannerRef.current.reset();
+      (scannerRef.current as any).reset?.();
     }
     
     if (videoRef.current && videoRef.current.srcObject) {
@@ -772,7 +772,7 @@ export default function QRScannerPage() {
             <Box sx={{ flex: 1, overflow: 'auto' }}>
               <List sx={{ py: 0 }}>
                 {recentScans.map((scan, index) => (
-                  <React.Fragment key={scan.id}>
+                  <Fragment key={scan.id}>
                     {index > 0 && <Divider />}
                     <ListItem sx={{ py: 2 }}>
                       <ListItemIcon>
@@ -809,7 +809,7 @@ export default function QRScannerPage() {
                         }
                       />
                     </ListItem>
-                  </React.Fragment>
+                  </Fragment>
                 ))}
                 
                 {recentScans.length === 0 && (
@@ -826,25 +826,117 @@ export default function QRScannerPage() {
         </Box>
 
         {/* Bottom Navigation */}
-        <Paper sx={{ position: 'sticky', bottom: 0 }} elevation={3}>
-          <Tabs
-            value={showHistory ? 1 : 0}
-            onChange={(_, value) => setShowHistory(value === 1)}
-            variant="fullWidth"
-            indicatorColor="primary"
-          >
-            <Tab 
-              label="Scanner" 
-              icon={<QrCodeScanner />} 
-              sx={{ minHeight: 64 }}
-            />
-            <Tab 
-              label={`Storico (${recentScans.length})`} 
-              icon={<History />} 
-              sx={{ minHeight: 64 }}
-            />
-          </Tabs>
-        </Paper>
+        <TabContext value={tabValue}>
+          <Paper sx={{ position: 'sticky', bottom: 0 }} elevation={3}>
+            <TabList
+              onChange={(_, newValue: number) => setTabValue(newValue)}
+              variant="fullWidth"
+              indicatorColor="primary"
+            >
+              <Tab 
+                label="Scanner" 
+                value="scanner" 
+                icon={<QrCodeScanner />} 
+                sx={{ minHeight: 64 }} 
+              />
+              <Tab 
+                label={`Storico (${recentScans.length})`} 
+                value="history" 
+                icon={<History />} 
+                sx={{ minHeight: 64 }} 
+              />
+            </TabList>
+          </Paper>
+
+          <TabPanel value={tabValue} index={0}>
+            <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column' }}>
+              {!isScanning && !scanResult && (
+                <Box sx={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: 3
+                }}>
+                  <QrCodeScanner sx={{ fontSize: 120, color: 'grey.400' }} />
+                  <Typography variant="h6" align="center">
+                    Scansiona QR Code ODL
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<CameraAlt />}
+                    onClick={startScanning}
+                    sx={{ 
+                      minHeight: 56,
+                      minWidth: 200,
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    Avvia Scanner
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={1}>
+            <Box sx={{ flex: 1, overflow: 'auto' }}>
+              <List sx={{ py: 0 }}>
+                {recentScans.map((scan, index) => (
+                  <Fragment key={scan.id}>
+                    {index > 0 && <Divider />}
+                    <ListItem sx={{ py: 2 }}>
+                      <ListItemIcon>
+                        {scan.synced ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <CloudOff color="warning" />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body1">
+                              ODL {scan.odlNumber}
+                            </Typography>
+                            <Chip 
+                              label={scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}
+                              size="small"
+                              color={scan.eventType === 'ENTRY' ? 'success' : 'error'}
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography variant="caption" display="block">
+                              {new Date(scan.timestamp).toLocaleString()}
+                            </Typography>
+                            {scan.duration && (
+                              <Typography variant="caption" display="block">
+                                Durata: {formatTime(scan.duration)}
+                              </Typography>
+                            )}
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  </Fragment>
+                ))}
+                {recentScans.length === 0 && (
+                  <ListItem>
+                    <ListItemText 
+                      primary="Nessuna scansione recente"
+                      sx={{ textAlign: 'center', color: 'text.secondary' }}
+                    />
+                  </ListItem>
+                )}
+              </List>
+            </Box>
+          </TabPanel>
+        </TabContext>
+
 
         {/* Autoclave Batch Dialog */}
         <Dialog

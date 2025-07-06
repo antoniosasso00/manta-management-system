@@ -190,6 +190,26 @@ npm run lint && npm run type-check
 - **Production Migrations**: `npm run db:migrate` for production-ready migrations
 - **IMPORTANTE**: NO seeding in produzione - database Netlify rimane vuoto per dati reali
 
+### Schema Validation & Field Removal (CRITICAL)
+**PRIMA di rimuovere/modificare campi dal codice, SEMPRE verificare:**
+```bash
+# 1. Verificare se il campo è usato nel codebase
+grep -r "nomeCampo" src/
+# 2. Verificare se esiste nel schema Prisma
+grep -A 10 "model NomeModello" prisma/schema.prisma
+```
+
+**Approccio corretto per errori di campo mancante:**
+1. ✅ **Verificare uso**: Se il campo è usato in frontend/API
+2. ✅ **Schema check**: Controllare se esiste in `prisma/schema.prisma`
+3. ✅ **Se campo mancante ma usato**: Aggiungere al schema o implementare logica alternativa
+4. ❌ **MAI rimuovere senza verifica**: Può rompere funzionalità esistenti
+
+**Esempi comuni:**
+- `progressivo` → mappare a `odlNumber` per compatibilità API
+- `description` → usare campo alternativo se manca (es. `name`)
+- `currentDepartmentId` → derivare da `ProductionEvent` se mancante
+
 ### Component Development Standards
 - **Atomic Design**: SEMPRE seguire pattern atoms → molecules → organisms → templates
 - **Material-UI v7**: Usare SOLO sintassi `<Grid size={{ xs: 12, sm: 6 }}>` - old syntax deprecata

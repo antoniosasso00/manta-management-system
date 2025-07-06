@@ -151,7 +151,7 @@ export default function ReportsPage() {
           </Typography>
           <Grid container spacing={3}>
             {reports.map((report) => (
-              <Grid item xs={12} sm={6} md={4} key={report.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={report.id}>
                 <Card sx={{ height: '100%' }}>
                   <CardActionArea 
                     onClick={() => handleGenerateReport(report)}
@@ -159,13 +159,11 @@ export default function ReportsPage() {
                   >
                     <CardContent>
                       <Box className="text-center">
-                        <report.icon 
-                          sx={{ 
+                        <Box component={report.icon} sx={{ 
                             fontSize: 48, 
                             color: report.color, 
                             mb: 2 
-                          }} 
-                        />
+                          }} />
                         <Typography variant="h6" component="h2" gutterBottom>
                           {report.title}
                         </Typography>

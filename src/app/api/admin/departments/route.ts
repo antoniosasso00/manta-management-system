@@ -26,14 +26,7 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            users: true,
-            productionEvents: {
-              where: {
-                createdAt: {
-                  gte: new Date(new Date().setHours(0, 0, 0, 0))
-                }
-              }
-            }
+            users: true
           }
         }
       },
@@ -46,17 +39,18 @@ export async function GET(request: NextRequest) {
         const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
         
         const [completedToday, totalEvents] = await Promise.all([
-          prisma.oDL.count({
+          // Count completed ODLs by checking latest events
+          prisma.productionEvent.count({
             where: {
-              currentDepartmentId: dept.id,
-              status: 'COMPLETED',
-              updatedAt: { gte: todayStart }
+              departmentId: dept.id,
+              eventType: 'EXIT',
+              timestamp: { gte: todayStart }
             }
           }),
           prisma.productionEvent.count({
             where: {
               departmentId: dept.id,
-              createdAt: { gte: todayStart }
+              timestamp: { gte: todayStart }
             }
           })
         ]);
@@ -68,8 +62,8 @@ export async function GET(request: NextRequest) {
           id: dept.id,
           name: dept.name,
           code: dept.code,
-          description: dept.description,
-          status: dept.status,
+          description: dept.name, // Using name as description since description field doesn't exist
+          status: dept.isActive ? 'ACTIVE' : 'INACTIVE',
           currentOperators: dept._count.users,
           totalCapacity: dept._count.users > 0 ? dept._count.users + 2 : 5, // Simple capacity calculation
           efficiency: Math.round(efficiency * 10) / 10,
