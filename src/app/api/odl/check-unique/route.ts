@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
         
         // Verifica se il suggerimento è disponibile
         const suggestionExists = await prisma.oDL.findFirst({
-          where: { progressivo: suggestedProgressivo },
+          where: { odlNumber: suggestedProgressivo },
           select: { id: true }
         });
         

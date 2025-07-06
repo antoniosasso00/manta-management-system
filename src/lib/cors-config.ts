@@ -6,10 +6,10 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 interface CORSOptions {
-  allowedOrigins?: string[];
-  allowedMethods?: string[];
-  allowedHeaders?: string[];
-  exposedHeaders?: string[];
+  allowedOrigins?: readonly string[];
+  allowedMethods?: readonly string[];
+  allowedHeaders?: readonly string[];
+  exposedHeaders?: readonly string[];
   credentials?: boolean;
   maxAge?: number;
   optionsSuccessStatus?: number;
@@ -59,7 +59,7 @@ const defaultOptions: CORSOptions = {
 /**
  * Verifica se un'origine è permessa
  */
-function isOriginAllowed(origin: string | null, allowedOrigins: string[]): boolean {
+function isOriginAllowed(origin: string | null, allowedOrigins: readonly string[]): boolean {
   if (!origin) return false;
   
   // Controllo esatto

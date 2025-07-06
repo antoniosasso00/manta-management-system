@@ -69,7 +69,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'StatusChip.tsx',
     element: 'Chip component',
-    currentSize: { width: 'auto', height: 32 },
+    currentSize: { width: -1, height: 32 },
     meetsStandard: false,
     recommendation: 'Aumentare altezza a 44px se interattivo',
     severity: 'medium'
@@ -77,7 +77,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'FilterPanel.tsx',
     element: 'FormControl selects',
-    currentSize: { width: 'auto', height: 'unknown' },
+    currentSize: { width: -1, height: -1 },
     meetsStandard: false,
     recommendation: 'Verificare altezza inputs e aumentare se < 44px',
     severity: 'medium'
@@ -85,7 +85,7 @@ export const TOUCH_TARGET_AUDIT: TouchTargetAuditResult[] = [
   {
     component: 'ConfirmActionDialog.tsx',
     element: 'Dialog action buttons',
-    currentSize: { width: 'auto', height: 'inherited' },
+    currentSize: { width: -1, height: -1 },
     meetsStandard: true,
     recommendation: 'Dovrebbe ereditare da theme, verificare visivamente',
     severity: 'low'

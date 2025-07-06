@@ -6,7 +6,7 @@ import {
 } from '@/domains/core/schemas/part'
 import {
   createPartSchema,
-  updatePartSchema,
+  updatePartInputSchema,
   type CreatePartInput,
   type UpdatePartInput
 } from '@/domains/core/schemas/part.schema'
@@ -20,7 +20,7 @@ export class PartRepository extends ValidatedRepository<Part, CreatePartInput, U
       {
         entity: partSchema,
         create: createPartSchema,
-        update: updatePartSchema.omit({ id: true })
+        update: updatePartInputSchema
       }
     )
   }
