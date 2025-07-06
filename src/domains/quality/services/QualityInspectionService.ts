@@ -143,7 +143,7 @@ export class QualityInspectionService {
         },
         orderBy: [
           { status: 'asc' },
-          { createdAt: 'desc' },
+          { completedAt: 'desc' },
         ],
         skip: (page - 1) * limit,
         take: limit,
@@ -342,7 +342,7 @@ export class QualityInspectionService {
       prisma.qualityInspection.count({
         where: {
           ...where,
-          createdAt: {
+          completedAt: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
           },
         },
@@ -391,7 +391,7 @@ export class QualityInspectionService {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        completedAt: 'desc',
       },
     })
   }

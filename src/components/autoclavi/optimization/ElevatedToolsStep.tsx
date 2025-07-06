@@ -114,7 +114,7 @@ export function ElevatedToolsStep({
 
       <Grid container spacing={3}>
         {/* Statistiche */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Stack direction="row" spacing={2}>
             <Paper variant="outlined" sx={{ p: 2, flex: 1 }}>
               <Typography variant="h4" color="primary">
@@ -144,7 +144,7 @@ export function ElevatedToolsStep({
         </Grid>
 
         {/* Controlli */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Stack direction="row" spacing={2}>
             <Button
               variant="outlined"
@@ -164,7 +164,7 @@ export function ElevatedToolsStep({
         </Grid>
 
         {/* Tabella Tool */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TableContainer component={Paper} variant="outlined">
             <Table size="small">
               <TableHead>
@@ -287,7 +287,7 @@ export function ElevatedToolsStep({
         </Grid>
 
         {/* Info aggiuntive */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Alert severity="success">
             <Typography variant="body2">
               Selezionando {elevatedCount} tool per i supporti rialzati, 

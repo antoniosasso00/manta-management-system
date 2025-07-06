@@ -4,7 +4,7 @@ export const createODLSchema = z.object({
   odlNumber: z.string().min(1, 'ODL number is required'),
   partId: z.string().cuid('Part ID is required'),
   quantity: z.number().int().min(1, 'Quantity must be at least 1'),
-  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
+  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).optional().default('NORMAL'),
   status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).default('CREATED'),
   notes: z.string().optional(),
   customerId: z.string().optional(),

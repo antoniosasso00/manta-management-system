@@ -15,8 +15,8 @@ Built as a Next.js 15.3.4 application following Domain-Driven Design principles 
 npm run dev          # Start development server with Turbopack (http://localhost:3000)
 npm run dev:standard # Start development server without Turbopack (fallback)
 npm run dev -- -p 3001 # Force specific port (use when multiple Claude instances)
-npm run build        # Create production build  
-npm run start        # Start production server
+npm run build        # Create production build (does NOT start services)
+npm run start        # Start production server (after build)
 npm run lint         # Run ESLint checks
 npm run type-check   # Type check without emitting files
 ```
@@ -31,6 +31,39 @@ npm run db:studio              # Open Prisma Studio GUI
 npm run db:seed                # Seed database with initial data
 npm run db:seed-complete       # Run complete seed for testing and validation
 docker compose down            # Stop services
+```
+
+### Microservices
+```bash
+# Optimization Service (Python)
+cd manta-optimization-service
+docker compose -f docker-compose.dev.yml up -d --build  # Start optimization microservice
+docker compose -f docker-compose.dev.yml down           # Stop optimization microservice
+docker compose -f docker-compose.dev.yml logs           # View microservice logs
+curl http://localhost:8000/api/v1/health/               # Test microservice health
+cd ..
+```
+
+### Complete Local Setup
+```bash
+# 1. Start all infrastructure
+docker compose up -d
+cd manta-optimization-service && docker compose -f docker-compose.dev.yml up -d && cd ..
+
+# 2. Setup database
+npm run db:push && npm run db:seed-complete
+
+# 3. Configure environment
+echo "OPTIMIZATION_SERVICE_URL=http://localhost:8000" >> .env.local
+
+# 4. Start Next.js app
+npm run dev -- -p 3001
+
+# URLs: 
+# - App: http://localhost:3001
+# - Microservice: http://localhost:8000
+# - Optimization: http://localhost:3001/autoclavi/optimization
+# - Login: admin@mantaaero.com / password123
 ```
 
 ### Development Setup (First Time)

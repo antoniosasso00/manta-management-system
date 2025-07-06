@@ -19,8 +19,8 @@ export class PartService {
       data: {
         partNumber: input.partNumber,
         description: input.description,
-        defaultCuringCycleId: input.defaultCuringCycleId,
-        defaultVacuumLines: input.defaultVacuumLines,
+        // defaultCuringCycleId: input.defaultCuringCycleId,
+        // defaultVacuumLines: input.defaultVacuumLines,
       }
     })
 
@@ -123,8 +123,8 @@ export class PartService {
       data: {
         partNumber: input.partNumber,
         description: input.description,
-        defaultCuringCycleId: input.defaultCuringCycleId,
-        defaultVacuumLines: input.defaultVacuumLines,
+        // defaultCuringCycleId: input.defaultCuringCycleId,
+        // defaultVacuumLines: input.defaultVacuumLines,
       }
     })
 
@@ -254,8 +254,8 @@ export class PartService {
           data: {
             partNumber: partData.partNumber,
             description: partData.description,
-            defaultCuringCycleId: partData.defaultCuringCycleId,
-            defaultVacuumLines: partData.defaultVacuumLines,
+            // defaultCuringCycleId: partData.defaultCuringCycleId,
+            // defaultVacuumLines: partData.defaultVacuumLines,
           }
         })
         created++

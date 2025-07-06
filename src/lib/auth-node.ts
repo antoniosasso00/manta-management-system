@@ -149,7 +149,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: decoded.user.name,
               role: decoded.user.role,
               departmentId: decoded.user.departmentId,
-              departmentRole: decoded.user.departmentRole || null
+              departmentRole: decoded.user.departmentRole || null,
+              emailVerified: null // Add missing field for AdapterUser
             }
             return session
           }

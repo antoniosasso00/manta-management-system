@@ -225,7 +225,7 @@ export class BackupService {
           size: stats.size,
           created: stats.birthtime,
           modified: stats.mtime,
-          type: file.startsWith('scheduled-') ? 'scheduled' : 'manual',
+          type: file.startsWith('scheduled-') ? 'scheduled' : 'manual' as 'scheduled' | 'manual',
         }
       })
       .sort((a, b) => b.modified.getTime() - a.modified.getTime())

@@ -62,7 +62,8 @@
       "Bash(./scripts/migrate-grid-v7.sh:*)",
       "Bash(npx tsx:*)",
       "Bash(python tests/test_optimization.py)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": []
   }

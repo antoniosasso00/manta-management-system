@@ -1,78 +1,164 @@
-📋 Comandi di Sviluppo Utili
+# 📋 Comandi di Sviluppo MES Aerospazio
 
-  Database Management
+## Development Commands
 
-  # Visualizza database con Prisma Studio
-  npm run db:studio
+### Next.js App
+```bash
+npm run dev          # Start development server (http://localhost:3000)
+npm run dev -- -p 3001  # Start on specific port
+npm run build        # Create production build (does NOT start services)
+npm run start        # Start production server (after build)
+npm run lint         # Run ESLint checks
+npm run type-check   # Type check without emitting files
+```
 
-  # Genera client Prisma dopo modifiche schema
-  npm run db:generate
+### Database Management
+```bash
+# PostgreSQL + Redis
+docker compose up -d           # Start database services
+docker compose down            # Stop database services
+docker compose ps             # Check services status
+docker compose logs postgres  # View database logs
 
-  # Visualizza logs database
-  docker compose logs postgres
+# Schema and Data
+npm run db:generate            # Generate Prisma client
+npm run db:push                # Push schema changes to database
+npm run db:migrate             # Create and run migrations
+npm run db:studio              # Open Prisma Studio GUI
+npm run db:seed                # Seed basic data
+npm run db:seed-complete       # Seed complete test data
+```
 
-  # Stop database
-  docker compose down
+### Microservices
+```bash
+# Optimization Service (Python)
+cd manta-optimization-service
+docker compose -f docker-compose.dev.yml up -d --build  # Start microservice
+docker compose -f docker-compose.dev.yml down           # Stop microservice
+docker compose -f docker-compose.dev.yml logs           # View logs
+curl http://localhost:8000/api/v1/health/               # Test health
+cd ..
+```
 
-  Build e Test
+## Complete System Startup
 
-  # Build produzione
-  npm run build
+### Full Local Setup
+```bash
+# 1. Start infrastructure
+docker compose up -d
+cd manta-optimization-service && docker compose -f docker-compose.dev.yml up -d && cd ..
 
-  # Start produzione
-  npm run start
+# 2. Setup database
+npm run db:push && npm run db:seed-complete
 
-  # Linting
-  npm run lint
+# 3. Configure environment
+echo "OPTIMIZATION_SERVICE_URL=http://localhost:8000" >> .env.local
 
-  Debug e Monitoring
+# 4. Start Next.js
+npm run dev -- -p 3001
+```
 
-  # Logs container database
-  docker compose logs -f postgres
+### URLs and Access
+- **App**: http://localhost:3001
+- **Microservice**: http://localhost:8000/docs
+- **Optimization**: http://localhost:3001/autoclavi/optimization
+- **Database Studio**: http://localhost:5555 (run `npm run db:studio`)
 
-  # Status containers
-  docker compose ps
+### Test Credentials
+- **Email**: admin@mantaaero.com
+- **Password**: password123
 
-  # Restart database
-  docker compose restart postgres
+## Service Status Checks
 
-  ---
-  ⚡ Quick Start (Sequenza Completa)
+### Health Checks
+```bash
+# Database
+docker compose ps | grep postgres  # Should show "Up"
 
-  # 1. Avvia tutto in sequenza
-  docker compose up -d && npm run db:push && npm run dev
+# Microservice
+curl http://localhost:8000/api/v1/health/  # Should return {"status":"healthy"}
 
-  # 2. Apri browser su http://localhost:3000
+# Next.js
+curl http://localhost:3001  # Should return HTML
+```
 
-  # 3. Vai su /register per creare primo admin
+### Debug Commands
+```bash
+# Database logs
+docker compose logs -f postgres
 
-  ---
-  🔧 Troubleshooting
+# Microservice logs
+docker logs manta-optimization-service-optimization-1 -f
 
-  Se hai problemi:
+# Next.js process
+ps aux | grep "next dev"
+```
 
-  1. Database non si connette:
-  docker compose down
-  docker compose up -d
-  2. Schema non sincronizzato:
-  npm run db:push
-  3. Port 3000 occupato:
-  npm run dev -- -p 3001
+## Troubleshooting
 
-  L'app sarà disponibile su http://localhost:3000 con il sistema di autenticazione
-  completo pronto all'uso!
+### Database Issues
+```bash
+# Reset database
+docker compose down
+docker compose up -d
+npm run db:push
+npm run db:seed-complete
+```
 
-  # Basic usage
-ccusage          # Show daily report (default)
-ccusage daily    # Daily token usage and costs
-ccusage monthly  # Monthly aggregated report
-ccusage session  # Usage by conversation session
-ccusage blocks   # 5-hour billing windows
+### Microservice Issues
+```bash
+cd manta-optimization-service
+docker compose -f docker-compose.dev.yml restart
+docker compose -f docker-compose.dev.yml logs
+```
 
-# Live monitoring
-ccusage blocks --live  # Real-time usage dashboard
+### Next.js Issues
+```bash
+# Kill existing processes
+pkill -f "next dev"
 
-# Filters and options
-ccusage daily --since 20250525 --until 20250530
-ccusage daily --json  # JSON output
-ccusage daily --breakdown  # Per-model cost breakdown
+# Clear cache and restart
+rm -rf .next
+npm run dev -- -p 3001
+```
+
+### Port Conflicts
+```bash
+# Check what's using port
+ss -tlnp | grep :3001
+ss -tlnp | grep :8000
+
+# Use different ports
+npm run dev -- -p 3002  # Next.js on 3002
+```
+
+## Development Workflow
+
+### Pre-commit Checks
+```bash
+npm run lint && npm run type-check
+```
+
+### Testing Integration
+```bash
+# Test microservice directly
+curl -X POST http://localhost:8000/api/v1/optimization/batch \
+  -H "Content-Type: application/json" \
+  -d '{"odls": [], "autoclaves": [], "selected_cycles": []}'
+
+# Test through Next.js API
+curl -X POST http://localhost:3001/api/autoclavi/optimization/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"odlIds": []}'
+```
+
+### Production Build Testing
+```bash
+# Build and test locally
+npm run build
+npm run start -- -p 3001
+
+# Test production build
+curl http://localhost:3001
+```
+

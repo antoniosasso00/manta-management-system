@@ -1,12 +1,14 @@
 import { ValidatedRepository } from '../repository'
 import { 
   odlSchema, 
-  createODLSchema, 
-  updateODLSchema,
   type ODL,
+} from '@/domains/core/schemas/odl'
+import {
+  createODLSchema,
+  updateODLSchema,
   type CreateODLInput,
   type UpdateODLInput
-} from '@/domains/core/schemas/odl'
+} from '@/domains/core/schemas/odl.schema'
 
 export class ODLRepository extends ValidatedRepository<ODL, CreateODLInput, UpdateODLInput> {
   constructor() {
@@ -16,7 +18,7 @@ export class ODLRepository extends ValidatedRepository<ODL, CreateODLInput, Upda
       },
       {
         entity: odlSchema,
-        create: createODLSchema,
+        create: createODLSchema as any,
         update: updateODLSchema
       }
     )

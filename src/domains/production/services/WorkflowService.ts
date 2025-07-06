@@ -303,7 +303,7 @@ export class WorkflowService {
           // 1. Verifica nuovamente lo stato ODL (potrebbero esserci stati cambiamenti)
           const currentODL = await tx.oDL.findUnique({
             where: { id: validatedInput.odlId },
-            select: { status: true, version: true } // Assumendo versioning ottimistico
+            select: { status: true } // Version field removed
           });
 
           if (!currentODL || currentODL.status !== originalODL.status) {

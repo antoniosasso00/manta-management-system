@@ -71,10 +71,12 @@ export class AutoclaveService {
         status: LoadStatus.DRAFT,
         layoutData: data.layoutData,
         loadItems: {
-          create: data.odlIds.map(odlId => ({
-            odlId,
-            position: null // Sarà popolato dal layoutData
-          }))
+          createMany: {
+            data: data.odlIds.map(odlId => ({
+              odlId,
+              position: undefined // Sarà popolato dal layoutData
+            }))
+          }
         }
       },
       include: {

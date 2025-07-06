@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Performance optimizations
   experimental: {
-    // Optimize CSS imports
-    optimizeCss: true,
+    // Optimize CSS imports - disabled due to missing critters module
+    optimizeCss: false,
   },
   
   // Server Components external packages

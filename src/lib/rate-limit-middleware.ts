@@ -158,11 +158,11 @@ export const generalRateLimiter = createRateLimitMiddleware({
 /**
  * Helper function per applicare rate limiting a una route handler
  */
-export function withRateLimit<T extends NextRequest>(
-  handler: (req: T) => Promise<NextResponse>,
+export function withRateLimit(
+  handler: (req: NextRequest) => Promise<NextResponse>,
   rateLimiter: ReturnType<typeof createRateLimitMiddleware>
 ) {
-  return async function (req: T): Promise<NextResponse> {
+  return async function (req: NextRequest): Promise<NextResponse> {
     return await rateLimiter(req, handler);
   };
 }

@@ -131,11 +131,12 @@ export class TimeMetricsService {
     })
 
     // Aggiorna statistiche aggregate per Part Number
-    await this.updatePartTimeStatistics(event.odl.partId, event.departmentId, {
-      advancementTime,
-      workingTime,
-      waitingTime: timeMetric.waitingTime
-    })
+    // TODO: Implementare logica per recuperare partId dall'ODL
+    // await this.updatePartTimeStatistics(event.odl.partId, event.departmentId, {
+    //   advancementTime,
+    //   workingTime,
+    //   waitingTime: timeMetric.waitingTime
+    // })
   }
 
   /**

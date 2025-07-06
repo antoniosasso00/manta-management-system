@@ -240,7 +240,7 @@ export function NavigationSidebar({
           </FormControl>
           {selectedRole && (
             <Chip
-              label={`Viewing as: ${ROLE_DISPLAY_NAMES[selectedRole]}`}
+              label={`Viewing as: ${ROLE_DISPLAY_NAMES[selectedRole as keyof typeof ROLE_DISPLAY_NAMES]}`}
               size="small"
               color="warning"
               variant="filled"

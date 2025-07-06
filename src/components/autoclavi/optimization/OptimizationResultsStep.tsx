@@ -116,7 +116,7 @@ export function OptimizationResultsStep({
     <Box>
       {/* Statistiche generali */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4" color="primary">
               {result.total_odls_placed}
@@ -126,7 +126,7 @@ export function OptimizationResultsStep({
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4">
               {result.batches.length}
@@ -136,7 +136,7 @@ export function OptimizationResultsStep({
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4" color="success.main">
               {(result.success_rate * 100).toFixed(0)}%
@@ -146,7 +146,7 @@ export function OptimizationResultsStep({
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4">
               {result.execution_time_seconds.toFixed(1)}s
@@ -168,7 +168,7 @@ export function OptimizationResultsStep({
           const isConfirmed = confirmedBatches.includes(batch.batch_id);
           
           return (
-            <Grid item xs={12} key={batch.batch_id}>
+            <Grid size={12} key={batch.batch_id}>
               <Card
                 variant={isConfirmed ? 'elevation' : 'outlined'}
                 sx={{
@@ -222,7 +222,7 @@ export function OptimizationResultsStep({
 
                   {/* Metriche batch */}
                   <Grid container spacing={2}>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Speed fontSize="small" color="action" />
                         <Box>
@@ -235,7 +235,7 @@ export function OptimizationResultsStep({
                         </Box>
                       </Stack>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Scale fontSize="small" color="action" />
                         <Box>
@@ -248,7 +248,7 @@ export function OptimizationResultsStep({
                         </Box>
                       </Stack>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <AirlineSeatFlat fontSize="small" color="action" />
                         <Box>
@@ -261,7 +261,7 @@ export function OptimizationResultsStep({
                         </Box>
                       </Stack>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                       <Box>
                         <Typography variant="h6">
                           {batch.metrics.odl_count}

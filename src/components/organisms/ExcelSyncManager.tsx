@@ -21,6 +21,7 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   ListItemIcon,
   Collapse,
@@ -92,13 +93,13 @@ export function ExcelSyncManager() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Errore caricamento cartella')
+        throw new window.Error(data.error || 'Errore caricamento cartella')
       }
 
       setCurrentPath(data.currentPath)
       setItems(data.items)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Errore sconosciuto')
+      setError(err instanceof window.Error ? err.message : 'Errore sconosciuto')
     } finally {
       setLoading(false)
     }
@@ -120,13 +121,13 @@ export function ExcelSyncManager() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Errore analisi file')
+        throw new window.Error(data.error || 'Errore analisi file')
       }
 
       setAnalysis(data)
       setShowAnalysis(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Errore sconosciuto')
+      setError(err instanceof window.Error ? err.message : 'Errore sconosciuto')
     } finally {
       setLoading(false)
     }
@@ -150,12 +151,12 @@ export function ExcelSyncManager() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Errore sincronizzazione')
+        throw new window.Error(data.error || 'Errore sincronizzazione')
       }
 
       setSyncResult(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Errore sconosciuto')
+      setError(err instanceof window.Error ? err.message : 'Errore sconosciuto')
     } finally {
       setSyncing(false)
     }
@@ -219,28 +220,28 @@ export function ExcelSyncManager() {
           <Paper sx={{ maxHeight: 400, overflow: 'auto' }}>
             <List dense>
               {items.map((item, index) => (
-                <ListItem
-                  key={index}
-                  button
-                  onClick={() => handleItemClick(item)}
-                  selected={selectedFile === item.path}
-                >
-                  <ListItemIcon>
-                    {item.type === 'directory' ? (
-                      <FolderOpen color="primary" />
-                    ) : item.isExcel ? (
-                      <Description color="success" />
-                    ) : (
-                      <InsertDriveFile />
+                <ListItem key={index} disablePadding>
+                  <ListItemButton
+                    onClick={() => handleItemClick(item)}
+                    selected={selectedFile === item.path}
+                  >
+                    <ListItemIcon>
+                      {item.type === 'directory' ? (
+                        <FolderOpen color="primary" />
+                      ) : item.isExcel ? (
+                        <Description color="success" />
+                      ) : (
+                        <InsertDriveFile />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.name}
+                      secondary={item.type === 'file' && item.isExcel ? 'File Excel' : undefined}
+                    />
+                    {item.isExcel && (
+                      <Chip size="small" label="Excel" color="success" />
                     )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.name}
-                    secondary={item.type === 'file' && item.isExcel ? 'File Excel' : undefined}
-                  />
-                  {item.isExcel && (
-                    <Chip size="small" label="Excel" color="success" />
-                  )}
+                  </ListItemButton>
                 </ListItem>
               ))}
             </List>

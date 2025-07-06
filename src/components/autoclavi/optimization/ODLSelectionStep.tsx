@@ -93,7 +93,7 @@ export function ODLSelectionStep({
   return (
     <Grid container spacing={3}>
       {/* Selezione ODL */}
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="h6" gutterBottom>
@@ -121,7 +121,7 @@ export function ODLSelectionStep({
               </Typography>
               
               <List dense>
-                {odls.map((odl) => (
+                {(odls as any[]).map((odl) => (
                   <ListItem key={odl.id} disablePadding>
                     <ListItemIcon>
                       <Checkbox
@@ -173,7 +173,7 @@ export function ODLSelectionStep({
       </Grid>
 
       {/* Selezione Autoclavi */}
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="h6" gutterBottom>
@@ -237,7 +237,7 @@ export function ODLSelectionStep({
       </Grid>
 
       {/* Vincoli Ottimizzazione */}
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom>
             Vincoli di Ottimizzazione
@@ -298,7 +298,7 @@ export function ODLSelectionStep({
       </Grid>
 
       {/* Riepilogo selezione */}
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Alert 
           severity={selectedODLs.length > 0 && selectedAutoclaves.length > 0 ? "success" : "info"}
         >

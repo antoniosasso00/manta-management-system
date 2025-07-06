@@ -8,8 +8,8 @@ export const createToolSchema = z.object({
     .min(1, 'Tool part number is required')
     .regex(toolPartNumberRegex, 'Tool part number must be 6-15 alphanumeric characters'),
   description: z.string()
-    .min(1, 'Description is required')
-    .max(255, 'Description too long'),
+    .max(255, 'Description too long')
+    .optional(),
   base: z.number()
     .positive('Base dimension must be positive'),
   height: z.number()

@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 
 /**
  * Wrapper for database operations with error handling and retry logic
  */
 export async function withDatabase<T>(
-  operation: (prisma: typeof prisma) => Promise<T>
+  operation: (prisma: PrismaClient) => Promise<T>
 ): Promise<T> {
   try {
     return await operation(prisma)

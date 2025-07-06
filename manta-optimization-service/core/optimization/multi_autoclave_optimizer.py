@@ -50,7 +50,7 @@ class MultiAutoclaveOptimizer:
             )
             
             # Fase 2: Ottimizza layout per ogni autoclave
-            for autoclave, assigned_odls in initial_distribution.items():
+            for autoclave_id, (autoclave, assigned_odls) in initial_distribution.items():
                 if not assigned_odls:
                     continue
                 
@@ -99,37 +99,38 @@ class MultiAutoclaveOptimizer:
         self,
         odls: List[ODL],
         autoclaves: List[Autoclave]
-    ) -> Dict[Autoclave, List[ODL]]:
+    ) -> Dict[str, Tuple[Autoclave, List[ODL]]]:
         """
-        First Fit Decreasing: assegna ODL più grandi prima.
-        Bilancia il carico tra autoclavi.
+        First Fit Decreasing ottimizzato per massima efficienza.
+        Utilizza Best-Fit con soglia di riempimento alta.
         """
         # Ordina ODL per area totale decrescente
         sorted_odls = sorted(odls, key=lambda o: o.total_area, reverse=True)
         
-        # Inizializza bins (autoclavi)
-        distribution = {a: [] for a in autoclaves}
-        bin_loads = {a: 0.0 for a in autoclaves}
+        # Inizializza bins (autoclavi) usando ID come chiave
+        distribution = {a.id: (a, []) for a in autoclaves}
+        bin_loads = {a.id: 0.0 for a in autoclaves}
         
         for odl in sorted_odls:
-            # Trova autoclave con minor carico che può contenere l'ODL
+            # Best-Fit: trova autoclave più piena che può ancora contenere l'ODL
             best_autoclave = None
-            min_load = float('inf')
+            best_load = -1
             
             for autoclave in autoclaves:
                 # Verifica vincoli base
                 if odl.vacuum_lines <= autoclave.vacuum_lines:
-                    current_load = bin_loads[autoclave]
+                    current_load = bin_loads[autoclave.id]
                     
-                    # Stima se c'è spazio (euristica)
+                    # Stima se c'è spazio con soglia più alta per efficienza
                     estimated_usage = (current_load + odl.total_area) / autoclave.area
                     
-                    if estimated_usage < 0.9 and current_load < min_load:
-                        best_autoclave = autoclave
-                        min_load = current_load
+                    # Usa Best-Fit invece di First-Fit per massimizzare riempimento
+                    if estimated_usage < 0.95 and current_load > best_load:
+                        best_autoclave = autoclave.id
+                        best_load = current_load
             
             if best_autoclave:
-                distribution[best_autoclave].append(odl)
+                distribution[best_autoclave][1].append(odl)
                 bin_loads[best_autoclave] += odl.total_area
         
         return distribution

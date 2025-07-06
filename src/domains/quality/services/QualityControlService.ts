@@ -29,7 +29,7 @@ export class QualityControlService {
         part: true,
         inspections: {
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { completedAt: 'desc' },
           include: {
             inspector: {
               select: { id: true, name: true, email: true },
@@ -165,7 +165,7 @@ export class QualityControlService {
       }),
       prisma.qualityInspection.count({
         where: {
-          createdAt: {
+          completedAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
           },
         },
@@ -226,6 +226,7 @@ export class QualityControlService {
         title: `${planData.title} (Copia)`,
         version: '1.0',
         createdBy,
+        acceptanceCriteria: planData.acceptanceCriteria as any, // Type cast for Prisma JSON field
       },
       include: {
         part: true,

@@ -328,7 +328,7 @@ export function withCORS<T extends NextRequest>(
     const allowed = !corsConfig?.allowedOrigins || 
       (origin && isOriginAllowed(origin, corsConfig.allowedOrigins));
     
-    logCORSRequest(req, allowed);
+    logCORSRequest(req, allowed || false);
     
     if (allowed) {
       return applyCORSHeaders(response, req, corsConfig);

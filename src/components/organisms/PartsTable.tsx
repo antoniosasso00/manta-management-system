@@ -113,22 +113,6 @@ export function PartsTable({
       },
     },
     {
-      id: 'standardLength',
-      label: 'Dimensions (L×W×H)',
-      minWidth: 120,
-      format: (value, row) => {
-        const { standardLength, standardWidth, standardHeight } = row
-        if (!standardLength || !standardWidth || !standardHeight) {
-          return (
-            <Typography variant="body2" color="textSecondary">
-              Not specified
-            </Typography>
-          )
-        }
-        return `${standardLength}×${standardWidth}×${standardHeight} mm`
-      },
-    },
-    {
       id: 'defaultVacuumLines',
       label: 'Vacuum Lines',
       minWidth: 100,
@@ -257,14 +241,8 @@ export function PartsTable({
     if (!selectedPart) return undefined
     
     return {
-      id: selectedPart.id,
       partNumber: selectedPart.partNumber,
       description: selectedPart.description,
-      standardLength: selectedPart.standardLength || undefined,
-      standardWidth: selectedPart.standardWidth || undefined,
-      standardHeight: selectedPart.standardHeight || undefined,
-      defaultVacuumLines: selectedPart.defaultVacuumLines || undefined,
-      defaultCuringCycleId: selectedPart.defaultCuringCycle?.id,
     }
   }
 
@@ -325,7 +303,6 @@ export function PartsTable({
         onSubmit={handleFormSubmit}
         initialData={getFormInitialData()}
         mode={formMode}
-        curingCycles={curingCycles}
         loading={actionLoading}
       />
 
