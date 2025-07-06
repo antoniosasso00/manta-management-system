@@ -21,72 +21,79 @@ export async function GET() {
       );
     }
 
-    // Ottieni tutti gli ODL con le informazioni di produzione
-    const odlList = await prisma.oDL.findMany({
-      include: {
-        part: true,
-        events: {
-          orderBy: {
-            timestamp: 'desc'
-          },
-          take: 1,
-          include: {
-            user: true,
-            department: true
+    // Pre-fetch tutti i departments per evitare N+1 queries
+    const [odlList, allDepartments] = await Promise.all([
+      prisma.oDL.findMany({
+        include: {
+          part: true,
+          events: {
+            orderBy: {
+              timestamp: 'desc'
+            },
+            take: 1,
+            include: {
+              user: true,
+              department: true
+            }
           }
+        },
+        orderBy: {
+          updatedAt: 'desc'
         }
-      },
-      orderBy: {
-        updatedAt: 'desc'
-      }
-    });
-
-    // Mappa i dati per il frontend
-    const productionODL = await Promise.all(
-      odlList.map(async (odl) => {
-        const lastEvent = odl.events[0];
-        const currentDepartment = lastEvent?.department?.name;
-        
-        // Calcola tempo nel reparto corrente
-        let timeInDepartment = 0;
-        if (lastEvent?.eventType === 'ENTRY') {
-          timeInDepartment = Math.floor(
-            (Date.now() - lastEvent.timestamp.getTime()) / (1000 * 60)
-          );
-        }
-
-        // Trova prossimo reparto nel workflow
-        let nextDepartment: string | undefined;
-        if (lastEvent?.department) {
-          const nextDepartmentType = WorkflowService.getNextDepartment(
-            lastEvent.department.type
-          );
-          
-          if (nextDepartmentType) {
-            const nextDept = await prisma.department.findFirst({
-              where: { type: nextDepartmentType, isActive: true }
-            });
-            nextDepartment = nextDept?.name;
-          }
-        }
-
-        return {
-          id: odl.id,
-          odlNumber: odl.odlNumber,
-          partNumber: odl.part.partNumber,
-          description: odl.part.description,
-          status: odl.status,
-          priority: odl.priority,
-          quantity: odl.quantity,
-          expectedCompletionDate: odl.expectedCompletionDate?.toISOString(),
-          currentDepartment,
-          assignedOperator: lastEvent?.user?.name,
-          timeInDepartment,
-          lastUpdate: odl.updatedAt.toISOString(),
-          nextDepartment
-        };
+      }),
+      prisma.department.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, type: true }
       })
+    ]);
+
+    // Crea mappa dei departments per lookup O(1)
+    const departmentsByType = new Map(
+      allDepartments.map(dept => [dept.type, dept])
     );
+
+    // Mappa i dati per il frontend - NO async operations
+    const productionODL = odlList.map((odl) => {
+      const lastEvent = odl.events[0];
+      const currentDepartment = lastEvent?.department?.name;
+      
+      // Calcola tempo nel reparto corrente
+      let timeInDepartment = 0;
+      if (lastEvent?.eventType === 'ENTRY') {
+        timeInDepartment = Math.floor(
+          (Date.now() - lastEvent.timestamp.getTime()) / (1000 * 60)
+        );
+      }
+
+      // Trova prossimo reparto nel workflow usando la mappa
+      let nextDepartment: string | undefined;
+      if (lastEvent?.department) {
+        const nextDepartmentType = WorkflowService.getNextDepartment(
+          lastEvent.department.type
+        );
+        
+        if (nextDepartmentType) {
+          const nextDept = departmentsByType.get(nextDepartmentType);
+          nextDepartment = nextDept?.name;
+        }
+      }
+
+      return {
+        id: odl.id,
+        odlNumber: odl.odlNumber,
+        partNumber: odl.part.partNumber,
+        description: odl.part.description,
+        status: odl.status,
+        priority: odl.priority,
+        quantity: odl.quantity,
+        expectedCompletionDate: odl.expectedCompletionDate?.toISOString(),
+        currentDepartment,
+        assignedOperator: lastEvent?.user?.name,
+        timeInDepartment,
+        lastUpdate: odl.updatedAt.toISOString(),
+        nextDepartment
+      };
+    });
 
     return NextResponse.json(productionODL);
 

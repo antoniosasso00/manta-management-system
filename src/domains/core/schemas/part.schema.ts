@@ -11,9 +11,13 @@ export const createPartSchema = z.object({
     .min(1, 'La descrizione è obbligatoria')
 })
 
+// Schema per validazione route (con id)
 export const updatePartSchema = createPartSchema.partial().extend({
   id: z.string().cuid(),
 })
+
+// Schema per input service (senza id)
+export const updatePartInputSchema = createPartSchema.partial()
 
 export const partQuerySchema = z.object({
   search: z.string().optional(),
@@ -37,7 +41,7 @@ export const bulkCreatePartsSchema = z.object({
 
 // Type exports
 export type CreatePartInput = z.infer<typeof createPartSchema>
-export type UpdatePartInput = z.infer<typeof updatePartSchema>
+export type UpdatePartInput = z.infer<typeof updatePartInputSchema>
 export type PartQueryInput = z.infer<typeof partQuerySchema>
 export type GammaSyncPartInput = z.infer<typeof gammaSyncPartSchema>
 export type BulkCreatePartsInput = z.infer<typeof bulkCreatePartsSchema>

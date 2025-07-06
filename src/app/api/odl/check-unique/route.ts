@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     // Costruisci query per controllo unicità
     const whereConditions: any = {
-      progressivo: validProgressivo
+      odlNumber: validProgressivo
     };
 
     // Escludi ODL corrente se specificato (per operazioni di modifica)
@@ -52,15 +52,9 @@ export async function GET(request: NextRequest) {
       where: whereConditions,
       select: {
         id: true,
-        progressivo: true,
+        odlNumber: true,
         status: true,
         createdAt: true,
-        createdBy: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
         part: {
           select: {
             partNumber: true,
@@ -77,10 +71,9 @@ export async function GET(request: NextRequest) {
     const conflictInfo = existingODL ? {
       conflictingODL: {
         id: existingODL.id,
-        progressivo: existingODL.progressivo,
+        progressivo: existingODL.odlNumber,
         status: existingODL.status,
         createdAt: existingODL.createdAt,
-        createdBy: existingODL.createdBy,
         part: existingODL.part
       }
     } : null;
@@ -112,7 +105,7 @@ export async function GET(request: NextRequest) {
     const stats = await prisma.oDL.aggregate({
       _count: { id: true },
       where: {
-        progressivo: {
+        odlNumber: {
           startsWith: validProgressivo.substring(0, 3) // Primi 3 caratteri
         }
       }
@@ -126,7 +119,7 @@ export async function GET(request: NextRequest) {
       validation: {
         format: validateProgressivoFormat(validProgressivo),
         length: validProgressivo.length,
-        similarCount: stats._count.id
+        similarCount: stats._count?.id || 0
       },
       timestamp: new Date().toISOString()
     };
@@ -212,8 +205,8 @@ export async function POST(request: NextRequest) {
     const results = await Promise.all(
       progressivos.map(async (progressivo: string) => {
         const existing = await prisma.oDL.findFirst({
-          where: { progressivo },
-          select: { id: true, progressivo: true }
+          where: { odlNumber: progressivo },
+          select: { id: true, odlNumber: true }
         });
         
         return {

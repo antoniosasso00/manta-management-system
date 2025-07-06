@@ -60,8 +60,7 @@ export class PDFExportService {
       title: config.title,
       subject: 'Report ODL - MES Aerospazio',
       author: 'MES Aerospazio',
-      creator: 'MES Sistema',
-      producer: 'jsPDF'
+      creator: 'MES Sistema'
     })
 
     let yPosition = 20
@@ -207,7 +206,7 @@ export class PDFExportService {
 
     // ODL Number (header)
     pdf.setFontSize(16)
-    pdf.setFont(undefined, 'bold')
+    pdf.setFont('helvetica', 'bold')
     pdf.text(odl.odlNumber, cardWidth / 2, 20, { align: 'center' })
 
     // QR Code (center)
@@ -251,12 +250,12 @@ export class PDFExportService {
     // Part info (bottom)
     let yPos = 80
     pdf.setFontSize(12)
-    pdf.setFont(undefined, 'bold')
+    pdf.setFont('helvetica', 'bold')
     pdf.text(odl.part.partNumber, cardWidth / 2, yPos, { align: 'center' })
     
     yPos += 8
     pdf.setFontSize(10)
-    pdf.setFont(undefined, 'normal')
+    pdf.setFont('helvetica', 'normal')
     const description = this.wrapText(pdf, odl.part.description, cardWidth - 20)
     description.forEach(line => {
       pdf.text(line, cardWidth / 2, yPos, { align: 'center' })
@@ -274,7 +273,7 @@ export class PDFExportService {
   // Helper methods
   private static addHeader(pdf: jsPDF, title: string, yPos: number): void {
     pdf.setFontSize(18)
-    pdf.setFont(undefined, 'bold')
+    pdf.setFont('helvetica', 'bold')
     pdf.setTextColor(0)
     pdf.text(title, pdf.internal.pageSize.width / 2, yPos, { align: 'center' })
     
@@ -295,12 +294,12 @@ export class PDFExportService {
     }
 
     pdf.setFontSize(12)
-    pdf.setFont(undefined, 'bold')
+    pdf.setFont('helvetica', 'bold')
     pdf.text('Riepilogo:', margin, yPos)
     yPos += 8
 
     pdf.setFontSize(10)
-    pdf.setFont(undefined, 'normal')
+    pdf.setFont('helvetica', 'normal')
     pdf.text(`Totale ODL: ${stats.total}`, margin, yPos)
     pdf.text(`Con QR Code: ${stats.withQR}`, margin + 60, yPos)
     yPos += 6
@@ -326,7 +325,7 @@ export class PDFExportService {
 
     // ODL header
     pdf.setFontSize(12)
-    pdf.setFont(undefined, 'bold')
+    pdf.setFont('helvetica', 'bold')
     pdf.text(odl.odlNumber, margin, yPos)
     
     // Status and priority badges
@@ -345,7 +344,7 @@ export class PDFExportService {
 
     // Part info
     pdf.setFontSize(10)
-    pdf.setFont(undefined, 'normal')
+    pdf.setFont('helvetica', 'normal')
     pdf.text(`Parte: ${odl.part.partNumber}`, margin, yPos)
     yPos += 5
     pdf.text(`Descrizione: ${odl.part.description}`, margin, yPos)
@@ -387,7 +386,7 @@ export class PDFExportService {
 
     // ODL Number
     pdf.setFontSize(10)
-    pdf.setFont(undefined, 'bold')
+    pdf.setFont('helvetica', 'bold')
     pdf.text(odl.odlNumber, x + width / 2, y + 8, { align: 'center' })
 
     // QR placeholder (centro)
@@ -405,7 +404,7 @@ export class PDFExportService {
 
     // Part info (bottom)
     pdf.setFontSize(7)
-    pdf.setFont(undefined, 'normal')
+    pdf.setFont('helvetica', 'normal')
     const bottomY = y + height - 10
     pdf.text(odl.part.partNumber, x + width / 2, bottomY, { align: 'center' })
     pdf.text(odl.priority, x + width / 2, bottomY + 4, { align: 'center' })

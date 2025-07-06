@@ -171,9 +171,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             forceChange,
             bypassWorkflow,
             userRole: user.role,
-            departmentRole: user.departmentRole
-          }),
-          details: JSON.stringify({
+            departmentRole: user.departmentRole,
             odlNumber: odl.odlNumber,
             partNumber: odl.part.partNumber,
             department: user.department?.name

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Part } from '../entities/Part'
-import { CreatePartInput, UpdatePartInput, PartQueryInput, GammaSyncPartInput } from '../schemas/part.schema'
+import { CreatePartInput, UpdatePartInput, PartQueryInput, GammaSyncPartInput, BulkCreatePartsInput } from '../schemas/part.schema'
 import { SyncStatus } from '@prisma/client'
 
 export class PartService {
@@ -226,5 +226,87 @@ export class PartService {
     })
 
     return data.map(Part.fromPrisma)
+  }
+
+  static async bulkCreate(parts: CreatePartInput[]): Promise<{
+    created: number
+    updated: number
+    skipped: number
+    errors: string[]
+  }> {
+    let created = 0
+    let updated = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (const partData of parts) {
+      try {
+        const existing = await prisma.part.findUnique({
+          where: { partNumber: partData.partNumber }
+        })
+
+        if (existing) {
+          skipped++
+          continue
+        }
+
+        await prisma.part.create({
+          data: {
+            partNumber: partData.partNumber,
+            description: partData.description,
+            defaultCuringCycleId: partData.defaultCuringCycleId,
+            defaultVacuumLines: partData.defaultVacuumLines,
+          }
+        })
+        created++
+      } catch (error) {
+        errors.push(`Failed to create part ${partData.partNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    }
+
+    return { created, updated, skipped, errors }
+  }
+
+  static async getStatistics(): Promise<{
+    totalParts: number
+    partsWithSpecs: number
+    partsWithoutSpecs: number
+    recentlyCreated: number
+    totalODLs: number
+  }> {
+    const [
+      totalParts,
+      partsWithoutSpecs,
+      recentlyCreated,
+      totalODLs
+    ] = await Promise.all([
+      prisma.part.count(),
+      prisma.part.count({
+        where: {
+          AND: [
+            { defaultCuringCycleId: null },
+            { defaultVacuumLines: null }
+          ]
+        }
+      }),
+      prisma.part.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setDate(new Date().getDate() - 30))
+          }
+        }
+      }),
+      prisma.oDL.count()
+    ])
+
+    const partsWithSpecs = totalParts - partsWithoutSpecs
+
+    return {
+      totalParts,
+      partsWithSpecs,
+      partsWithoutSpecs,
+      recentlyCreated,
+      totalODLs
+    }
   }
 }

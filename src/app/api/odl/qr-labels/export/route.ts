@@ -43,11 +43,6 @@ export async function POST(request: NextRequest) {
             partNumber: true,
             description: true
           }
-        },
-        currentDepartment: {
-          select: {
-            name: true
-          }
         }
       },
       orderBy: [
@@ -79,7 +74,6 @@ export async function POST(request: NextRequest) {
         <div class="part-info">
           <div class="part-number">${odl.part.partNumber}</div>
           <div class="part-description">${odl.part.description}</div>
-          ${odl.currentDepartment ? `<div class="department">Rep: ${odl.currentDepartment.name}</div>` : ''}
         </div>
       </div>
     `).join('')
