@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Installa dipendenze sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia requirements
+COPY requirements.txt .
+
+# Installa dipendenze Python incluso OR-Tools
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir ortools
+
+# Copia codice
+COPY . .
+
+# Esponi porta
+EXPOSE 8000
+
+# Comando di avvio
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
