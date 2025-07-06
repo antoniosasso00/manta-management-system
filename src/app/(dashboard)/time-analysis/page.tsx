@@ -75,6 +75,8 @@ export default function TimeAnalysisPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(25)
 
   const fetchData = async (view: 'odl' | 'part') => {
     setLoading(true)
@@ -362,9 +364,14 @@ export default function TimeAnalysisPage() {
               </Box>
             ) : (
               <DataTable
-                data={filteredData as Record<string, unknown>[]}
+                data={filteredData as unknown as Record<string, unknown>[]}
                 columns={currentTab === 'odl' ? odlColumns : partColumns}
                 loading={loading}
+                totalCount={filteredData.length}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
               />
             )}
           </CardContent>
