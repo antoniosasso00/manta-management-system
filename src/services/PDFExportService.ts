@@ -16,7 +16,7 @@ export interface ODLForPDF {
   } | null
   createdAt: string
   quantity?: number
-  dueDate?: string | null
+  expectedCompletionDate?: string | null
 }
 
 export interface PDFExportOptions {

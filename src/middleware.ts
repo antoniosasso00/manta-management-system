@@ -57,19 +57,19 @@ export default async function middleware(req: NextRequest) {
       import("@/lib/cors-config")
     ])
     
-    return auth((req) => {
+    return (auth as any)((req: any) => {
       // Gestisci CORS per tutte le richieste API
       if (req.nextUrl.pathname.startsWith('/api/')) {
         // Determina configurazione CORS basata sul path
-        let corsConfig = corsConfigs.development;
+        let corsConfig = corsConfigs.development as any;
         
         if (process.env.NODE_ENV === 'production') {
           if (req.nextUrl.pathname.startsWith('/api/admin/')) {
-            corsConfig = corsConfigs.admin;
+            corsConfig = corsConfigs.admin as any;
           } else if (req.nextUrl.pathname.startsWith('/api/production/')) {
-            corsConfig = corsConfigs.production;
+            corsConfig = corsConfigs.production as any;
           } else {
-            corsConfig = corsConfigs.public;
+            corsConfig = corsConfigs.public as any;
           }
         }
         

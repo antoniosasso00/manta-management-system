@@ -82,10 +82,15 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      odls = [odl]
+      odls = [{
+        ...odl,
+        createdAt: odl.createdAt.toISOString(),
+        expectedCompletionDate: odl.expectedCompletionDate?.toISOString() || null,
+        currentDepartment: odl.events[0]?.department || null
+      }]
     } else if (odlIds && odlIds.length > 0) {
       // Multiple ODLs by IDs
-      odls = await prisma.oDL.findMany({
+      const rawOdls = await prisma.oDL.findMany({
         where: {
           id: { in: odlIds }
         },
@@ -122,6 +127,13 @@ export async function POST(request: NextRequest) {
           { createdAt: 'desc' }
         ]
       })
+      
+      odls = rawOdls.map(odl => ({
+        ...odl,
+        createdAt: odl.createdAt.toISOString(),
+        expectedCompletionDate: odl.expectedCompletionDate?.toISOString() || null,
+        currentDepartment: odl.events[0]?.department || null
+      }))
     } else {
       // All ODLs (with potential filters based on user role)
       const whereClause: any = {}
@@ -136,7 +148,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      odls = await prisma.oDL.findMany({
+      const rawOdls = await prisma.oDL.findMany({
         where: whereClause,
         select: {
           id: true,
@@ -172,6 +184,13 @@ export async function POST(request: NextRequest) {
         ],
         take: 100 // Limit for performance
       })
+      
+      odls = rawOdls.map(odl => ({
+        ...odl,
+        createdAt: odl.createdAt.toISOString(),
+        expectedCompletionDate: odl.expectedCompletionDate?.toISOString() || null,
+        currentDepartment: odl.events[0]?.department || null
+      }))
     }
 
     if (odls.length === 0) {

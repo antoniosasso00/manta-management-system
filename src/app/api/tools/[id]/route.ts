@@ -119,8 +119,7 @@ export async function PUT(
                 select: {
                   id: true,
                   partNumber: true,
-                  description: true,
-                  isActive: true
+                  description: true
                 }
               }
             }
@@ -155,8 +154,7 @@ export async function PUT(
                   select: {
                     id: true,
                     partNumber: true,
-                    description: true,
-                    isActive: true
+                    description: true
                   }
                 }
               }
@@ -172,12 +170,13 @@ export async function PUT(
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
+        userEmail: session.user.email || 'unknown',
         action: 'UPDATE',
         resource: 'Tool',
         resourceId: updatedTool!.id,
         details: {
           toolPartNumber: updatedTool!.toolPartNumber,
-          associatedParts: updatedTool!.partTools.length
+          associatedParts: updatedTool!.partTools?.length || 0
         },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'
@@ -193,8 +192,8 @@ export async function PUT(
       weight: updatedTool!.weight,
       material: updatedTool!.material,
       isActive: updatedTool!.isActive,
-      associatedParts: updatedTool!.partTools.length,
-      parts: updatedTool!.partTools.map(pt => pt.part),
+      associatedParts: updatedTool!.partTools?.length || 0,
+      parts: updatedTool!.partTools?.map(pt => pt.part) || [],
       createdAt: updatedTool!.createdAt,
       updatedAt: updatedTool!.updatedAt
     })
@@ -261,6 +260,7 @@ export async function DELETE(
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
+        userEmail: session.user.email || 'unknown',
         action: 'DELETE',
         resource: 'Tool',
         resourceId: id,

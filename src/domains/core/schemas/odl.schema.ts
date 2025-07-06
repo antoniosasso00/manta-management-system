@@ -5,6 +5,11 @@ export const createODLSchema = z.object({
   partId: z.string().cuid('Part ID is required'),
   quantity: z.number().int().min(1, 'Quantity must be at least 1'),
   priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
+  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'IN_RIFILATURA', 'RIFILATURA_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).default('CREATED'),
+  notes: z.string().optional(),
+  customerId: z.string().optional(),
+  dueDate: z.date().optional(),
+  expectedCompletionDate: z.date().optional(),
   
   // Override dimensions (if different from part standard)
   length: z.number().positive().optional(),
@@ -49,6 +54,31 @@ export const bulkCreateODLSchema = z.object({
   odls: z.array(createODLSchema).min(1).max(500),
 })
 
+// Complete ODL entity schema (matches Prisma model)
+export const odlSchema = z.object({
+  id: z.string().cuid(),
+  odlNumber: z.string(),
+  partId: z.string(),
+  quantity: z.number().int(),
+  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']),
+  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'IN_RIFILATURA', 'RIFILATURA_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']),
+  qrCode: z.string(),
+  expectedCompletionDate: z.date().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  gammaId: z.string().nullable(),
+  lastSyncAt: z.date().nullable(),
+  syncStatus: z.enum(['SUCCESS', 'PENDING', 'FAILED']),
+  length: z.number().nullable(),
+  width: z.number().nullable(),
+  height: z.number().nullable(),
+  curingCycleId: z.string().nullable(),
+  vacuumLines: z.number().int().nullable(),
+  notes: z.string().optional(),
+  customerId: z.string().optional(),
+  dueDate: z.date().optional(),
+})
+
 // Type exports
 export type CreateODLInput = z.infer<typeof createODLSchema>
 export type UpdateODLInput = z.infer<typeof updateODLSchema>
@@ -56,3 +86,4 @@ export type ODLQueryInput = z.infer<typeof odlQuerySchema>
 export type ODLEventInput = z.infer<typeof odlEventSchema>
 export type GammaSyncODLInput = z.infer<typeof gammaSyncODLSchema>
 export type BulkCreateODLInput = z.infer<typeof bulkCreateODLSchema>
+export type ODL = z.infer<typeof odlSchema>

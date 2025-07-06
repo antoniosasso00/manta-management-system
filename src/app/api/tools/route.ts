@@ -111,7 +111,10 @@ export async function POST(request: NextRequest) {
     const newTool = await prisma.$transaction(async (tx) => {
       // Create the tool
       const tool = await tx.tool.create({
-        data: toolData,
+        data: {
+          ...toolData,
+          material: toolData.material || null
+        },
         include: {
           partTools: {
             include: {
@@ -119,8 +122,7 @@ export async function POST(request: NextRequest) {
                 select: {
                   id: true,
                   partNumber: true,
-                  description: true,
-                  isActive: true
+                  description: true
                 }
               }
             }
@@ -147,8 +149,7 @@ export async function POST(request: NextRequest) {
                   select: {
                     id: true,
                     partNumber: true,
-                    description: true,
-                    isActive: true
+                    description: true
                   }
                 }
               }
@@ -164,12 +165,13 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
+        userEmail: session.user.email || 'unknown',
         action: 'CREATE',
         resource: 'Tool',
         resourceId: newTool!.id,
         details: {
           toolPartNumber: newTool!.toolPartNumber,
-          associatedParts: newTool!.partTools.length
+          associatedParts: newTool!.partTools?.length || 0
         },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'
@@ -185,8 +187,8 @@ export async function POST(request: NextRequest) {
       weight: newTool!.weight,
       material: newTool!.material,
       isActive: newTool!.isActive,
-      associatedParts: newTool!.partTools.length,
-      parts: newTool!.partTools.map(pt => pt.part),
+      associatedParts: newTool!.partTools?.length || 0,
+      parts: newTool!.partTools?.map(pt => pt.part) || [],
       createdAt: newTool!.createdAt,
       updatedAt: newTool!.updatedAt
     }, { status: 201 })

@@ -182,7 +182,7 @@ export class AutoclaviBatchService {
           odlId: odls[0].id,
           departmentId: 'autoclave-dept',
           eventType: 'ENTRY',
-          notes: `Batch created: ${loadNumber} with ${odls.length} ODLs in autoclave ${typeof batch.autoclave === 'string' ? batch.autoclave : 'unknown'}`,
+          notes: `Batch created: ${loadNumber} with ${odls.length} ODLs in autoclave ${data.autoclaveId}`,
           userId: 'system',
         },
       });
@@ -421,15 +421,15 @@ export class AutoclaviBatchService {
       return sum + (length * width * height * item.odl.quantity);
     }, 0);
 
-    const autoclaveVolume = batch.autoclave.maxLength * batch.autoclave.maxWidth * batch.autoclave.maxHeight;
+    const autoclaveVolume = batch.autoclave?.maxLength * batch.autoclave?.maxWidth * batch.autoclave?.maxHeight || 0;
     const utilization = autoclaveVolume > 0 ? (totalVolume / autoclaveVolume) * 100 : 0;
 
     return {
       id: batch.id,
       loadNumber: batch.loadNumber,
       status: batch.status,
-      autoclaveName: batch.autoclave.name,
-      curingCycleName: batch.curingCycle.name,
+      autoclaveName: batch.autoclave?.name || 'Unknown',
+      curingCycleName: batch.curingCycle?.name || 'Unknown',
       odlCount: batch.loadItems.length,
       totalQuantity: batch.loadItems.reduce((sum: number, item: any) => sum + item.odl.quantity, 0),
       plannedStart: batch.plannedStart,
@@ -461,7 +461,7 @@ export class AutoclaviBatchService {
           height: item.odl.height || item.odl.part.standardHeight,
         },
       })),
-      autoclave: {
+      autoclave: batch.autoclave ? {
         id: batch.autoclave.id,
         code: batch.autoclave.code,
         name: batch.autoclave.name,
@@ -469,12 +469,25 @@ export class AutoclaviBatchService {
         maxWidth: batch.autoclave.maxWidth,
         maxHeight: batch.autoclave.maxHeight,
         vacuumLines: batch.autoclave.vacuumLines,
+      } : {
+        id: '',
+        code: '',
+        name: 'Unknown',
+        maxLength: 0,
+        maxWidth: 0,
+        maxHeight: 0,
+        vacuumLines: 0,
       },
-      curingCycle: {
+      curingCycle: batch.curingCycle ? {
         id: batch.curingCycle.id,
         name: batch.curingCycle.name,
         description: batch.curingCycle.description,
         totalDuration: batch.curingCycle.totalDuration,
+      } : {
+        id: '',
+        name: 'Unknown',
+        description: '',
+        totalDuration: 0,
       },
     };
   }
