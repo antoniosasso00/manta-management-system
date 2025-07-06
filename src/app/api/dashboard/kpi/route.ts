@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
         id: event.id,
         type: event.eventType,
         timestamp: event.timestamp,
-        description: event.description,
+        description: event.notes,
         odl: event.odl ? {
           odlNumber: event.odl.odlNumber,
           partNumber: event.odl.part.partNumber,

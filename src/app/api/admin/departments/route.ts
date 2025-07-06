@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
           id: dept.id,
           name: dept.name,
           code: dept.code,
-          description: dept.name, // Using name as description since description field doesn't exist
+          description: dept.name,
           status: dept.isActive ? 'ACTIVE' : 'INACTIVE',
           currentOperators: dept._count.users,
           totalCapacity: dept._count.users > 0 ? dept._count.users + 2 : 5, // Simple capacity calculation

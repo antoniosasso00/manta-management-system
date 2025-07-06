@@ -75,14 +75,6 @@ export async function GET(request: NextRequest) {
           quantity: odl.quantity,
           priority: odl.priority,
           createdAt: odl.createdAt,
-          dimensions: {
-            length: odl.length || odl.part.standardLength,
-            width: odl.width || odl.part.standardWidth,
-            height: odl.height || odl.part.standardHeight,
-          },
-          estimatedVolume: (odl.length || odl.part.standardLength || 0) * 
-                          (odl.width || odl.part.standardWidth || 0) * 
-                          (odl.height || odl.part.standardHeight || 0),
         });
       }
     }
@@ -99,14 +91,6 @@ export async function GET(request: NextRequest) {
         createdAt: odl.createdAt,
         curingCycleId: odl.curingCycleId || odl.part.defaultCuringCycleId,
         curingCycleName: (odl.curingCycle || odl.part.defaultCuringCycle)?.name,
-        dimensions: {
-          length: odl.length || odl.part.standardLength,
-          width: odl.width || odl.part.standardWidth,
-          height: odl.height || odl.part.standardHeight,
-        },
-        estimatedVolume: (odl.length || odl.part.standardLength || 0) * 
-                        (odl.width || odl.part.standardWidth || 0) * 
-                        (odl.height || odl.part.standardHeight || 0),
       })),
       groupedByCycle,
       cycleNames,

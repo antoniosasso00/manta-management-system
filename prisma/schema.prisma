@@ -110,6 +110,7 @@ model Part {
   coatingConfig        PartVerniciatura?      @relation("PartCoatingConfig")
   defaultCuringCycle   CuringCycle?           @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
   qualityPlans         QualityControlPlan[]
+  timeStatistics       PartTimeStatistics[]
 
   @@index([partNumber])
   @@index([gammaId])
@@ -143,6 +144,7 @@ model ODL {
   events                 ProductionEvent[]
   qualityCertificates    QualityCertificate[]
   qualityInspections     QualityInspection[]
+  timeMetrics            TimeMetrics[]
 
   @@index([qrCode])
   @@index([partId, status])
@@ -176,14 +178,16 @@ model ProductionEvent {
 }
 
 model Department {
-  id         String            @id @default(cuid())
-  code       String            @unique
-  name       String
-  type       DepartmentType
-  isActive   Boolean           @default(true)
-  autoclaves Autoclave[]
-  events     ProductionEvent[]
-  users      User[]
+  id                  String                @id @default(cuid())
+  code                String                @unique
+  name                String
+  type                DepartmentType
+  isActive            Boolean               @default(true)
+  autoclaves          Autoclave[]
+  events              ProductionEvent[]
+  users               User[]
+  timeMetrics         TimeMetrics[]
+  partTimeStatistics  PartTimeStatistics[]
 
   @@map("departments")
 }
@@ -824,4 +828,57 @@ enum FuelType {
   DIESEL
   ELECTRIC
   HYDROGEN
+}
+
+model TimeMetrics {
+  id                String     @id @default(cuid())
+  odlId             String
+  departmentId      String
+  // Tempi in minuti
+  advancementTime   Int?       // Tempo totale ENTRY → EXIT (include pause)
+  workingTime       Int?       // Tempo lavorazione (esclude pause)
+  waitingTime       Int?       // Tempo attesa da reparto precedente
+  // Metadati
+  entryTimestamp    DateTime?  // ENTRY event timestamp
+  exitTimestamp     DateTime?  // EXIT event timestamp
+  pauseDuration     Int        @default(0) // Somma pause in minuti
+  isCompleted       Boolean    @default(false) // Reparto completato
+  calculatedAt      DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  // Relazioni
+  odl               ODL        @relation(fields: [odlId], references: [id], onDelete: Cascade)
+  department        Department @relation(fields: [departmentId], references: [id])
+  
+  @@unique([odlId, departmentId]) // Un record per ODL per reparto
+  @@index([odlId])
+  @@index([departmentId, isCompleted])
+  @@index([calculatedAt])
+  @@map("time_metrics")
+}
+
+model PartTimeStatistics {
+  id                     String     @id @default(cuid())
+  partId                 String
+  departmentId           String
+  // Statistiche aggregate (in minuti)
+  avgAdvancementTime     Float?
+  avgWorkingTime         Float?
+  avgWaitingTime         Float?
+  // Contatori per calcolo media
+  completedODLCount      Int        @default(0)
+  totalAdvancementTime   Int        @default(0)
+  totalWorkingTime       Int        @default(0)
+  totalWaitingTime       Int        @default(0)
+  // Metadati
+  lastUpdated            DateTime   @updatedAt
+  
+  // Relazioni
+  part                   Part       @relation(fields: [partId], references: [id], onDelete: Cascade)
+  department            Department  @relation(fields: [departmentId], references: [id])
+  
+  @@unique([partId, departmentId])
+  @@index([partId])
+  @@index([departmentId])
+  @@map("part_time_statistics")
 }

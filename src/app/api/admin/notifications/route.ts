@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         autoclave: { select: { name: true } },
-        _count: { select: { items: true } }
+        _count: { select: { loadItems: true } }
       },
       take: 3
     });
@@ -76,8 +76,8 @@ export async function GET(request: NextRequest) {
         id: `batch-completed-${batch.id}`,
         type: 'success',
         title: 'Batch completato',
-        message: `${batch.autoclave?.name || 'Autoclave'} ha completato il ciclo con ${batch._count.items} parti`,
-        timestamp: batch.completedAt
+        message: `${batch.autoclave?.name || 'Autoclave'} ha completato il ciclo con ${batch._count.loadItems} parti`,
+        timestamp: batch.actualEnd
       });
     });
 
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     // Check for system issues (simplified check)
     const recentFailedEvents = await prisma.productionEvent.count({
       where: {
-        createdAt: { gte: last24Hours },
+        timestamp: { gte: last24Hours },
         notes: { contains: 'error' }
       }
     });

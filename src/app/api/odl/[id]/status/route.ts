@@ -58,6 +58,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id: token.sub! },
       select: { 
         id: true, 
+        email: true,
         role: true, 
         departmentRole: true, 
         departmentId: true,
@@ -146,7 +147,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       // 2. Crea evento di cambio stato manuale
       await tx.productionEvent.create({
         data: {
-          odlId: params.id,
+          odlId: (await params).id,
           departmentId: user.departmentId || 'SYSTEM',
           userId: user.id,
           eventType: 'NOTE',
@@ -159,9 +160,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       await tx.auditLog.create({
         data: {
           userId: user.id,
-          action: 'ODL_STATUS_CHANGE',
-          entityType: 'ODL',
-          entityId: params.id,
+          userEmail: user.email,
+          action: 'UPDATE',
+          resource: 'ODL',
+          resourceId: (await params).id,
           details: JSON.stringify({
             previousStatus,
             newStatus,
@@ -171,7 +173,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             userRole: user.role,
             departmentRole: user.departmentRole
           }),
-          metadata: JSON.stringify({
+          details: JSON.stringify({
             odlNumber: odl.odlNumber,
             partNumber: odl.part.partNumber,
             department: user.department?.name
