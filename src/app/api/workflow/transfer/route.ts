@@ -35,11 +35,11 @@ async function postHandler(request: NextRequest) {
     }
 
     // Esegui trasferimento automatico
-    const result = await WorkflowService.executeAutoTransfer(
+    const result = await WorkflowService.executeAutoTransfer({
       odlId,
       currentDepartmentId,
-      session.user.id
-    );
+      userId: session.user.id
+    });
 
     if (!result.success) {
       return NextResponse.json(

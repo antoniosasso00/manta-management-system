@@ -162,8 +162,6 @@ export default function ProductionPage() {
       case 'IN_CLEANROOM':
       case 'IN_AUTOCLAVE':
       case 'IN_NDI':
-      case 'IN_RIFILATURA':
-        return 'primary';
       case 'CLEANROOM_COMPLETED':
       case 'AUTOCLAVE_COMPLETED':
         return 'success';
@@ -207,8 +205,6 @@ export default function ProductionPage() {
       'AUTOCLAVE_COMPLETED': 'Autoclavi OK',
       'IN_NDI': 'In NDI',
       'NDI_COMPLETED': 'NDI OK',
-      'IN_RIFILATURA': 'In Rifilatura',
-      'RIFILATURA_COMPLETED': 'Rifilatura OK',
       'IN_VERNICIATURA': 'In Verniciatura',
       'VERNICIATURA_COMPLETED': 'Verniciatura OK',
       'IN_MOTORI': 'In Motori',
@@ -357,7 +353,6 @@ export default function ProductionPage() {
                 <MenuItem value="IN_AUTOCLAVE">In Autoclavi</MenuItem>
                 <MenuItem value="AUTOCLAVE_COMPLETED">Autoclavi OK</MenuItem>
                 <MenuItem value="IN_NDI">In NDI</MenuItem>
-                <MenuItem value="IN_RIFILATURA">In Rifilatura</MenuItem>
                 <MenuItem value="COMPLETED">Completato</MenuItem>
                 <MenuItem value="ON_HOLD">In Attesa</MenuItem>
               </TextField>
@@ -372,7 +367,6 @@ export default function ProductionPage() {
                 <MenuItem value="Clean Room">Clean Room</MenuItem>
                 <MenuItem value="Autoclavi">Autoclavi</MenuItem>
                 <MenuItem value="NDI">NDI</MenuItem>
-                <MenuItem value="Rifilatura">Rifilatura</MenuItem>
               </TextField>
     <TextField
                 select

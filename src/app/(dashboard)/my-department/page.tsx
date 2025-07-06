@@ -236,7 +236,6 @@ export default function MyDepartmentPage() {
       case 'IN_CLEANROOM':
       case 'IN_AUTOCLAVE':
       case 'IN_NDI':
-      case 'IN_RIFILATURA':
       case 'IN_CONTROLLO_NUMERICO':
       case 'IN_MONTAGGIO':
       case 'IN_VERNICIATURA':
@@ -246,7 +245,6 @@ export default function MyDepartmentPage() {
       case 'HONEYCOMB_COMPLETED':
       case 'CLEANROOM_COMPLETED':
       case 'AUTOCLAVE_COMPLETED':
-      case 'RIFILATURA_COMPLETED':
       case 'CONTROLLO_NUMERICO_COMPLETED':
       case 'MONTAGGIO_COMPLETED':
       case 'NDI_COMPLETED':
@@ -510,7 +508,6 @@ export default function MyDepartmentPage() {
             <MenuItem value="IN_AUTOCLAVE">In Autoclavi</MenuItem>
             <MenuItem value="AUTOCLAVE_COMPLETED">Autoclavi Completato</MenuItem>
             <MenuItem value="IN_NDI">In NDI</MenuItem>
-            <MenuItem value="IN_RIFILATURA">In Rifilatura</MenuItem>
             <MenuItem value="COMPLETED">Completato</MenuItem>
             <MenuItem value="ON_HOLD">In Attesa</MenuItem>
           </TextField>

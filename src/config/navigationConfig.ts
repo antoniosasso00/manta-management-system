@@ -25,6 +25,7 @@ import {
   Brush,
   DirectionsCar,
   VerifiedUser,
+  AutoMode,
 } from '@mui/icons-material'
 
 export interface NavigationItem {
@@ -174,6 +175,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Nuovo Batch',
           icon: Add,
           href: '/autoclavi/create-batch',
+        },
+        {
+          id: 'autoclavi-optimization',
+          label: 'Ottimizzazione Batch',
+          icon: AutoMode,
+          href: '/autoclavi/optimization',
         },
       ],
     },
@@ -359,6 +366,20 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       label: 'Autoclavi',
       icon: LocalFireDepartment,
       href: '/autoclavi/batches',
+      children: [
+        {
+          id: 'autoclavi-batches',
+          label: 'Gestione Batch',
+          icon: ListAlt,
+          href: '/autoclavi/batches',
+        },
+        {
+          id: 'autoclavi-optimization',
+          label: 'Ottimizzazione Batch',
+          icon: AutoMode,
+          href: '/autoclavi/optimization',
+        },
+      ],
     },
     {
       id: 'data-management',

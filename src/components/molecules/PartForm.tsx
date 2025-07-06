@@ -8,10 +8,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  MenuItem,
   Alert,
   Box,
-  Typography,
 } from '@mui/material'
 import { Input } from '@/components/atoms/Input'
 import { Button } from '@/components/atoms/Button'
@@ -25,7 +23,6 @@ interface PartFormProps {
   onSubmit: (data: CreatePartInput | UpdatePartInput) => Promise<void>
   initialData?: Partial<UpdatePartInput>
   mode: 'create' | 'edit'
-  curingCycles?: Array<{ id: string; code: string; name: string }>
   loading?: boolean
 }
 
@@ -35,7 +32,6 @@ export function PartForm({
   onSubmit,
   initialData,
   mode,
-  curingCycles = [],
   loading = false,
 }: PartFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -55,11 +51,6 @@ export function PartForm({
     defaultValues: initialData || {
       partNumber: '',
       description: '',
-      standardLength: undefined,
-      standardWidth: undefined,
-      standardHeight: undefined,
-      defaultVacuumLines: undefined,
-      defaultCuringCycleId: undefined,
     },
   })
 
@@ -159,125 +150,17 @@ export function PartForm({
               />
             </Box>
 
-            {/* Dimensions Section */}
-            <Box className="col-span-full">
-              <Typography variant="h6" gutterBottom>
-                Standard Dimensions (optional)
-              </Typography>
-            </Box>
-
-            <Box className="grid grid-cols-1 md:grid-cols-3 gap-6 col-span-full">
-              <Box>
-                <Controller
-                  name="standardLength"
-                  control={control}
-                  render={({ field: { value, onChange, ...field } }) => (
-                    <Input
-                      {...field}
-                      type="number"
-                      label="Length (mm)"
-                      value={value || ''}
-                      onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      error={!!errors.standardLength}
-                      helperText={errors.standardLength?.message}
-                      disabled={loading}
-                    />
-                  )}
-                />
-              </Box>
-
-              <Box>
-                <Controller
-                  name="standardWidth"
-                  control={control}
-                  render={({ field: { value, onChange, ...field } }) => (
-                    <Input
-                      {...field}
-                      type="number"
-                      label="Width (mm)"
-                      value={value || ''}
-                      onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      error={!!errors.standardWidth}
-                      helperText={errors.standardWidth?.message}
-                      disabled={loading}
-                    />
-                  )}
-                />
-              </Box>
-
-              <Box>
-                <Controller
-                  name="standardHeight"
-                  control={control}
-                  render={({ field: { value, onChange, ...field } }) => (
-                    <Input
-                      {...field}
-                      type="number"
-                      label="Height (mm)"
-                      value={value || ''}
-                      onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      error={!!errors.standardHeight}
-                      helperText={errors.standardHeight?.message}
-                      disabled={loading}
-                    />
-                  )}
-                />
-              </Box>
-            </Box>
-
-            {/* Production Settings */}
-            <Box className="col-span-full">
-              <Typography variant="h6" gutterBottom>
-                Production Settings (optional)
-              </Typography>
-            </Box>
-
-            <Box>
-              <Controller
-                name="defaultVacuumLines"
-                control={control}
-                render={({ field: { value, onChange, ...field } }) => (
-                  <Input
-                    {...field}
-                    type="number"
-                    label="Default Vacuum Lines"
-                    value={value || ''}
-                    onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    inputProps={{ min: 1, max: 10 }}
-                    error={!!errors.defaultVacuumLines}
-                    helperText={errors.defaultVacuumLines?.message}
-                    disabled={loading}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Controller
-                name="defaultCuringCycleId"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    select
-                    label="Default Curing Cycle"
-                    value={field.value || ''}
-                    error={!!errors.defaultCuringCycleId}
-                    helperText={errors.defaultCuringCycleId?.message}
-                    disabled={loading}
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {curingCycles.map((cycle) => (
-                      <MenuItem key={cycle.id} value={cycle.id}>
-                        {cycle.code} - {cycle.name}
-                      </MenuItem>
-                    ))}
-                  </Input>
-                )}
-              />
-            </Box>
+            {/* REMOVED: Non-existent fields from Part schema */}
+            {/* 
+            Dimensions Section - COMMENTED OUT (fields not in schema)
+            - standardLength
+            - standardWidth  
+            - standardHeight
+            
+            Production Settings - COMMENTED OUT (fields not in schema)
+            - defaultVacuumLines
+            - defaultCuringCycleId
+            */}
           </Box>
         </Box>
       </DialogContent>

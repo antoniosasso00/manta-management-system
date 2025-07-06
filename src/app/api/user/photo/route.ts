@@ -60,14 +60,14 @@ export async function PUT(request: NextRequest) {
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        image: publicPath,
+        // image: publicPath, // TODO: Add image field to User model
         updatedAt: new Date()
       },
       select: {
         id: true,
         name: true,
         email: true,
-        image: true,
+        // image: true, // TODO: Add image field to User model
         updatedAt: true
       }
     });
@@ -102,14 +102,14 @@ export async function DELETE(request: NextRequest) {
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        image: null,
+        // image: null, // TODO: Add image field to User model
         updatedAt: new Date()
       },
       select: {
         id: true,
         name: true,
         email: true,
-        image: true,
+        // image: true, // TODO: Add image field to User model
         updatedAt: true
       }
     });
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        image: true,
+        // image: true, // TODO: Add image field to User model
         updatedAt: true
       }
     });
@@ -155,8 +155,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       user,
-      hasPhoto: !!user.image,
-      photoUrl: user.image,
+      hasPhoto: false, // TODO: Implement when image field is added to User model
+      photoUrl: null, // TODO: Implement when image field is added to User model
       uploadLimits: {
         maxSize: MAX_FILE_SIZE,
         allowedTypes: ALLOWED_TYPES

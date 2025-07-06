@@ -83,8 +83,6 @@ export function getStatusColor(status: string): 'default' | 'primary' | 'seconda
     case 'IN_CLEANROOM':
     case 'IN_AUTOCLAVE':
     case 'IN_NDI':
-    case 'IN_RIFILATURA':
-      return 'primary'
     case 'CLEANROOM_COMPLETED':
     case 'AUTOCLAVE_COMPLETED':
       return 'info'

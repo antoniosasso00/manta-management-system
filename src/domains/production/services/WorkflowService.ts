@@ -480,7 +480,7 @@ export class WorkflowService {
           return acc;
         }, {} as Record<string, number>),
         inProgress: stats
-          .filter(s => ['IN_CLEANROOM', 'IN_AUTOCLAVE', 'IN_NDI', 'IN_RIFILATURA'].includes(s.status))
+          .filter(s => ['IN_CLEANROOM', 'IN_AUTOCLAVE', 'IN_NDI'].includes(s.status))
           .reduce((sum, stat) => sum + stat._count.status, 0),
         completed: stats.find(s => s.status === 'COMPLETED')?._count.status || 0
       };

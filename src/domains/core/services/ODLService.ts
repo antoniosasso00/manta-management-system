@@ -332,7 +332,7 @@ export class ODLService {
     const data = await prisma.oDL.findMany({
       where: {
         status: {
-          in: ['IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'IN_RIFILATURA']
+          in: ['IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI']
         }
       },
       include: { part: true },

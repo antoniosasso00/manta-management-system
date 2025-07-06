@@ -158,7 +158,7 @@ export function CycleAnalysisStep({
 
                     {/* Metriche */}
                     <Grid container spacing={1}>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <Paper variant="outlined" sx={{ p: 1, textAlign: 'center' }}>
                           <Typography variant="h5" color="primary">
                             {group.odl_count}
@@ -168,7 +168,7 @@ export function CycleAnalysisStep({
                           </Typography>
                         </Paper>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <Paper variant="outlined" sx={{ p: 1, textAlign: 'center' }}>
                           <Typography variant="h5" color="primary">
                             {(group.total_area / 1000000).toFixed(1)}

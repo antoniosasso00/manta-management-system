@@ -24,8 +24,6 @@ export function StatusChip({ status, type = 'odl', ...props }: StatusChipProps) 
           return { color: 'success', label: 'Autoclave Completato' }
         case 'IN_NDI':
           return { color: 'info', label: 'In NDI' }
-        case 'IN_RIFILATURA':
-          return { color: 'info', label: 'In Rifilatura' }
         case 'COMPLETED':
           return { color: 'success', label: 'Completato' }
         case 'ON_HOLD':

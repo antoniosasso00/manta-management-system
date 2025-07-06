@@ -789,7 +789,7 @@ export default function QRLabelsPage() {
         <Alert severity="warning" sx={{ mt: 2 }}>
           <Typography variant="body2">
             <strong>IMPORTANTE</strong>: Questi QR code vengono utilizzati per registrare ingresso/uscita dai reparti 
-            (Clean Room → Autoclavi → NDI → Rifilatura). Assicurarsi che siano ben visibili e protetti durante la movimentazione.
+(Clean Room → Autoclavi → NDI). Assicurarsi che siano ben visibili e protetti durante la movimentazione.
           </Typography>
         </Alert>
       </Box>

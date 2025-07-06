@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
-import { ODLStatus, ProductionEventType } from '@prisma/client';
+import { ODLStatus, EventType } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,10 +31,14 @@ export async function GET(request: NextRequest) {
       averageTimePerOperation,
       recentActivity
     ] = await Promise.all([
-      // ODL creati dall'utente
+      // ODL gestiti dall'utente (con eventi)
       prisma.oDL.count({
         where: {
-          createdById: userId
+          events: {
+            some: {
+              userId: userId
+            }
+          }
         }
       }),
       
@@ -42,7 +46,7 @@ export async function GET(request: NextRequest) {
       prisma.productionEvent.count({
         where: {
           userId: userId,
-          eventType: ProductionEventType.EXIT,
+          eventType: EventType.EXIT,
           odl: {
             status: ODLStatus.COMPLETED
           }
@@ -125,7 +129,7 @@ export async function GET(request: NextRequest) {
         include: {
           odl: {
             select: {
-              progressivo: true,
+              odlNumber: true,
               part: {
                 select: {
                   partNumber: true,
@@ -243,10 +247,10 @@ export async function GET(request: NextRequest) {
         id: event.id,
         type: event.eventType,
         timestamp: event.timestamp,
-        description: event.description,
+        description: event.notes || 'Nessuna descrizione',
         duration: event.duration,
         odl: event.odl ? {
-          progressivo: event.odl.progressivo,
+          progressivo: event.odl.odlNumber,
           partNumber: event.odl.part.partNumber,
           description: event.odl.part.description
         } : null,

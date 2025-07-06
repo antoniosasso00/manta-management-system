@@ -212,7 +212,6 @@ export class ODL implements ODLEntity {
       ODLStatus.IN_AUTOCLAVE,
       ODLStatus.AUTOCLAVE_COMPLETED,
       ODLStatus.IN_NDI,
-      ODLStatus.IN_RIFILATURA
     ].includes(this.status as any) // eslint-disable-line @typescript-eslint/no-explicit-any
   }
 

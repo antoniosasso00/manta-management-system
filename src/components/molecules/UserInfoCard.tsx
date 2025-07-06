@@ -59,11 +59,16 @@ export function UserInfoCard({
   }
 
   const getDepartmentTypeIcon = (type: DepartmentType) => {
-    const icons = {
+    const icons: Record<DepartmentType, string> = {
       [DepartmentType.CLEANROOM]: '🧪',
       [DepartmentType.AUTOCLAVE]: '🔥',
       [DepartmentType.NDI]: '🔍',
-      [DepartmentType.RIFILATURA]: '✂️',
+      [DepartmentType.HONEYCOMB]: '🍯',
+      [DepartmentType.CONTROLLO_NUMERICO]: '⚙️',
+      [DepartmentType.MONTAGGIO]: '🔧',
+      [DepartmentType.VERNICIATURA]: '🎨',
+      [DepartmentType.MOTORI]: '🚀',
+      [DepartmentType.CONTROLLO_QUALITA]: '✅',
       [DepartmentType.OTHER]: '📋',
     }
     return icons[type] || '📋'

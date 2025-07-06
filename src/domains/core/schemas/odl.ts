@@ -32,7 +32,7 @@ export const createODLSchema = z.object({
   quantity: z.number()
     .int('La quantità deve essere un numero intero')
     .positive('La quantità deve essere positiva'),
-  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'IN_RIFILATURA', 'RIFILATURA_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).default('CREATED'),
+  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).default('CREATED'),
   priority: z.number()
     .int('La priorità deve essere un numero intero')
     .min(1, 'La priorità minima è 1')
@@ -56,7 +56,7 @@ export const updateODLSchema = z.object({
     .int('La quantità deve essere un numero intero')
     .positive('La quantità deve essere positiva')
     .optional(),
-  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'IN_RIFILATURA', 'RIFILATURA_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).optional(),
+  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).optional(),
   priority: z.number()
     .int('La priorità deve essere un numero intero')
     .min(1, 'La priorità minima è 1')

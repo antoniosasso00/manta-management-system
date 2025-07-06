@@ -112,8 +112,7 @@ export async function POST(request: NextRequest) {
       // Create the tool
       const tool = await tx.tool.create({
         data: {
-          ...toolData,
-          material: toolData.material || null
+          ...toolData
         },
         include: {
           partTools: {

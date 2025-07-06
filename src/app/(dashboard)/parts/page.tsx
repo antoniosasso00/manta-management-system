@@ -14,7 +14,7 @@ import { PermissionGuard } from '@/components/auth/PermissionGuard'
 import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
 import { FormBuilder, FieldConfig } from '@/components/molecules/FormBuilder'
 import { partRepository } from '@/services/api/repositories/part.repository'
-import { createPartSchema, updatePartSchema } from '@/domains/core/schemas/part.schema'
+import { createPartSchema, updatePartInputSchema } from '@/domains/core/schemas/part.schema'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { CreatePartInput, UpdatePartInput } from '@/domains/core/schemas/part.schema'
@@ -37,7 +37,7 @@ export default function PartsPage() {
   })
 
   const updateForm = useForm<UpdatePartInput>({
-    resolver: zodResolver(updatePartSchema)
+    resolver: zodResolver(updatePartInputSchema)
   })
 
   // Use the appropriate form based on editing state
@@ -84,7 +84,6 @@ export default function PartsPage() {
     setSelectedPart(part)
     setIsEditing(true)
     updateForm.reset({
-      id: part.id,
       partNumber: part.partNumber,
       description: part.description
     })

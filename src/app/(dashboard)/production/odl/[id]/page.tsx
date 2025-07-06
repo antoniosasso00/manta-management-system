@@ -147,8 +147,6 @@ const statusColors: Record<string, 'default' | 'primary' | 'secondary' | 'error'
   'AUTOCLAVE_COMPLETED': 'success',
   'IN_NDI': 'secondary',
   'NDI_COMPLETED': 'success',
-  'IN_RIFILATURA': 'primary',
-  'RIFILATURA_COMPLETED': 'success',
   'COMPLETED': 'success',
   'ON_HOLD': 'warning',
   'CANCELLED': 'error'
@@ -165,7 +163,6 @@ const departmentIcons: Record<string, React.ElementType> = {
   'CLEANROOM': CleanRoomIcon,
   'AUTOCLAVI': AutoclaveIcon,
   'NDI': ScienceIcon,
-  'RIFILATURA': RifiltaturaIcon,
   'VERNICIATURA': VerniciatturaIcon,
   'HONEYCOMB': HoneycombIcon
 }
@@ -174,7 +171,6 @@ const departments = [
   { id: 'cleanroom', name: 'Clean Room', type: 'CLEANROOM' },
   { id: 'autoclavi', name: 'Autoclavi', type: 'AUTOCLAVI' },
   { id: 'ndi', name: 'NDI', type: 'NDI' },
-  { id: 'rifilatura', name: 'Rifilatura', type: 'RIFILATURA' },
   { id: 'verniciatura', name: 'Verniciatura', type: 'VERNICIATURA' }
 ]
 
@@ -450,7 +446,6 @@ export default function ODLDetailPage() {
           <Tab icon={<CleanRoomIcon />} label="Clean Room" />
           <Tab icon={<AutoclaveIcon />} label="Autoclavi" />
           <Tab icon={<ScienceIcon />} label="NDI" />
-          <Tab icon={<RifiltaturaIcon />} label="Rifilatura" />
           <Tab icon={<InfoIcon />} label="Dettagli Generali" />
         </Tabs>
 
@@ -522,8 +517,8 @@ export default function ODLDetailPage() {
         </TabPanel>
 
         {/* Department Configuration Tabs */}
-        {[1, 2, 3, 4].map((tabIndex) => {
-          const deptNames = ['Clean Room', 'Autoclavi', 'NDI', 'Rifilatura']
+        {[1, 2, 3].map((tabIndex) => {
+          const deptNames = ['Clean Room', 'Autoclavi', 'NDI']
           return (
             <TabPanel key={tabIndex} value={currentTab} index={tabIndex}>
               <Typography variant="h6" gutterBottom>
@@ -571,7 +566,7 @@ export default function ODLDetailPage() {
         })}
 
         {/* General Details Tab */}
-        <TabPanel value={currentTab} index={5}>
+        <TabPanel value={currentTab} index={4}>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Card>

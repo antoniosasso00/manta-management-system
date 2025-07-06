@@ -60,7 +60,9 @@
       "Bash(npx next dev:*)",
       "Bash(timeout 15 npm run dev -- -p 3001)",
       "Bash(./scripts/migrate-grid-v7.sh:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(python tests/test_optimization.py)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }

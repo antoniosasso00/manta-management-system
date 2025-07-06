@@ -200,7 +200,7 @@ export const getProcessTypeDisplayName = (processType: HoneycombProcessType): st
     SKIN_PREPARATION: 'Preparazione Skin',
     BONDING: 'Incollaggio',
     CURING: 'Cura',
-    TRIMMING: 'Rifilatura',
+    TRIMMING: 'Taglio',
     INSPECTION: 'Ispezione',
   }
   return displayNames[processType] || processType

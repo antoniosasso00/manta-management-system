@@ -110,7 +110,7 @@ export default function ODLPage() {
         // Calcola statistiche
         const total = data.odls?.length || 0
         const active = data.odls?.filter((odl: ODL) => 
-          ['IN_CLEANROOM', 'IN_AUTOCLAVE', 'IN_NDI', 'IN_RIFILATURA'].includes(odl.status)
+          ['IN_CLEANROOM', 'IN_AUTOCLAVE', 'IN_NDI'].includes(odl.status)
         ).length || 0
         const inProduction = data.odls?.filter((odl: ODL) => 
           ['IN_CLEANROOM', 'IN_AUTOCLAVE'].includes(odl.status)
@@ -172,8 +172,6 @@ export default function ODLPage() {
       case 'IN_CLEANROOM':
       case 'IN_AUTOCLAVE':
       case 'IN_NDI':
-      case 'IN_RIFILATURA':
-        return 'primary'
       case 'CLEANROOM_COMPLETED':
       case 'AUTOCLAVE_COMPLETED':
         return 'success'
@@ -213,8 +211,6 @@ export default function ODLPage() {
       'AUTOCLAVE_COMPLETED': 'Autoclavi OK',
       'IN_NDI': 'In NDI',
       'NDI_COMPLETED': 'NDI OK',
-      'IN_RIFILATURA': 'In Rifilatura',
-      'RIFILATURA_COMPLETED': 'Rifilatura OK',
       'IN_VERNICIATURA': 'In Verniciatura',
       'VERNICIATURA_COMPLETED': 'Verniciatura OK',
       'IN_MOTORI': 'In Motori',
@@ -326,7 +322,6 @@ export default function ODLPage() {
                     <MenuItem value="IN_CLEANROOM">In Clean Room</MenuItem>
                     <MenuItem value="IN_AUTOCLAVE">In Autoclavi</MenuItem>
                     <MenuItem value="IN_NDI">In NDI</MenuItem>
-                    <MenuItem value="IN_RIFILATURA">In Rifilatura</MenuItem>
                     <MenuItem value="COMPLETED">Completato</MenuItem>
                     <MenuItem value="ON_HOLD">In Attesa</MenuItem>
                   </TextField>
