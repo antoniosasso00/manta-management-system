@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         odl: {
           select: {
             id: true,
-            progressivo: true,
+            odlNumber: true,
             status: true,
             part: {
               select: {
@@ -71,13 +71,13 @@ export async function POST(request: NextRequest) {
       'Tipo Evento': event.eventType,
       'Categoria': getCategoryFromEventType(event.eventType),
       'Livello': getLevelFromEventType(event.eventType),
-      'Descrizione': event.description,
+      'Descrizione': event.notes || '',
       'Utente': event.user?.name || 'Sistema',
       'Email Utente': event.user?.email || '',
       'Ruolo': event.user?.role || '',
       'Reparto': event.department?.name || '',
       'Tipo Reparto': event.department?.type || '',
-      'ODL': event.odl?.progressivo || '',
+      'ODL': event.odl?.odlNumber || '',
       'Part Number': event.odl?.part?.partNumber || '',
       'Descrizione Parte': event.odl?.part?.description || '',
       'Stato ODL': event.odl?.status || '',
@@ -299,7 +299,7 @@ export async function GET(request: NextRequest) {
         department: { select: { name: true, type: true } },
         odl: { 
           select: { 
-            progressivo: true, 
+            odlNumber: true, 
             part: { select: { partNumber: true } } 
           } 
         }

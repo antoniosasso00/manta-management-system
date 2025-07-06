@@ -35,8 +35,7 @@ export async function GET(request: NextRequest) {
     // Filtro ricerca testuale
     if (search) {
       whereConditions.OR = [
-        { description: { contains: search, mode: 'insensitive' } },
-        { metadata: { path: '$.details', string_contains: search } },
+        { notes: { contains: search, mode: 'insensitive' } },
         { user: { name: { contains: search, mode: 'insensitive' } } },
         { user: { email: { contains: search, mode: 'insensitive' } } }
       ];
@@ -102,7 +101,7 @@ export async function GET(request: NextRequest) {
           odl: {
             select: {
               id: true,
-              progressivo: true,
+              odlNumber: true,
               part: {
                 select: {
                   partNumber: true,
@@ -126,7 +125,7 @@ export async function GET(request: NextRequest) {
       category: getCategoryFromEventType(event.eventType),
       level: getLevelFromEventType(event.eventType),
       title: getEventTitle(event),
-      description: event.description,
+      description: event.notes || '',
       user: event.user ? {
         id: event.user.id,
         name: event.user.name,
@@ -140,13 +139,13 @@ export async function GET(request: NextRequest) {
       } : null,
       odl: event.odl ? {
         id: event.odl.id,
-        progressivo: event.odl.progressivo,
+        progressivo: event.odl.odlNumber,
         partNumber: event.odl.part.partNumber,
         description: event.odl.part.description
       } : null,
       metadata: {
         duration: event.duration,
-        details: event.description,
+        details: event.notes || '',
         source: 'PRODUCTION_EVENT'
       }
     }));
@@ -273,8 +272,8 @@ async function calculateAuditStats(whereConditions: any) {
     prisma.productionEvent.count({
       where: {
         ...whereConditions,
-        // Simula eventi di errore basati su descrizione
-        description: {
+        // Simula eventi di errore basati su notes
+        notes: {
           contains: 'errore',
           mode: 'insensitive'
         }
@@ -283,7 +282,7 @@ async function calculateAuditStats(whereConditions: any) {
     prisma.productionEvent.count({
       where: {
         ...whereConditions,
-        description: {
+        notes: {
           contains: 'warning',
           mode: 'insensitive'
         }
