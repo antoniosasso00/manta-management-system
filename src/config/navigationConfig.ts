@@ -211,6 +211,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       href: '/reports',
     },
     {
+      id: 'time-analysis',
+      label: 'Analisi Tempi',
+      icon: Schedule,
+      href: '/time-analysis',
+    },
+    {
       id: 'admin',
       label: 'Amministrazione',
       icon: AdminPanelSettings,
@@ -380,6 +386,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
       label: 'Report',
       icon: Assessment,
       href: '/reports',
+    },
+    {
+      id: 'time-analysis',
+      label: 'Analisi Tempi',
+      icon: Schedule,
+      href: '/time-analysis',
     },
   ],
 

@@ -1,6 +1,7 @@
 import { EventType, ODLStatus, Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { WorkflowService } from './WorkflowService'
+import { TimeMetricsService } from './TimeMetricsService'
 import type { 
   CreateManualEvent, 
   ProductionEventFilter, 
@@ -43,6 +44,14 @@ export class TrackingService {
 
     // Aggiorna lo stato dell'ODL in base all'evento
     await this.updateODLStatus(odl.id, data.departmentId, data.eventType)
+
+    // 🆕 EVENT-DRIVEN HOOK: Calcola metriche temporali
+    try {
+      await TimeMetricsService.processProductionEvent(event as ProductionEventResponse)
+    } catch (error) {
+      console.error('Errore calcolo metriche temporali:', error)
+      // Non bloccare il flusso principale per errori di calcolo metriche
+    }
 
     // Attiva trasferimento automatico se EXIT
     if (data.eventType === EventType.EXIT) {
