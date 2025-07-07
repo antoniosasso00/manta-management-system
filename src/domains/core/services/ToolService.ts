@@ -50,6 +50,15 @@ export class ToolService {
   }
 
   /**
+   * Trova tool per Part Number
+   */
+  static async findByPartNumber(toolPartNumber: string) {
+    return prisma.tool.findUnique({
+      where: { toolPartNumber }
+    });
+  }
+
+  /**
    * Crea nuovo tool
    */
   static async create(data: {

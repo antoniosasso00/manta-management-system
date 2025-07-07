@@ -131,12 +131,19 @@ export class TimeMetricsService {
     })
 
     // Aggiorna statistiche aggregate per Part Number
-    // TODO: Implementare logica per recuperare partId dall'ODL
-    // await this.updatePartTimeStatistics(event.odl.partId, event.departmentId, {
-    //   advancementTime,
-    //   workingTime,
-    //   waitingTime: timeMetric.waitingTime
-    // })
+    // Recupera l'ID del part dal partNumber perché l'evento contiene solo partNumber
+    const part = await prisma.part.findUnique({
+      where: { partNumber: event.odl.part.partNumber },
+      select: { id: true }
+    })
+    
+    if (part) {
+      await this.updatePartTimeStatistics(part.id, event.departmentId, {
+        advancementTime,
+        workingTime,
+        waitingTime: timeMetric.waitingTime
+      })
+    }
   }
 
   /**

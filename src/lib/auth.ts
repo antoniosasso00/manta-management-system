@@ -20,15 +20,25 @@ declare module "next-auth" {
   }
 }
 
-// Mock auth function for edge runtime compatibility
-export const auth = (callback: (req: any) => any) => {
-  return (req: any) => {
-    // Simple check - just pass through for edge runtime
-    return callback(req)
+// Edge runtime auth function - validates session tokens from cookies
+export const auth = async (req: any) => {
+  // Check for session cookies (both dev and production names)
+  const sessionToken = req.cookies?.get('authjs.session-token')?.value || 
+                      req.cookies?.get('__Secure-authjs.session-token')?.value
+  
+  if (!sessionToken) {
+    return null
+  }
+
+  // For edge runtime, we only do basic token presence validation
+  // Full JWT verification happens in auth-node.ts for API routes
+  return {
+    user: {
+      // Minimal user object for edge runtime
+      authenticated: true
+    }
   }
 }
 
-// Export placeholders for API routes - they should use auth-node.ts
-export const handlers = { GET: null, POST: null }
-export const signIn = null
-export const signOut = null
+// Re-export handlers from auth-node for API routes
+export { handlers, signIn, signOut } from './auth-node'

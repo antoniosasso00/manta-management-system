@@ -114,13 +114,30 @@ export class EmailService {
   /**
    * Resend implementation
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async sendWithResend(_options: EmailOptions): Promise<boolean> {
-    // TODO: Implement Resend
-    // const { Resend } = require('resend')
-    // const resend = new Resend(process.env.RESEND_API_KEY)
-    // ...
-    return false
+  private async sendWithResend(options: EmailOptions): Promise<boolean> {
+    try {
+      const { Resend } = await import('resend')
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      
+      const result = await resend.emails.send({
+        from: process.env.EMAIL_FROM || 'noreply@mantaaero.com',
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      })
+      
+      if (result.error) {
+        console.error('Resend error:', result.error)
+        return false
+      }
+      
+      console.log('Email sent via Resend:', result.data?.id)
+      return true
+    } catch (error) {
+      console.error('Resend implementation error:', error)
+      return false
+    }
   }
 
   /**

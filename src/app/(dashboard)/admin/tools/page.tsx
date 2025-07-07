@@ -199,14 +199,79 @@ export default function ToolsManagementPage() {
     setOpenAssociationDialog(true)
   }
 
-  const handleExport = () => {
-    // TODO: Implementare export CSV
-    alert('Export CSV in sviluppo')
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/admin/tools/export')
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `tools_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Export error:', error)
+      alert('Errore durante l\'export dei tools')
+    }
   }
 
   const handleImport = () => {
-    // TODO: Implementare import CSV
-    alert('Import CSV in sviluppo')
+    // Crea input file nascosto per upload CSV
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.csv'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      
+      // Parsing CSV semplificato - in produzione usare una libreria come Papa Parse
+      const text = await file.text()
+      const lines = text.split('\n').slice(1) // Skip header
+      
+      const tools = lines
+        .filter(line => line.trim())
+        .map((line, index) => {
+          const [toolPartNumber, description, base, height, weight, material, valveCount, isActive] = 
+            line.split(',').map(field => field.replace(/"/g, '').trim())
+          
+          try {
+            return {
+              toolPartNumber,
+              description: description || undefined,
+              base: parseFloat(base),
+              height: parseFloat(height),
+              weight: weight ? parseFloat(weight) : undefined,
+              material: material || undefined,
+              valveCount: parseInt(valveCount) || 0,
+              isActive: isActive !== 'Disattivato'
+            }
+          } catch (error) {
+            console.error(`Error parsing line ${index + 2}:`, line)
+            return null
+          }
+        })
+        .filter(Boolean)
+      
+      try {
+        const response = await fetch('/api/admin/tools/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tools, skipDuplicates: true })
+        })
+        
+        const result = await response.json()
+        alert(result.message)
+        loadData() // Refresh data
+      } catch (error) {
+        console.error('Import error:', error)
+        alert('Errore durante l\'import dei tools')
+      }
+    }
+    input.click()
   }
 
   // Filtra tools in base alla ricerca

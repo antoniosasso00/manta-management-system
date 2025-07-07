@@ -184,5 +184,33 @@ export const auditHelpers = {
       },
       request
     })
+  },
+
+  async logDataExport(adminUserId: string, adminEmail: string, resource: string, description: string, request?: NextRequest) {
+    await logAuditAction({
+      action: AuditAction.EXPORT,
+      resource,
+      userId: adminUserId,
+      userEmail: adminEmail,
+      details: {
+        operation: 'data_export',
+        description
+      },
+      request
+    })
+  },
+
+  async logDataImport(adminUserId: string, adminEmail: string, resource: string, description: string, request?: NextRequest) {
+    await logAuditAction({
+      action: AuditAction.IMPORT,
+      resource,
+      userId: adminUserId,
+      userEmail: adminEmail,
+      details: {
+        operation: 'data_import',
+        description
+      },
+      request
+    })
   }
 }
