@@ -228,15 +228,17 @@ export default function ManualStatusChanger({
                 <Build color="primary" />
                 Cambio Stato Manuale
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                ODL: {odl.odlNumber} | Stato attuale: 
-                <Chip 
-                  label={ODL_STATUSES[odl.status as keyof typeof ODL_STATUSES] || odl.status}
-                  color={STATUS_COLORS[odl.status as keyof typeof STATUS_COLORS] || 'default'}
-                  size="small"
-                  sx={{ ml: 1 }}
-                />
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                <Typography variant="body2" color="text.secondary" component="div">
+                  ODL: {odl.odlNumber} | Stato attuale:
+                  <Chip 
+                    label={ODL_STATUSES[odl.status as keyof typeof ODL_STATUSES] || odl.status}
+                    color={STATUS_COLORS[odl.status as keyof typeof STATUS_COLORS] || 'default'}
+                    size="small"
+                    sx={{ ml: 1 }}
+                  />
+                </Typography>
+              </Box>
             </Box>
             
             <Button
