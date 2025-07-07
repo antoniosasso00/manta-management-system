@@ -15,7 +15,7 @@ const UpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -24,11 +24,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const validatedData = UpdateSchema.parse(body);
 
     const autoclave = await prisma.autoclave.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       include: {
         department: true
@@ -54,7 +55,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -63,9 +64,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Verifica se ci sono carichi associati
     const loads = await prisma.autoclaveLoad.count({
-      where: { autoclaveId: params.id }
+      where: { autoclaveId: id }
     });
 
     if (loads > 0) {
@@ -76,7 +79,7 @@ export async function DELETE(
     }
 
     await prisma.autoclave.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ success: true });

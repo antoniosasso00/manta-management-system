@@ -16,7 +16,7 @@ const UpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -25,10 +25,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const validatedData = UpdateSchema.parse(body);
 
-    const tool = await ToolService.update(params.id, validatedData);
+    const tool = await ToolService.update(id, validatedData);
 
     return NextResponse.json(tool);
   } catch (error) {
@@ -49,7 +50,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -58,7 +59,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
-    await ToolService.delete(params.id);
+    const { id } = await params;
+    await ToolService.delete(id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

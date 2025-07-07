@@ -18,7 +18,7 @@ const UpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -27,11 +27,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const validatedData = UpdateSchema.parse(body);
 
     const cycle = await prisma.curingCycle.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData
     });
 
@@ -54,7 +55,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -63,11 +64,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Verifica se ci sono ODL o carichi associati
     const [odls, loads, partConfigs] = await Promise.all([
-      prisma.oDL.count({ where: { curingCycleId: params.id } }),
-      prisma.autoclaveLoad.count({ where: { curingCycleId: params.id } }),
-      prisma.partAutoclave.count({ where: { curingCycleId: params.id } })
+      prisma.oDL.count({ where: { curingCycleId: id } }),
+      prisma.autoclaveLoad.count({ where: { curingCycleId: id } }),
+      prisma.partAutoclave.count({ where: { curingCycleId: id } })
     ]);
 
     if (odls > 0 || loads > 0 || partConfigs > 0) {
@@ -78,7 +81,7 @@ export async function DELETE(
     }
 
     await prisma.curingCycle.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ success: true });

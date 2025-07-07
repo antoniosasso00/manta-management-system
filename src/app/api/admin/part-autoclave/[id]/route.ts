@@ -4,7 +4,7 @@ import { PartAutoclaveService } from '@/domains/autoclave/services/PartAutoclave
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
-    await PartAutoclaveService.delete(params.id);
+    const { id } = await params;
+    await PartAutoclaveService.delete(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
