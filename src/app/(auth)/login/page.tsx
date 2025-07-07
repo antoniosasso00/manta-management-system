@@ -204,6 +204,7 @@ function LoginForm() {
         localStorage.removeItem('loginAttempts')
         localStorage.removeItem('blockTime')
         
+        // Manual redirect after successful login
         const from = searchParams.get('from') || '/dashboard'
         router.push(from)
       }

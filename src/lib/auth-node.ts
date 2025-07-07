@@ -170,6 +170,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session
     },
+    async redirect({ url, baseUrl }) {
+      // Allow relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allow same-origin URLs
+      if (new URL(url).origin === baseUrl) return url
+      // Default redirect to dashboard
+      return `${baseUrl}/dashboard`
+    },
   },
   pages: {
     signIn: "/login",
