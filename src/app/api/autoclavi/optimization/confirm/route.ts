@@ -4,6 +4,8 @@ import { AutoclaveService } from '@/domains/autoclave/services/autoclave-service
 import { ODLService } from '@/domains/core/services/ODLService';
 import { prisma } from '@/lib/prisma';
 
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     // Verifica autenticazione

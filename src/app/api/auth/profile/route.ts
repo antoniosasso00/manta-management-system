@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const runtime = 'nodejs'
+
 const updateProfileSchema = z.object({
   name: z.string().min(2, 'Il nome deve contenere almeno 2 caratteri'),
   email: z.string().email('Email non valida'),

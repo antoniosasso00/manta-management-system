@@ -3,6 +3,8 @@ import { requireAdmin } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { auditHelpers } from '@/lib/audit-logger'
 
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const adminUser = await requireAdmin()

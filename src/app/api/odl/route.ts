@@ -4,6 +4,8 @@ import { ODLService } from '@/domains/core/services/ODLService'
 import { createODLSchema, odlQuerySchema } from '@/domains/core/schemas/odl.schema'
 import { ZodError } from 'zod'
 
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()

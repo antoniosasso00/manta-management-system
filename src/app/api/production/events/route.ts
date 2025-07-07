@@ -5,6 +5,8 @@ import { TrackingService } from '@/domains/production'
 import { z } from 'zod'
 import { withRateLimit, productionRateLimiter } from '@/lib/rate-limit-middleware'
 
+export const runtime = 'nodejs'
+
 // POST /api/production/events - Crea nuovo evento di produzione
 async function postHandler(req: NextRequest) {
   try {

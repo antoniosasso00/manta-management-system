@@ -5,6 +5,8 @@ import { hash } from 'bcryptjs'
 import { z } from 'zod'
 import { auditHelpers } from '@/lib/audit-logger'
 
+export const runtime = 'nodejs'
+
 const importUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),

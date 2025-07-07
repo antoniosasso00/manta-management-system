@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth-node'
 import { z, ZodError } from 'zod'
 import { createToolWithPartsSchema, toolQuerySchema } from '@/domains/core/schemas/tool.schema'
 
+export const runtime = 'nodejs'
+
 // GET /api/tools - Lista tutti gli strumenti
 export async function GET(request: NextRequest) {
   try {

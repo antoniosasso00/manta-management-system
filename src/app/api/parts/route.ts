@@ -4,6 +4,8 @@ import { PartService } from '@/domains/core/services/PartService'
 import { createPartSchema, partQuerySchema } from '@/domains/core/schemas/part.schema'
 import { ZodError } from 'zod'
 
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()

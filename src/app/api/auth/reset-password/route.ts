@@ -4,6 +4,8 @@ import { hash } from 'bcryptjs'
 import { z } from 'zod'
 import { passwordSchema } from '@/lib/password-validation'
 
+export const runtime = 'nodejs'
+
 const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Token richiesto'),
   password: passwordSchema,

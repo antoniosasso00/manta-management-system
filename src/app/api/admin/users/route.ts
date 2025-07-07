@@ -7,6 +7,8 @@ import { createUserWithRoleSchema } from '@/domains/user/schemas/user.schema'
 import { auditHelpers } from '@/lib/audit-logger'
 import { withRateLimit, adminRateLimiter } from '@/lib/rate-limit-middleware'
 
+export const runtime = 'nodejs'
+
 async function getHandler(request: NextRequest) {
   try {
     await requireAdmin()

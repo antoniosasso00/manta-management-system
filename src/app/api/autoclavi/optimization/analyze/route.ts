@@ -9,6 +9,8 @@ import {
   convertAutoclaveToOptimizationData
 } from '@/services/optimization-service';
 
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     // Verifica autenticazione

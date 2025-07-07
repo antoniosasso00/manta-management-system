@@ -5,6 +5,8 @@ import { compare, hash } from 'bcryptjs'
 import { z } from 'zod'
 import { passwordSchema } from '@/lib/password-validation'
 
+export const runtime = 'nodejs'
+
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Password attuale richiesta'),
   newPassword: passwordSchema,

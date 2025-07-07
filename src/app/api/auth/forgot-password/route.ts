@@ -5,6 +5,8 @@ import { redisRateLimiter, getClientIdentifier, RATE_LIMIT_CONFIGS } from '@/lib
 import { z } from 'zod'
 import crypto from 'crypto'
 
+export const runtime = 'nodejs'
+
 const forgotPasswordSchema = z.object({
   email: z.string().email('Email non valida'),
 })

@@ -5,6 +5,8 @@ import { hash } from 'bcryptjs'
 import { z } from 'zod'
 import { UserRole, DepartmentRole } from '@prisma/client'
 
+export const runtime = 'nodejs'
+
 const updateUserSchema = z.object({
   name: z.string().min(2, 'Il nome deve contenere almeno 2 caratteri'),
   email: z.string().email('Email non valida'),
