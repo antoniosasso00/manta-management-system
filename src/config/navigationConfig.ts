@@ -241,6 +241,38 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Gestione Reparti',
           icon: Factory,
           href: '/admin/departments',
+          children: [
+            {
+              id: 'admin-departments-overview',
+              label: 'Overview Reparti',
+              icon: Factory,
+              href: '/admin/departments',
+            },
+            {
+              id: 'admin-departments-cleanroom',
+              label: 'Config Clean Room',
+              icon: CleaningServices,
+              href: '/admin/departments/cleanroom',
+            },
+            {
+              id: 'admin-departments-autoclavi',
+              label: 'Config Autoclavi',
+              icon: LocalFireDepartment,
+              href: '/admin/departments/autoclavi',
+            },
+            {
+              id: 'admin-departments-ndi',
+              label: 'Config NDI',
+              icon: Science,
+              href: '/admin/departments/ndi',
+            },
+            {
+              id: 'admin-departments-cnc',
+              label: 'Config Controllo Numerico',
+              icon: Tune,
+              href: '/admin/departments/controllo-numerico',
+            },
+          ],
         },
         {
           id: 'admin-audit',
