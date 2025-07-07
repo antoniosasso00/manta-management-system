@@ -40,6 +40,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   
   // Stato per evitare hydration mismatch
   const [mounted, setMounted] = useState(false)
+  const [loadingTimeout, setLoadingTimeout] = useState(false)
   
   // Stato sidebar
   const [sidebarOpen, setSidebarOpen] = useState(defaultOpen)
@@ -54,20 +55,39 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
     setMounted(true)
   }, [])
 
+  // Timeout fallback per loading infinito
+  useEffect(() => {
+    if (isLoading && mounted) {
+      const timer = setTimeout(() => {
+        console.warn('Auth loading timeout - treating as unauthenticated')
+        setLoadingTimeout(true)
+      }, 10000) // 10 secondi timeout
+
+      return () => clearTimeout(timer)
+    } else {
+      setLoadingTimeout(false)
+    }
+  }, [isLoading, mounted])
+
   // Auto-generate breadcrumbs if not provided
   const autoBreadcrumbs = breadcrumbs || generateBreadcrumbs(pathname)
 
   // Show loading state during authentication check and mount to prevent hydration mismatch
-  if (isLoading || !mounted) {
+  if ((isLoading && !loadingTimeout) || !mounted) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Typography>Loading...</Typography>
+        {loadingTimeout && (
+          <Typography variant="body2" color="error" sx={{ ml: 2 }}>
+            Authentication timeout - please refresh the page
+          </Typography>
+        )}
       </Box>
     )
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
+  // Redirect to login if not authenticated or loading timed out
+  if (!isAuthenticated || loadingTimeout) {
     if (typeof window !== 'undefined') {
       const currentPath = window.location.pathname + window.location.search
       window.location.href = `/login?from=${encodeURIComponent(currentPath)}`

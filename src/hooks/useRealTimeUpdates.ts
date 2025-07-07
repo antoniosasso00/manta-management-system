@@ -163,7 +163,7 @@ export function useDashboardKPI() {
   // Initial fetch
   useEffect(() => {
     fetchKPIData()
-  }, [fetchKPIData])
+  }, []) // Rimuoviamo fetchKPIData per evitare loop infinito
 
   return {
     data: kpiData,
@@ -218,7 +218,7 @@ export function useAuditEvents() {
   // Initial fetch
   useEffect(() => {
     fetchAuditData()
-  }, [fetchAuditData])
+  }, []) // Rimuoviamo fetchAuditData per evitare loop infinito
 
   return {
     data: auditData,
@@ -266,7 +266,7 @@ export function useUserStats() {
   // Initial fetch
   useEffect(() => {
     fetchStatsData()
-  }, [fetchStatsData])
+  }, []) // Rimuoviamo fetchStatsData per evitare loop infinito
 
   return {
     data: statsData,

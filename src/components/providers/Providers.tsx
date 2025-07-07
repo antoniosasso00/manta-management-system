@@ -25,7 +25,11 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <AppRouterCacheProvider>
-      <SessionProvider>
+      <SessionProvider 
+        basePath="/api/auth"
+        refetchInterval={0}
+        refetchOnWindowFocus={false}
+      >
         <QueryClientProvider client={queryClient}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
