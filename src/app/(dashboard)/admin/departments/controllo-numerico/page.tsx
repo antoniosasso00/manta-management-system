@@ -26,50 +26,47 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material'
 
-export default function RifilaturaManagementPage() {
+export default function ControlloNumericoManagementPage() {
   const router = useRouter()
 
   const mockupSections = [
     {
-      title: 'Programmi CNC',
+      title: 'Parametri Lavorazione',
       icon: CutIcon,
       color: '#ff5722',
-      description: 'Gestione percorsi utensile e parametri di taglio',
+      description: 'Tempi e parametri processo CNC',
       plannedFields: [
-        'Numero programma CNC',
-        'Velocità taglio (mm/min)',
-        'Avanzamento (mm/giro)',
-        'Profondità passata',
-        'Numero passate',
-        'Tipo refrigerante'
+        'Tempo programmazione',
+        'Tempo setup macchina',
+        'Tempo ciclo lavorazione',
+        'Priorità lavorazione',
+        'Macchine compatibili'
       ]
     },
     {
-      title: 'Utensili e Frese',
+      title: 'Materiali e Tooling',
       icon: PrecisionIcon,
       color: '#3f51b5',
-      description: 'Inventario utensili con vita utile',
+      description: 'Tipo materiale e utensili richiesti',
       plannedFields: [
-        'Lista utensili richiesti',
-        'Diametro frese',
-        'Materiale utensile',
-        'Rivestimento',
-        'Ore utilizzo massime',
-        'Velocità rotazione (RPM)'
+        'Tipo materiale (Alluminio, Carbon Fiber, ecc.)',
+        'Tooling richiesto',
+        'Classe tolleranza',
+        'Finitura superficiale',
+        'Ispezioni richieste'
       ]
     },
     {
-      title: 'Attrezzature e Dime',
+      title: 'Controlli Qualità',
       icon: FixtureIcon,
       color: '#009688',
-      description: 'Fixture e riferimenti dimensionali',
+      description: 'Controlli dimensionali e verifiche',
       plannedFields: [
-        'Codice dima/fixture',
-        'Punti riferimento',
-        'Classe tolleranza',
-        'Sistema bloccaggio',
-        'Controlli dimensionali',
-        'Setup time attrezzatura'
+        'Controlli dimensionali (JSON)',
+        'Ispezioni richieste',
+        'Standard qualità',
+        'Punti di controllo',
+        'Certificazioni richieste'
       ]
     }
   ]
@@ -78,20 +75,20 @@ export default function RifilaturaManagementPage() {
     {
       partNumber: '8G5350A001',
       description: 'Pannello fusoliera',
-      cncProgram: 'PRG-001',
-      toolingList: ['T12-6mm', 'T15-10mm'],
-      cuttingSpeed: 1200,
-      tolerance: '±0.1mm',
-      machineTime: 35
+      materialType: 'CARBON_FIBER',
+      toolingRequired: ['T12-6mm', 'T15-10mm'],
+      toleranceClass: 'FINE',
+      cycleTime: 35,
+      programmingTime: 45
     },
     {
       partNumber: '8G5350D004',
       description: 'Nervatura alare',
-      cncProgram: 'PRG-045',
-      toolingList: ['T08-4mm', 'T12-6mm', 'T20-12mm'],
-      cuttingSpeed: 800,
-      tolerance: '±0.05mm',
-      machineTime: 55
+      materialType: 'ALUMINUM',
+      toolingRequired: ['T08-4mm', 'T12-6mm', 'T20-12mm'],
+      toleranceClass: 'PRECISION',
+      cycleTime: 55,
+      programmingTime: 30
     }
   ]
 
@@ -101,19 +98,19 @@ export default function RifilaturaManagementPage() {
       <Box>
         <Typography variant="h4" className="flex items-center gap-2">
           <CutIcon />
-          Gestione Dati Reparto Rifilatura
+          Gestione Dati Reparto Controllo Numerico
         </Typography>
         <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-          Mockup - Configurazione programmi CNC e parametri di lavorazione
+          Mockup - Configurazione parametri lavorazione CNC esistenti
         </Typography>
       </Box>
 
       {/* Status Alert */}
       <Alert severity="info" icon={<InfoIcon />}>
         <Typography variant="body2">
-          <strong>Stato: Mockup</strong> - Questa è una preview della futura gestione dati Rifilatura.
-          La tabella <code>PartRifilatura</code> è stata creata nel database ma l'interfaccia completa 
-          sarà implementata in una fase successiva.
+          <strong>Stato: Mockup</strong> - Estensione della gestione dati Controllo Numerico.
+          La tabella <code>PartControlloNumerico</code> esiste già nel database con campi completi 
+          ma l'interfaccia di gestione sarà implementata in una fase successiva.
         </Typography>
       </Alert>
 
@@ -173,11 +170,11 @@ export default function RifilaturaManagementPage() {
               <TableRow>
                 <TableCell>Part Number</TableCell>
                 <TableCell>Descrizione</TableCell>
-                <TableCell>Programma CNC</TableCell>
-                <TableCell>Utensili</TableCell>
-                <TableCell>Velocità Taglio</TableCell>
-                <TableCell>Tolleranza</TableCell>
-                <TableCell>Tempo Macchina (min)</TableCell>
+                <TableCell>Tipo Materiale</TableCell>
+                <TableCell>Tooling Richiesto</TableCell>
+                <TableCell>Classe Tolleranza</TableCell>
+                <TableCell>Tempo Ciclo (min)</TableCell>
+                <TableCell>Tempo Programmazione (min)</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -188,10 +185,10 @@ export default function RifilaturaManagementPage() {
                   </TableCell>
                   <TableCell>{row.description}</TableCell>
                   <TableCell>
-                    <code>{row.cncProgram}</code>
+                    <code>{row.materialType}</code>
                   </TableCell>
                   <TableCell>
-                    {row.toolingList.map((tool, idx) => (
+                    {row.toolingRequired.map((tool, idx) => (
                       <Chip 
                         key={idx} 
                         label={tool} 
@@ -201,9 +198,9 @@ export default function RifilaturaManagementPage() {
                       />
                     ))}
                   </TableCell>
-                  <TableCell>{row.cuttingSpeed} mm/min</TableCell>
-                  <TableCell>{row.tolerance}</TableCell>
-                  <TableCell align="center">{row.machineTime}</TableCell>
+                  <TableCell>{row.toleranceClass}</TableCell>
+                  <TableCell>{row.cycleTime}</TableCell>
+                  <TableCell align="center">{row.programmingTime}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -215,7 +212,7 @@ export default function RifilaturaManagementPage() {
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Schema Database <code>PartRifilatura</code>
+            Schema Database <code>PartControlloNumerico</code> (Esistente)
           </Typography>
           <Typography variant="body2" component="pre" sx={{ 
             bgcolor: 'grey.100', 
@@ -223,19 +220,22 @@ export default function RifilaturaManagementPage() {
             borderRadius: 1,
             overflow: 'auto' 
           }}>
-{`model PartRifilatura {
-  id                String    @id @default(cuid())
-  partId            String    @unique
-  cncProgram        String?   // Numero programma CNC
-  toolingList       String[]  // Lista utensili richiesti
-  cuttingSpeed      Float?    // Velocità taglio mm/min
-  feedRate          Float?    // Avanzamento mm/giro
-  toleranceClass    String?   // Classe tolleranza
-  fixtureCode       String?   // Codice dima/attrezzatura
-  setupTime         Int?      // Tempo setup in minuti
-  machineTime       Int?      // Tempo macchina in minuti
+{`model PartControlloNumerico {
+  id                 String          @id @default(cuid())
+  partId             String          @unique
+  materialType       CNCMaterialType // Alluminio, Carbon Fiber, etc
+  toolingRequired    String[]        // Lista utensili
+  programmingTime    Int?            // Tempo programmazione
+  setupTime          Int?            // Tempo setup
+  cycleTime          Int?            // Tempo ciclo
+  toleranceClass     ToleranceClass  // Classe tolleranza
+  surfaceFinish      String?         // Finitura superficiale
+  compatibleMachines String[]        // Macchine compatibili
+  priority           Int             // Priorità lavorazione
+  dimensionalChecks  Json            // Controlli dimensionali
+  requiredInspection String?         // Ispezioni richieste
   
-  part              Part      @relation(...)
+  part               Part      @relation(...)
 }`}
           </Typography>
         </CardContent>

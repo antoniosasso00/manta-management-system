@@ -111,7 +111,6 @@ model Part {
   autoclaveConfig      PartAutoclave?         @relation("PartAutoclaveConfig")
   cleanroomConfig      PartCleanroom?         @relation("PartCleanroomConfig")
   ndiConfig            PartNDI?               @relation("PartNDIConfig")
-  rifilaturaConfig     PartRifilatura?        @relation("PartRifilaturaConfig")
   defaultCuringCycle   CuringCycle?           @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
   qualityPlans         QualityControlPlan[]
   timeStatistics       PartTimeStatistics[]
@@ -618,25 +617,6 @@ model PartNDI {
   @@map("part_ndi")
 }
 
-model PartRifilatura {
-  id                String    @id @default(cuid())
-  partId            String    @unique
-  cncProgram        String?   // Numero programma CNC
-  toolingList       String[]  // Lista utensili richiesti
-  cuttingSpeed      Float?    // Velocità taglio mm/min
-  feedRate          Float?    // Avanzamento mm/giro
-  toleranceClass    String?   // Classe tolleranza
-  fixtureCode       String?   // Codice dima/attrezzatura
-  setupTime         Int?      // Tempo setup in minuti
-  machineTime       Int?      // Tempo macchina in minuti
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  part              Part      @relation("PartRifilaturaConfig", fields: [partId], references: [id])
-  
-  @@index([partId])
-  @@map("part_rifilatura")
-}
 
 model PartMotori {
   id               String     @id @default(cuid())
