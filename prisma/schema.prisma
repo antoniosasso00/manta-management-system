@@ -108,6 +108,10 @@ model Part {
   engineConfig         PartMotori?            @relation("PartEngineConfig")
   partTools            PartTool[]
   coatingConfig        PartVerniciatura?      @relation("PartCoatingConfig")
+  autoclaveConfig      PartAutoclave?         @relation("PartAutoclaveConfig")
+  cleanroomConfig      PartCleanroom?         @relation("PartCleanroomConfig")
+  ndiConfig            PartNDI?               @relation("PartNDIConfig")
+  rifilaturaConfig     PartRifilatura?        @relation("PartRifilaturaConfig")
   defaultCuringCycle   CuringCycle?           @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
   qualityPlans         QualityControlPlan[]
   timeStatistics       PartTimeStatistics[]
@@ -311,6 +315,7 @@ model CuringCycle {
   autoclaveLoads    AutoclaveLoad[]
   odls              ODL[]           @relation("ODLCuringCycle")
   defaultParts      Part[]          @relation("DefaultCuringCycle")
+  partAutoclaves    PartAutoclave[]
 
   @@index([code])
   @@map("curing_cycles")
@@ -553,6 +558,84 @@ model PartVerniciatura {
   @@index([partId])
   @@index([coatingType])
   @@map("part_verniciatura")
+}
+
+model PartAutoclave {
+  id             String       @id @default(cuid())
+  partId         String       @unique
+  curingCycleId  String
+  vacuumLines    Int
+  setupTime      Int?         // Tempo setup in minuti
+  loadPosition   String?      // Posizione preferita nel carico
+  notes          String?      // Note specifiche per il part
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  
+  part           Part         @relation("PartAutoclaveConfig", fields: [partId], references: [id])
+  curingCycle    CuringCycle  @relation(fields: [curingCycleId], references: [id])
+  
+  @@index([partId])
+  @@index([curingCycleId])
+  @@map("part_autoclave")
+}
+
+model PartCleanroom {
+  id                String    @id @default(cuid())
+  partId            String    @unique
+  layupSequence     Json?     // Sequenza strati composito
+  fiberOrientation  String[]  // Orientamenti fibre [0°, 45°, 90°, etc]
+  resinType         String?   // Tipo resina
+  prepregCode       String?   // Codice prepreg
+  roomTemperature   Float?    // Temperatura stanza richiesta
+  humidity          Float?    // Umidità richiesta %
+  shelfLife         Int?      // Vita utile materiale in giorni
+  setupTime         Int?      // Tempo setup in minuti
+  cycleTime         Int?      // Tempo ciclo in minuti
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  part              Part      @relation("PartCleanroomConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@map("part_cleanroom")
+}
+
+model PartNDI {
+  id                String    @id @default(cuid())
+  partId            String    @unique
+  inspectionMethod  String[]  // Metodi: ultrasuoni, raggi X, termografia
+  acceptanceCriteria Json?    // Criteri accettazione difetti
+  criticalAreas     Json?     // Aree critiche da ispezionare
+  inspectionTime    Int?      // Tempo ispezione in minuti
+  requiredCerts     String[]  // Certificazioni richieste operatore
+  calibrationReq    String?   // Requisiti calibrazione strumenti
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  part              Part      @relation("PartNDIConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@map("part_ndi")
+}
+
+model PartRifilatura {
+  id                String    @id @default(cuid())
+  partId            String    @unique
+  cncProgram        String?   // Numero programma CNC
+  toolingList       String[]  // Lista utensili richiesti
+  cuttingSpeed      Float?    // Velocità taglio mm/min
+  feedRate          Float?    // Avanzamento mm/giro
+  toleranceClass    String?   // Classe tolleranza
+  fixtureCode       String?   // Codice dima/attrezzatura
+  setupTime         Int?      // Tempo setup in minuti
+  machineTime       Int?      // Tempo macchina in minuti
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  part              Part      @relation("PartRifilaturaConfig", fields: [partId], references: [id])
+  
+  @@index([partId])
+  @@map("part_rifilatura")
 }
 
 model PartMotori {
