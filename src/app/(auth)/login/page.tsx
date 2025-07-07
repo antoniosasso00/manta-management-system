@@ -204,9 +204,8 @@ function LoginForm() {
         localStorage.removeItem('loginAttempts')
         localStorage.removeItem('blockTime')
         
-        const from = searchParams.get('from') || '/'
+        const from = searchParams.get('from') || '/dashboard'
         router.push(from)
-        router.refresh()
       }
     } catch (err) {
       console.error('Login error:', err)

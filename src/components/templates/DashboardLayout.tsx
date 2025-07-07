@@ -86,15 +86,11 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
     )
   }
 
-  // Redirect to login if not authenticated or loading timed out
+  // Show error message if not authenticated (let root page handle redirects)
   if (!isAuthenticated || loadingTimeout) {
-    if (typeof window !== 'undefined') {
-      const currentPath = window.location.pathname + window.location.search
-      window.location.href = `/login?from=${encodeURIComponent(currentPath)}`
-    }
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Typography>Redirecting to login...</Typography>
+        <Typography>Not authenticated. Please log in.</Typography>
       </Box>
     )
   }

@@ -1,14 +1,35 @@
-import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth-node'
+'use client'
 
-export default async function Home() {
-  const session = await auth()
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { Box, CircularProgress } from '@mui/material'
+
+export default function Home() {
+  const router = useRouter()
+  const { isAuthenticated, isLoading } = useAuth()
   
-  // Redirect to login if not authenticated
-  if (!session?.user) {
-    redirect('/login')
-  }
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.replace('/dashboard')
+      } else {
+        router.replace('/login')
+      }
+    }
+  }, [isAuthenticated, isLoading, router])
   
-  // Redirect authenticated users to the main dashboard
-  redirect('/dashboard')
+  // Show loading while checking auth
+  return (
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  )
 }
