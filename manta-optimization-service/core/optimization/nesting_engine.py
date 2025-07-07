@@ -313,11 +313,13 @@ class NestingEngine:
         x1, y1, x2, y2 = rect1
         x3, y3, x4, y4 = rect2
         
-        # Espandi rect2 del gap
-        x3 -= gap
-        y3 -= gap
-        x4 += gap
-        y4 += gap
+        # Calcola distanza minima richiesta tra i rettangoli
+        # Due rettangoli si sovrappongono se la distanza è minore del gap
         
-        # Verifica non-sovrapposizione
-        return not (x2 <= x3 or x4 <= x1 or y2 <= y3 or y4 <= y1)
+        # Distanza orizzontale (negativa se si sovrappongono)
+        dx = max(0, max(x1, x3) - min(x2, x4))
+        # Distanza verticale (negativa se si sovrappongono)  
+        dy = max(0, max(y1, y3) - min(y2, y4))
+        
+        # Si sovrappongono se entrambe le distanze sono < gap
+        return dx < gap and dy < gap

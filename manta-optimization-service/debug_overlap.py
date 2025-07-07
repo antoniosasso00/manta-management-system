@@ -105,34 +105,35 @@ def check_placement_overlaps(placements, gap=15):
     for i, p1 in enumerate(placements):
         for j, p2 in enumerate(placements[i+1:], i+1):
             
-            # Coordinate rettangoli con gap
+            # Coordinate rettangoli SENZA espansione
             rect1 = {
                 'id': p1['tool_id'],
-                'x1': p1['x'] - gap,
-                'y1': p1['y'] - gap,
-                'x2': p1['x'] + p1['width'] + gap,
-                'y2': p1['y'] + p1['height'] + gap
+                'x1': p1['x'],
+                'y1': p1['y'],
+                'x2': p1['x'] + p1['width'],
+                'y2': p1['y'] + p1['height']
             }
             
             rect2 = {
                 'id': p2['tool_id'], 
-                'x1': p2['x'] - gap,
-                'y1': p2['y'] - gap,
-                'x2': p2['x'] + p2['width'] + gap,
-                'y2': p2['y'] + p2['height'] + gap
+                'x1': p2['x'],
+                'y1': p2['y'],
+                'x2': p2['x'] + p2['width'],
+                'y2': p2['y'] + p2['height']
             }
             
-            # Verifica overlap
-            if not (rect1['x2'] <= rect2['x1'] or 
-                   rect2['x2'] <= rect1['x1'] or 
-                   rect1['y2'] <= rect2['y1'] or 
-                   rect2['y2'] <= rect1['y1']):
+            # Calcola distanza effettiva tra i rettangoli
+            dx = max(0, max(rect1['x1'], rect2['x1']) - min(rect1['x2'], rect2['x2']))
+            dy = max(0, max(rect1['y1'], rect2['y1']) - min(rect1['y2'], rect2['y2']))
+            
+            # Verifica se la distanza è minore del gap richiesto
+            if dx < gap and dy < gap:
                 
-                # Calcola area overlap
-                overlap_x1 = max(rect1['x1'], rect2['x1'])
-                overlap_y1 = max(rect1['y1'], rect2['y1'])
-                overlap_x2 = min(rect1['x2'], rect2['x2'])
-                overlap_y2 = min(rect1['y2'], rect2['y2'])
+                # Calcola area overlap teorica con gap
+                overlap_x1 = max(rect1['x1'] - gap, rect2['x1'] - gap)
+                overlap_y1 = max(rect1['y1'] - gap, rect2['y1'] - gap)
+                overlap_x2 = min(rect1['x2'] + gap, rect2['x2'] + gap)
+                overlap_y2 = min(rect1['y2'] + gap, rect2['y2'] + gap)
                 
                 overlap_area = max(0, overlap_x2 - overlap_x1) * max(0, overlap_y2 - overlap_y1)
                 
@@ -140,6 +141,8 @@ def check_placement_overlaps(placements, gap=15):
                     'tool1': p1['tool_id'],
                     'tool2': p2['tool_id'],
                     'overlap_area': overlap_area,
+                    'distance_x': dx,
+                    'distance_y': dy,
                     'rect1': rect1,
                     'rect2': rect2,
                     'placement1': p1,
@@ -188,14 +191,14 @@ def analyze_overlaps(result):
                 print(f"       {overlap['tool1']}: ({p1['x']:.0f},{p1['y']:.0f}) → ({p1['x']+p1['width']:.0f},{p1['y']+p1['height']:.0f})")
                 print(f"       {overlap['tool2']}: ({p2['x']:.0f},{p2['y']:.0f}) → ({p2['x']+p2['width']:.0f},{p2['y']+p2['height']:.0f})")
                 
-                # Calcola distanza effettiva
-                min_x_dist = max(0, max(p1['x'], p2['x']) - min(p1['x'] + p1['width'], p2['x'] + p2['width']))
-                min_y_dist = max(0, max(p1['y'], p2['y']) - min(p1['y'] + p1['height'], p2['y'] + p2['height']))
+                # Usa distanze calcolate
+                dx = overlap['distance_x']
+                dy = overlap['distance_y']
                 
-                if min_x_dist == 0 and min_y_dist == 0:
+                if dx == 0 and dy == 0:
                     print(f"       DISTANZA EFFETTIVA: OVERLAP DIRETTO!")
                 else:
-                    print(f"       Distanza X: {min_x_dist:.0f}mm, Y: {min_y_dist:.0f}mm")
+                    print(f"       Distanza X: {dx:.0f}mm, Y: {dy:.0f}mm (gap richiesto: 15mm)")
         else:
             print("   ✅ Nessun overlap rilevato")
         
