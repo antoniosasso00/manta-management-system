@@ -16,7 +16,6 @@ import {
 } from '@mui/material'
 import { 
   Refresh, 
-  CleaningServices, 
   Timer, 
   Group, 
   Assessment,
@@ -24,6 +23,7 @@ import {
 } from '@mui/icons-material'
 import { DepartmentODLList } from './DepartmentODLList'
 import { CreateManualEvent, DepartmentODLList as DepartmentODLListType } from '@/domains/production'
+import { getDepartmentNomenclature, getDepartmentIcon, getDepartmentColors } from '@/config/departmentNomenclature'
 
 interface ProductionDashboardProps {
   departmentId: string
@@ -81,29 +81,32 @@ export function ProductionDashboard({
 
   const getStatCards = () => {
     const stats = data?.statistics || { totalActive: 0, avgCycleTime: 0, efficiency: 0 }
+    const nomenclature = getDepartmentNomenclature(departmentCode)
+    const colors = getDepartmentColors(departmentCode)
+    const DepartmentIcon = getDepartmentIcon(departmentCode)
     
     return [
       {
-        icon: <CleaningServices sx={{ fontSize: 48 }} />,
-        title: 'Postazioni Attive',
+        icon: <DepartmentIcon sx={{ fontSize: 48 }} />,
+        title: nomenclature.statistics.activeStations,
         value: `${data?.odlInProduction.length || 0}/${stats.totalActive}`,
-        color: 'primary.main'
+        color: colors.primary
       },
       {
         icon: <Timer sx={{ fontSize: 48 }} />,
-        title: 'Tempo Medio Ciclo',
+        title: nomenclature.statistics.avgCycleTime,
         value: `${Math.floor(stats.avgCycleTime / 60)}h ${stats.avgCycleTime % 60}m`,
         color: 'success.main'
       },
       {
         icon: <Group sx={{ fontSize: 48 }} />,
-        title: 'ODL in Preparazione',
+        title: nomenclature.statistics.inPreparation,
         value: data?.odlInPreparation.length || 0,
         color: 'info.main'
       },
       {
         icon: <Assessment sx={{ fontSize: 48 }} />,
-        title: 'Efficienza',
+        title: nomenclature.statistics.efficiency,
         value: `${stats.efficiency}%`,
         color: 'warning.main'
       }
@@ -120,7 +123,7 @@ export function ProductionDashboard({
               {departmentName}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Gestione ODL in {departmentCode === 'CLEANROOM' ? 'Preparazione e Laminazione' : departmentName}
+              {getDepartmentNomenclature(departmentCode).description}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -168,6 +171,7 @@ export function ProductionDashboard({
             onTrackingEvent={handleTrackingEvent}
             onRefresh={fetchData}
             departmentName={departmentName}
+            departmentCode={departmentCode}
           />
         </Paper>
       </Box>

@@ -15,6 +15,7 @@ import { ConfirmActionDialog } from '@/components/atoms'
 import ManualStatusChanger from './ManualStatusChanger'
 import { DepartmentODLList as DepartmentODLListType, CreateManualEvent } from '@/domains/production'
 import { EventType } from '@prisma/client'
+import { getDepartmentNomenclature } from '@/config/departmentNomenclature'
 
 interface DepartmentODLListProps {
   departmentId: string
@@ -24,6 +25,7 @@ interface DepartmentODLListProps {
   onTrackingEvent: (data: CreateManualEvent) => Promise<void>
   onRefresh?: () => void
   departmentName?: string
+  departmentCode: string
 }
 
 export function DepartmentODLList({ 
@@ -33,7 +35,8 @@ export function DepartmentODLList({
   error,
   onTrackingEvent,
   onRefresh,
-  departmentName
+  departmentName,
+  departmentCode
 }: DepartmentODLListProps) {
   const [tabValue, setTabValue] = useState(0)
   const [pendingAction, setPendingAction] = useState<{ odlId: string; action: EventType } | null>(null)
@@ -89,6 +92,8 @@ export function DepartmentODLList({
 
   if (!data) return null
 
+  const nomenclature = getDepartmentNomenclature(departmentCode)
+
   const getTabContent = () => {
     switch (tabValue) {
       case 0:
@@ -139,9 +144,9 @@ export function DepartmentODLList({
       {/* Tabs per stato ODL */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label={`In Preparazione (${data.odlInPreparation.length})`} />
-          <Tab label={`In Laminazione (${data.odlInProduction.length})`} />
-          <Tab label={`Completati (${data.odlCompleted.length})`} />
+          <Tab label={`${nomenclature.states.preparation.label} (${data.odlInPreparation.length})`} />
+          <Tab label={`${nomenclature.states.inProcess.label} (${data.odlInProduction.length})`} />
+          <Tab label={`${nomenclature.states.completed.label} (${data.odlCompleted.length})`} />
         </Tabs>
       </Box>
 
