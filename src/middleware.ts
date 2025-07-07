@@ -22,9 +22,11 @@ export default async function middleware(req: NextRequest) {
 
   // For Netlify edge runtime, use simple cookie-based auth check
   if (process.env.NETLIFY) {
-    // Simple cookie check for edge runtime
+    // Check all possible NextAuth cookie names
     const sessionToken = req.cookies.get('authjs.session-token')?.value || 
-                       req.cookies.get('__Secure-authjs.session-token')?.value
+                       req.cookies.get('__Secure-authjs.session-token')?.value ||
+                       req.cookies.get('next-auth.session-token')?.value ||
+                       req.cookies.get('__Secure-next-auth.session-token')?.value
     
     const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
                        req.nextUrl.pathname.startsWith("/register") ||
@@ -33,10 +35,19 @@ export default async function middleware(req: NextRequest) {
     
     // Allow auth pages
     if (isAuthPage) {
+      // If already logged in and trying to access login, redirect to dashboard
+      if (sessionToken && req.nextUrl.pathname === "/login") {
+        return NextResponse.redirect(new URL("/dashboard", req.url))
+      }
       return NextResponse.next()
     }
     
-    // Redirect to login if no session token
+    // Allow root page to handle its own redirect logic
+    if (req.nextUrl.pathname === "/") {
+      return NextResponse.next()
+    }
+    
+    // Redirect to login if no session token for protected routes
     if (!sessionToken) {
       let from = req.nextUrl.pathname
       if (req.nextUrl.search) {
