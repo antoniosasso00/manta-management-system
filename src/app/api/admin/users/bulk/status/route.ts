@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { auditHelpers } from '@/lib/audit-logger'
 
+export const runtime = 'nodejs'
+
 const bulkStatusSchema = z.object({
   userIds: z.array(z.string()),
   isActive: z.boolean()

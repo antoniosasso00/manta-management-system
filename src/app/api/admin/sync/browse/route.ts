@@ -4,6 +4,8 @@ import { existsSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { z } from 'zod'
 
+export const runtime = 'nodejs'
+
 const browseRequestSchema = z.object({
   path: z.string().optional().default('/home')
 })

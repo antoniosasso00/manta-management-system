@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth-utils'
 import { cleanupTasks } from '@/lib/cleanup-tasks'
 
+export const runtime = 'nodejs'
+
 export async function POST() {
   try {
     await requireAdmin()

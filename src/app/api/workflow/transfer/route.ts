@@ -4,6 +4,8 @@ import { WorkflowService } from '@/domains/production/services/WorkflowService';
 import { z } from 'zod';
 import { withRateLimit, workflowRateLimiter } from '@/lib/rate-limit-middleware';
 
+export const runtime = 'nodejs';
+
 const TransferRequestSchema = z.object({
   odlId: z.string().cuid(),
   departmentId: z.string().cuid().optional()

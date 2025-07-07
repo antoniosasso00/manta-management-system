@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { UserRole } from '@prisma/client';
 import * as XLSX from 'xlsx';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

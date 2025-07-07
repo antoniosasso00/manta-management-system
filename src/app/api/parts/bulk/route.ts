@@ -4,6 +4,8 @@ import { PartService } from '@/domains/core/services/PartService'
 import { bulkCreatePartsSchema } from '@/domains/core/schemas/part.schema'
 import { ZodError } from 'zod'
 
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()

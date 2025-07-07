@@ -4,6 +4,8 @@ import { ODLService } from '@/domains/core/services/ODLService'
 import { updateODLSchema } from '@/domains/core/schemas/odl.schema'
 import { ZodError } from 'zod'
 
+export const runtime = 'nodejs'
+
 
 export async function GET(
   request: NextRequest,

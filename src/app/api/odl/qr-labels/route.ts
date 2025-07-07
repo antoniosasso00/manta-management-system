@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth-node'
 
+export const runtime = 'nodejs'
+
 // GET /api/odl/qr-labels - Lista ODL per stampa QR
 export async function GET(request: NextRequest) {
   try {

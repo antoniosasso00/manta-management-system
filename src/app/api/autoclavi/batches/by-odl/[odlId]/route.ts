@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth-node';
 import { AutoclaviBatchService } from '@/services/autoclavi-batch.service';
 
+export const runtime = 'nodejs';
+
 // GET /api/autoclavi/batches/by-odl/[odlId] - Trova batch contenente un ODL specifico
 export async function GET(
   request: NextRequest,

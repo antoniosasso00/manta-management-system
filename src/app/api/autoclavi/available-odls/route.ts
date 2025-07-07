@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 
+export const runtime = 'nodejs';
+
 // GET /api/autoclavi/available-odls - Lista ODL disponibili per batch
 export async function GET(request: NextRequest) {
   try {

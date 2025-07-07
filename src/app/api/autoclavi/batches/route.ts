@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 // Schema per creazione batch
 const createBatchSchema = z.object({
   autoclaveId: z.string().min(1, 'Autoclave richiesta'),

@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { UserRole } from '@prisma/client'
 import { BackupService } from '@/lib/backup-service'
 
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()

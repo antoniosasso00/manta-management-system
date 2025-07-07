@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { redisRateLimiter } from "@/lib/rate-limit-redis"
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     // Get Redis stats

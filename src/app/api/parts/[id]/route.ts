@@ -4,6 +4,8 @@ import { PartService } from '@/domains/core/services/PartService'
 import { updatePartSchema } from '@/domains/core/schemas/part.schema'
 import { ZodError } from 'zod'
 
+export const runtime = 'nodejs'
+
 
 export async function GET(
   request: NextRequest,

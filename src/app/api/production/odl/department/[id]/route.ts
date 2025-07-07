@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-node'
 import { TrackingService } from '@/domains/production'
 
+export const runtime = 'nodejs'
+
 // GET /api/production/odl/department/[id] - Ottieni ODL per reparto
 export async function GET(
   req: NextRequest,

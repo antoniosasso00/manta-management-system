@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-node'
 import { PartService } from '@/domains/core/services/PartService'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     const session = await auth()

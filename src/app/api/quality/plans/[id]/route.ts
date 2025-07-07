@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { QualityControlService } from '@/domains/quality/services/QualityControlService'
 import { QualityControlPlanUpdateSchema } from '@/domains/quality/schemas/qualitySchemas'
 
+export const runtime = 'nodejs'
+
 interface Params {
   params: Promise<{
     id: string

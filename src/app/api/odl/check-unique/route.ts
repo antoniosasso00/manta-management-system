@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 const checkUniqueSchema = z.object({
   progressivo: z.string().min(1, 'Progressivo ODL richiesto'),
   excludeId: z.string().optional() // Per escludere ODL corrente durante modifica

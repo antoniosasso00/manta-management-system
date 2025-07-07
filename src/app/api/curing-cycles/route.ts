@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const runtime = 'nodejs'
+
 // Validation schema for curing cycle
 const curingCycleSchema = z.object({
   code: z.string().min(1, 'Code is required'),

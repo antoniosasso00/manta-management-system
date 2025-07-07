@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { ExcelSyncService } from '@/services/excel-sync.service'
 import { z } from 'zod'
 
+export const runtime = 'nodejs'
+
 const syncRequestSchema = z.object({
   filePath: z.string().min(1, 'Percorso file richiesto'),
   action: z.enum(['analyze', 'sync'])

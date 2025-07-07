@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+
+export const runtime = 'nodejs';
 import { existsSync } from 'fs';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB

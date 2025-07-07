@@ -3,6 +3,8 @@ import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { WorkflowService } from '@/domains/production/services/WorkflowService';
 import { z } from 'zod';
+
+export const runtime = 'nodejs';
 import { ODL_STATUS } from '@/utils/constants';
 
 // Schema per validazione cambio stato

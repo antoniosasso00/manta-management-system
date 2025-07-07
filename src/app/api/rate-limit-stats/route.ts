@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth-utils';
 import { getRateLimitStats } from '@/lib/rate-limit-middleware';
 
+export const runtime = 'nodejs';
+
 /**
  * API endpoint per monitorare statistiche rate limiting
  * Accessibile solo agli amministratori per monitoring e debugging

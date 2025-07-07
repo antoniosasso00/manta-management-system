@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth-node'
 import { z } from 'zod'
 import { PDFExportService, type ODLForPDF } from '@/services/PDFExportService'
 
+export const runtime = 'nodejs'
+
 const pdfRequestSchema = z.object({
   type: z.enum(['odl-report', 'qr-labels', 'single-odl']),
   odlIds: z.array(z.string()).optional(),

@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { UserRole } from '@prisma/client'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+
+export const runtime = 'nodejs'
 import fs from 'fs'
 import path from 'path'
 

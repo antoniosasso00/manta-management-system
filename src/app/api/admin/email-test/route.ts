@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth-utils'
 import { emailService } from '@/lib/email-service'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     await requireAdmin()

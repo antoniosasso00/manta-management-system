@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node'
 import { QualityInspectionService } from '@/domains/quality/services/QualityInspectionService'
 import { QualityInspectionStartSchema } from '@/domains/quality/schemas/qualitySchemas'
 
+export const runtime = 'nodejs'
+
 interface Params {
   params: Promise<{
     id: string

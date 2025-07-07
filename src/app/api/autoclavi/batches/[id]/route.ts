@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 const updateBatchSchema = z.object({
   status: z.enum(['DRAFT', 'READY', 'IN_CURE', 'COMPLETED', 'RELEASED', 'CANCELLED']).optional(),
   plannedStart: z.string().transform((str) => new Date(str)).optional(),

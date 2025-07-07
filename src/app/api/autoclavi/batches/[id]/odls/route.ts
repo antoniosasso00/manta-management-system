@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 const addOdlToBatchSchema = z.object({
   odlIds: z.array(z.string()).min(1, 'Almeno un ODL richiesto'),
 });

@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { ODLService } from '@/domains/core/services/ODLService';
 import { AutoclaveService } from '@/domains/autoclave/services/autoclave-service';
 import { prisma } from '@/lib/prisma';
+
+export const runtime = 'nodejs';
 import { 
   OptimizationService,
   convertODLToOptimizationData,

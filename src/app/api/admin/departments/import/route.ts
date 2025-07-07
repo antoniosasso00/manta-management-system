@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 const departmentImportSchema = z.object({
   departments: z.array(z.object({
     name: z.string().min(1),

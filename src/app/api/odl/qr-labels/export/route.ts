@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth-node'
 import { z } from 'zod'
 
+export const runtime = 'nodejs'
+
 const exportRequestSchema = z.object({
   odlIds: z.array(z.string()).min(1, 'Almeno un ODL richiesto')
 })

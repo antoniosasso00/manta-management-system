@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { WorkflowService } from '@/domains/production/services/WorkflowService';
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const session = await auth();

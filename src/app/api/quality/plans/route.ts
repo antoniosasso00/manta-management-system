@@ -7,6 +7,8 @@ import {
   PaginationSchema,
 } from '@/domains/quality/schemas/qualitySchemas'
 
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()

@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth-node';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const runtime = 'nodejs';
+
 const advanceBatchSchema = z.object({
   batchId: z.string().min(1, 'Batch ID richiesto'),
   targetStatus: z.enum(['READY', 'IN_CURE', 'COMPLETED', 'RELEASED']),
