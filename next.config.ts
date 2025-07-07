@@ -163,11 +163,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // Add any legacy redirects here
-      {
-        source: '/dashboard',
-        destination: '/',
-        permanent: true,
-      },
+      // REMOVED: redirect from /dashboard to / was causing infinite loop
     ];
   },
 

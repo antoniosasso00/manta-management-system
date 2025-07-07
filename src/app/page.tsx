@@ -1,35 +1,24 @@
-'use client'
-
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
-import { Box, CircularProgress } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 
 export default function Home() {
-  const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
-  
-  useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated) {
-        router.replace('/dashboard')
-      } else {
-        router.replace('/login')
-      }
-    }
-  }, [isAuthenticated, isLoading, router])
-  
-  // Show loading while checking auth
+  // Static page that never redirects - let middleware handle everything
   return (
     <Box 
       sx={{ 
         display: 'flex', 
+        flexDirection: 'column',
         justifyContent: 'center', 
         alignItems: 'center', 
-        height: '100vh' 
+        height: '100vh',
+        gap: 2
       }}
     >
-      <CircularProgress />
+      <Typography variant="h4">
+        Manta Management System
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        Access the application at /login or /dashboard
+      </Typography>
     </Box>
   )
 }

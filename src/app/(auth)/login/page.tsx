@@ -205,8 +205,9 @@ function LoginForm() {
         localStorage.removeItem('blockTime')
         
         // Manual redirect after successful login
-        const from = searchParams.get('from') || '/dashboard'
-        router.push(from)
+        const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('from') || '/dashboard'
+        router.push(callbackUrl)
+        router.refresh()
       }
     } catch (err) {
       console.error('Login error:', err)

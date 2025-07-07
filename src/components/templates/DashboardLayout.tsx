@@ -86,7 +86,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
     )
   }
 
-  // Show error message if not authenticated (let root page handle redirects)
+  // Show error message if not authenticated (let middleware handle redirects)
   if (!isAuthenticated || loadingTimeout) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>

@@ -7,6 +7,7 @@ import { redisRateLimiter, getClientIdentifier, RATE_LIMIT_CONFIGS } from "./rat
 import type { UserRole, DepartmentRole } from "@prisma/client"
 import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
+import { authConfig } from "@/auth.config"
 
 declare module "next-auth" {
   interface User {
@@ -28,6 +29,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
   trustHost: true, // Important for Netlify deployment
   session: {
