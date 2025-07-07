@@ -104,7 +104,27 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           id: 'production-autoclave',
           label: 'Autoclavi',
           icon: LocalFireDepartment,
-          href: '/production/autoclave',
+          href: '/autoclavi/batches',
+          children: [
+            {
+              id: 'autoclavi-batches',
+              label: 'Gestione Batch',
+              icon: ListAlt,
+              href: '/autoclavi/batches',
+            },
+            {
+              id: 'autoclavi-create-batch',
+              label: 'Nuovo Batch',
+              icon: Add,
+              href: '/autoclavi/create-batch',
+            },
+            {
+              id: 'autoclavi-optimization',
+              label: 'Ottimizzazione Batch',
+              icon: AutoMode,
+              href: '/autoclavi/optimization',
+            },
+          ],
         },
         {
           id: 'production-controllo-numerico',
@@ -155,32 +175,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Motori (Separato)',
           icon: DirectionsCar,
           href: '/production/motori',
-        },
-      ],
-    },
-    {
-      id: 'autoclavi',
-      label: 'Autoclavi',
-      icon: LocalFireDepartment,
-      href: '/autoclavi/batches',
-      children: [
-        {
-          id: 'autoclavi-batches',
-          label: 'Gestione Batch',
-          icon: ListAlt,
-          href: '/autoclavi/batches',
-        },
-        {
-          id: 'autoclavi-create-batch',
-          label: 'Nuovo Batch',
-          icon: Add,
-          href: '/autoclavi/create-batch',
-        },
-        {
-          id: 'autoclavi-optimization',
-          label: 'Ottimizzazione Batch',
-          icon: AutoMode,
-          href: '/autoclavi/optimization',
         },
       ],
     },
@@ -327,7 +321,27 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           id: 'production-autoclave',
           label: 'Autoclavi',
           icon: LocalFireDepartment,
-          href: '/production/autoclave',
+          href: '/autoclavi/batches',
+          children: [
+            {
+              id: 'autoclavi-batches',
+              label: 'Gestione Batch',
+              icon: ListAlt,
+              href: '/autoclavi/batches',
+            },
+            {
+              id: 'autoclavi-create-batch',
+              label: 'Nuovo Batch',
+              icon: Add,
+              href: '/autoclavi/create-batch',
+            },
+            {
+              id: 'autoclavi-optimization',
+              label: 'Ottimizzazione Batch',
+              icon: AutoMode,
+              href: '/autoclavi/optimization',
+            },
+          ],
         },
         {
           id: 'production-controllo-numerico',
@@ -358,26 +372,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Controllo Qualità',
           icon: VerifiedUser,
           href: '/production/controllo-qualita',
-        },
-      ],
-    },
-    {
-      id: 'autoclavi',
-      label: 'Autoclavi',
-      icon: LocalFireDepartment,
-      href: '/autoclavi/batches',
-      children: [
-        {
-          id: 'autoclavi-batches',
-          label: 'Gestione Batch',
-          icon: ListAlt,
-          href: '/autoclavi/batches',
-        },
-        {
-          id: 'autoclavi-optimization',
-          label: 'Ottimizzazione Batch',
-          icon: AutoMode,
-          href: '/autoclavi/optimization',
         },
       ],
     },
