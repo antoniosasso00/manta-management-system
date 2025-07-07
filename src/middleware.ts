@@ -50,71 +50,65 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Dynamic import auth and CORS only when needed (non-edge runtime)
+  // Dynamic import CORS only when needed (non-edge runtime)
   try {
-    const [{ auth }, { corsHandler, corsConfigs }] = await Promise.all([
-      import("@/lib/auth-node"),
-      import("@/lib/cors-config")
-    ])
+    const { corsHandler, corsConfigs } = await import("@/lib/cors-config")
     
-    return (auth as any)((req: any) => {
-      // Gestisci CORS per tutte le richieste API
-      if (req.nextUrl.pathname.startsWith('/api/')) {
-        // Determina configurazione CORS basata sul path
-        let corsConfig = corsConfigs.development as any;
-        
-        if (process.env.NODE_ENV === 'production') {
-          if (req.nextUrl.pathname.startsWith('/api/admin/')) {
-            corsConfig = corsConfigs.admin as any;
-          } else if (req.nextUrl.pathname.startsWith('/api/production/')) {
-            corsConfig = corsConfigs.production as any;
-          } else {
-            corsConfig = corsConfigs.public as any;
-          }
-        }
-        
-        // Applica CORS
-        const corsMiddleware = corsHandler(corsConfig);
-        const corsResponse = corsMiddleware(req);
-        
-        if (corsResponse) {
-          return corsResponse;
+    // Simple auth check without Prisma for non-edge runtime
+    const sessionToken = req.cookies.get('authjs.session-token')?.value || 
+                       req.cookies.get('__Secure-authjs.session-token')?.value
+    
+    const isLoggedIn = !!sessionToken
+    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
+                       req.nextUrl.pathname.startsWith("/register") ||
+                       req.nextUrl.pathname.startsWith("/forgot-password") ||
+                       req.nextUrl.pathname.startsWith("/reset-password")
+    
+    // Gestisci CORS per tutte le richieste API
+    if (req.nextUrl.pathname.startsWith('/api/')) {
+      // Determina configurazione CORS basata sul path
+      let corsConfig = corsConfigs.development as any;
+      
+      if (process.env.NODE_ENV === 'production') {
+        if (req.nextUrl.pathname.startsWith('/api/admin/')) {
+          corsConfig = corsConfigs.admin as any;
+        } else if (req.nextUrl.pathname.startsWith('/api/production/')) {
+          corsConfig = corsConfigs.production as any;
+        } else {
+          corsConfig = corsConfigs.public as any;
         }
       }
-
-      const isLoggedIn = !!req.auth
-      const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
-                         req.nextUrl.pathname.startsWith("/register") ||
-                         req.nextUrl.pathname.startsWith("/forgot-password") ||
-                         req.nextUrl.pathname.startsWith("/reset-password")
-
-      // Allow auth pages when not logged in
-      if (isAuthPage) {
-        if (isLoggedIn && !req.nextUrl.pathname.startsWith("/reset-password")) {
-          return NextResponse.redirect(new URL("/", req.url))
-        }
-        return NextResponse.next()
+      
+      // Applica CORS
+      const corsMiddleware = corsHandler(corsConfig);
+      const corsResponse = corsMiddleware(req);
+      
+      if (corsResponse) {
+        return corsResponse;
       }
+    }
 
-      // Check if user is logged in for protected routes
-      if (!isLoggedIn) {
-        let from = req.nextUrl.pathname
-        if (req.nextUrl.search) {
-          from += req.nextUrl.search
-        }
-
-        return NextResponse.redirect(
-          new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-        )
+    // Allow auth pages when not logged in
+    if (isAuthPage) {
+      if (isLoggedIn && !req.nextUrl.pathname.startsWith("/reset-password")) {
+        return NextResponse.redirect(new URL("/", req.url))
       }
-
-      // Check if user account is active
-      if (req.auth?.user && 'isActive' in req.auth.user && !req.auth.user.isActive) {
-        return NextResponse.redirect(new URL("/login?reason=account-disabled", req.url))
-      }
-
       return NextResponse.next()
-    })(req)
+    }
+
+    // Check if user is logged in for protected routes
+    if (!isLoggedIn) {
+      let from = req.nextUrl.pathname
+      if (req.nextUrl.search) {
+        from += req.nextUrl.search
+      }
+
+      return NextResponse.redirect(
+        new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
+      )
+    }
+
+    return NextResponse.next()
   } catch (error) {
     console.warn('Auth middleware failed, allowing request:', error)
     return NextResponse.next()

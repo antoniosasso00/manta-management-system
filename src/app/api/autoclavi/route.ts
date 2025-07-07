@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth-node'
 
+// Force Node.js runtime to avoid Edge Runtime issues
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     const session = await auth()
