@@ -66,9 +66,17 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
     )
   }
 
-  // Show only children for authentication pages
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <>{children}</>
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname + window.location.search
+      window.location.href = `/login?from=${encodeURIComponent(currentPath)}`
+    }
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Typography>Redirecting to login...</Typography>
+      </Box>
+    )
   }
 
   const handleDrawerToggle = () => {

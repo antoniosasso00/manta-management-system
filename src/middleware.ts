@@ -20,7 +20,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // For Netlify edge runtime, use simple cookie-based auth check
+  // For Netlify edge runtime, be less aggressive with redirects
   if (process.env.NETLIFY) {
     // Check all possible NextAuth cookie names
     const sessionToken = req.cookies.get('authjs.session-token')?.value || 
@@ -42,22 +42,8 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.next()
     }
     
-    // Allow root page to handle its own redirect logic
-    if (req.nextUrl.pathname === "/") {
-      return NextResponse.next()
-    }
-    
-    // Redirect to login if no session token for protected routes
-    if (!sessionToken) {
-      let from = req.nextUrl.pathname
-      if (req.nextUrl.search) {
-        from += req.nextUrl.search
-      }
-      return NextResponse.redirect(
-        new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-      )
-    }
-    
+    // Allow all dashboard pages to pass through - let client-side handle auth
+    // This prevents middleware redirect loops with NextAuth
     return NextResponse.next()
   }
 
