@@ -45,11 +45,20 @@ export function NavigationItem({
     e.preventDefault()
     e.stopPropagation()
     if (hasChildren) {
+      // Haptic feedback per expand/collapse
+      if ('vibrate' in navigator) {
+        navigator.vibrate(12)
+      }
       setExpanded(!expanded)
     }
   }
 
   const handleItemClick = () => {
+    // Haptic feedback per touch devices
+    if ('vibrate' in navigator) {
+      navigator.vibrate(8)
+    }
+    
     if (onItemClick) {
       onItemClick()
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useState, useEffect } from 'react'
+import { ReactNode, useState, useEffect, useCallback } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -18,6 +18,7 @@ import {
   Zoom,
 } from '@mui/material'
 import { Menu as MenuIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material'
+import { useSwipeable } from 'react-swipeable'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserMenu } from '@/components/auth/UserMenu'
@@ -95,13 +96,34 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
     )
   }
 
-  const handleDrawerToggle = () => {
+  const handleDrawerToggle = useCallback(() => {
     setSidebarOpen(!sidebarOpen)
-  }
+  }, [sidebarOpen])
 
-  const handleDrawerClose = () => {
+  const handleDrawerClose = useCallback(() => {
     setSidebarOpen(false)
-  }
+  }, [])
+
+  const handleDrawerOpen = useCallback(() => {
+    setSidebarOpen(true)
+  }, [])
+
+  // Edge swipe per aprire sidebar su mobile
+  const edgeSwipeHandlers = useSwipeable({
+    onSwipedRight: (eventData) => {
+      if (isMobile && !sidebarOpen && eventData.initial[0] < 30) {
+        // Apri sidebar solo se swipe inizia dal bordo sinistro (30px)
+        if ('vibrate' in navigator) {
+          navigator.vibrate(15) // Feedback per apertura
+        }
+        handleDrawerOpen()
+      }
+    },
+    trackMouse: false,
+    trackTouch: true,
+    delta: 50,
+    preventScrollOnSwipe: false, // Consenti scroll normale
+  })
 
   const handleToggleCollapsed = () => {
     setSidebarCollapsed(!sidebarCollapsed)
@@ -115,7 +137,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }} {...edgeSwipeHandlers}>
       {/* Sidebar */}
       <NavigationSidebar
         open={sidebarOpen}

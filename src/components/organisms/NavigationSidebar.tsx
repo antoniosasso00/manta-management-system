@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, memo, useRef, useEffect } from 'react'
 import {
   Drawer,
   List,
@@ -44,7 +44,7 @@ interface NavigationSidebarProps {
 const SIDEBAR_WIDTH = 280
 const SIDEBAR_COLLAPSED_WIDTH = 64
 
-export function NavigationSidebar({
+const NavigationSidebarComponent = memo(function NavigationSidebar({
   open,
   onClose,
   collapsed = false,
@@ -58,13 +58,41 @@ export function NavigationSidebar({
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const { user, isAuthenticated } = useAuth()
   
-  // Swipe handlers per mobile
+  // Callback per close ottimizzato
+  const handleClose = useCallback(() => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10) // Feedback per chiusura
+    }
+    onClose()
+  }, [onClose])
+
+  // Swipe handlers per mobile con gesture migliorati
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => isMobile && onClose(),
+    onSwipedLeft: (eventData) => {
+      if (isMobile && open) {
+        // Chiudi solo se swipe inizia da sidebar o se sidebar è aperta
+        handleClose()
+      }
+    },
     onSwipedRight: () => {}, // Previeni swipe accidentale dal bordo
+    onSwipeStart: (eventData) => {
+      // Haptic feedback leggero all'inizio del swipe
+      if ('vibrate' in navigator && eventData.initial[0] > window.innerWidth * 0.7) {
+        navigator.vibrate(10)
+      }
+    },
+    onSwiping: (eventData) => {
+      // Feedback visivo durante lo swipe (opzionale)
+      const swipeProgress = Math.abs(eventData.deltaX) / (window.innerWidth * 0.3)
+      if (swipeProgress > 0.5 && 'vibrate' in navigator) {
+        navigator.vibrate(5) // Feedback quando swipe è abbastanza lungo
+      }
+    },
     trackMouse: false,
     trackTouch: true,
-    delta: 50, // Minimo movimento richiesto
+    delta: 30, // Ridotto per più sensibilità
+    preventScrollOnSwipe: true,
+    touchEventOptions: { passive: false }, // Previeni scroll durante swipe
   })
   
   // Stato per la selezione del ruolo (solo per admin)
@@ -94,6 +122,35 @@ export function NavigationSidebar({
   }, [user, selectedRole])
 
   const currentWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH
+  const sidebarRef = useRef<HTMLDivElement>(null)
+
+  // Auto-focus management per accessibility
+  useEffect(() => {
+    if (isMobile && open && sidebarRef.current) {
+      // Focus il primo elemento focalizzabile quando la sidebar si apre
+      const firstFocusable = sidebarRef.current.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) as HTMLElement
+      
+      if (firstFocusable) {
+        setTimeout(() => firstFocusable.focus(), 200) // Delay per animazione
+      }
+    }
+  }, [isMobile, open])
+
+  // Gestione ESC key per chiudere sidebar
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMobile && open) {
+        handleClose()
+      }
+    }
+
+    if (isMobile && open) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isMobile, open, handleClose])
 
   if (!isAuthenticated || !user) {
     return null
@@ -101,6 +158,7 @@ export function NavigationSidebar({
 
   const sidebarContent = (
     <Box
+      ref={sidebarRef}
       sx={{
         width: currentWidth,
         height: '100%',
@@ -108,7 +166,12 @@ export function NavigationSidebar({
         flexDirection: 'column',
         backgroundColor: 'background.paper',
         borderRight: `1px solid ${theme.palette.divider}`,
+        // Safe area support per iPhone con notch
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingLeft: 'env(safe-area-inset-left)',
       }}
+      role="navigation"
+      aria-label="Menu di navigazione principale"
     >
       {/* Logo Section con close button per mobile */}
       <Box
@@ -257,6 +320,24 @@ export function NavigationSidebar({
         overflow: 'auto',
         overscrollBehavior: 'contain',
         WebkitOverflowScrolling: 'touch', // Smooth scrolling iOS
+        // Prevenzione pull-to-refresh
+        touchAction: 'pan-y',
+        // Scroll elastico iOS
+        '&::-webkit-scrollbar': {
+          width: 4,
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: theme.palette.divider,
+          borderRadius: 2,
+          '&:hover': {
+            background: theme.palette.action.hover,
+          },
+        },
+        // Momentum scrolling migliorato
+        scrollBehavior: 'smooth',
       }}>
         <List disablePadding sx={{ py: { xs: 0.5, sm: 1 } }}>
           {navigation.map((item) => (
@@ -264,7 +345,7 @@ export function NavigationSidebar({
               key={item.id}
               item={item}
               collapsed={collapsed}
-              onItemClick={isMobile ? onClose : undefined}
+              onItemClick={isMobile ? handleClose : undefined}
             />
           ))}
         </List>
@@ -287,22 +368,41 @@ export function NavigationSidebar({
     </Box>
   )
 
-  // Mobile: usa SwipeableDrawer con gesture support
+  // Mobile: usa SwipeableDrawer con gesture support e backdrop blur
   if (isMobile) {
     return (
       <SwipeableDrawer
         variant="temporary"
         open={open}
-        onClose={onClose}
+        onClose={handleClose}
         onOpen={() => {}}
         ModalProps={{
           keepMounted: true, // Better open performance on mobile
+          BackdropProps: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)', // Safari support
+            },
+          },
         }}
         sx={{
           '& .MuiDrawer-paper': {
             width: { xs: '85%', sm: SIDEBAR_WIDTH },
             maxWidth: SIDEBAR_WIDTH,
             boxSizing: 'border-box',
+            boxShadow: '8px 0 32px rgba(0, 0, 0, 0.24)',
+            borderRadius: { xs: '0 16px 16px 0', sm: 0 },
+            transition: theme.transitions.create(['transform', 'box-shadow'], {
+              easing: theme.transitions.easing.easeInOut,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          },
+          '& .MuiBackdrop-root': {
+            transition: theme.transitions.create('opacity', {
+              easing: theme.transitions.easing.easeInOut,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
           },
         }}
         {...swipeHandlers}
@@ -317,7 +417,7 @@ export function NavigationSidebar({
     <Drawer
       variant={variant}
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       sx={{
         '& .MuiDrawer-paper': {
           width: currentWidth,
@@ -333,7 +433,9 @@ export function NavigationSidebar({
       {sidebarContent}
     </Drawer>
   )
-}
+})
+
+export const NavigationSidebar = NavigationSidebarComponent
 
 // Hook per gestire lo stato della sidebar
 export function useSidebar() {
