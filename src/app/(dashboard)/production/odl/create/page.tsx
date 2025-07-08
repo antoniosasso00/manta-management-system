@@ -26,7 +26,10 @@ import {
   CardContent,
   Divider,
   IconButton,
-  Tooltip
+  Tooltip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material'
 import {
   Save as SaveIcon,
@@ -35,7 +38,8 @@ import {
   Search as SearchIcon,
   Info as InfoIcon,
   CheckCircle as CheckIcon,
-  Warning as WarningIcon
+  Warning as WarningIcon,
+  ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -50,12 +54,35 @@ const createODLFormSchema = z.object({
   priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']),
   notes: z.string().optional(),
   
-  // Optional override fields
-  length: z.number().positive().optional(),
-  width: z.number().positive().optional(),
-  height: z.number().positive().optional(),
-  curingCycleId: z.string().cuid().optional(),
-  vacuumLines: z.number().int().min(1).max(10).optional(),
+  // Department-specific configurations (optional overrides)
+  partAutoclave: z.object({
+    curingCycleId: z.string().cuid().optional(),
+    vacuumLines: z.number().int().min(1).max(10).optional(),
+    setupTime: z.number().int().positive().optional(),
+    loadPosition: z.string().optional(),
+    notes: z.string().optional(),
+  }).optional(),
+  
+  partCleanroom: z.object({
+    layupSequence: z.any().optional(), // JSON field
+    fiberOrientation: z.array(z.string()).optional(),
+    resinType: z.string().optional(),
+    prepregCode: z.string().optional(),
+    roomTemperature: z.number().positive().optional(),
+    humidity: z.number().min(0).max(100).optional(),
+    shelfLife: z.number().int().positive().optional(),
+    setupTime: z.number().int().positive().optional(),
+    cycleTime: z.number().int().positive().optional(),
+  }).optional(),
+  
+  partNDI: z.object({
+    inspectionMethod: z.array(z.string()).optional(),
+    acceptanceCriteria: z.any().optional(), // JSON field
+    criticalAreas: z.any().optional(), // JSON field
+    inspectionTime: z.number().int().positive().optional(),
+    requiredCerts: z.array(z.string()).optional(),
+    calibrationReq: z.string().optional(),
+  }).optional(),
 })
 
 const createPartFormSchema = z.object({
@@ -96,8 +123,14 @@ export default function CreateODLPage() {
   const { control, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<CreateODLForm>({
     resolver: zodResolver(createODLFormSchema),
     defaultValues: {
-      priority: 'NORMAL',
+      odlNumber: '',
+      partId: '',
       quantity: 1,
+      priority: 'NORMAL',
+      notes: '',
+      partAutoclave: undefined,
+      partCleanroom: undefined,
+      partNDI: undefined,
     }
   })
 
@@ -108,7 +141,11 @@ export default function CreateODLPage() {
     formState: { errors: partErrors }, 
     reset: resetPartForm 
   } = useForm<CreatePartForm>({
-    resolver: zodResolver(createPartFormSchema)
+    resolver: zodResolver(createPartFormSchema),
+    defaultValues: {
+      partNumber: '',
+      description: '',
+    }
   })
 
   const watchedOdlNumber = watch('odlNumber')
@@ -121,6 +158,12 @@ export default function CreateODLPage() {
   // ODL number uniqueness check with debounce
   const debouncedOdlCheck = useCallback(
     debounce(async (odlNumber: string) => {
+      // Extra safety check for undefined/null values
+      if (odlNumber === undefined || odlNumber === null || typeof odlNumber !== 'string') {
+        setOdlNumberCheck('idle')
+        return
+      }
+      
       if (!odlNumber.trim()) {
         setOdlNumberCheck('idle')
         return
@@ -128,7 +171,7 @@ export default function CreateODLPage() {
 
       setOdlNumberCheck('checking')
       try {
-        const response = await fetch(`/api/odl/check-unique?progressivo=${encodeURIComponent(odlNumber)}`)
+        const response = await fetch(`/api/odl/check-unique?odlNumber=${encodeURIComponent(odlNumber.trim())}`)
         const data = await response.json()
         
         if (response.ok) {
@@ -146,13 +189,15 @@ export default function CreateODLPage() {
   )
 
   useEffect(() => {
-    debouncedOdlCheck(watchedOdlNumber)
+    if (watchedOdlNumber !== undefined) {
+      debouncedOdlCheck(watchedOdlNumber)
+    }
   }, [watchedOdlNumber, debouncedOdlCheck])
 
   // Parts search with debounce
   const debouncedPartsSearch = useCallback(
     debounce(async (searchTerm: string) => {
-      if (!searchTerm.trim()) {
+      if (!searchTerm || !searchTerm.trim()) {
         setParts([])
         return
       }
@@ -161,7 +206,7 @@ export default function CreateODLPage() {
       try {
         const response = await fetch(`/api/parts?search=${encodeURIComponent(searchTerm)}&limit=20`)
         const data = await response.json()
-        setParts(data.data || [])
+        setParts(data.parts || [])
       } catch (error) {
         console.error('Error searching parts:', error)
         setParts([])
@@ -186,14 +231,6 @@ export default function CreateODLPage() {
     setSelectedPart(part)
     if (part) {
       setValue('partId', part.id)
-      
-      // Auto-populate optional fields if they exist and are unique
-      if (part.defaultCuringCycleId) {
-        setValue('curingCycleId', part.defaultCuringCycleId)
-      }
-      if (part.defaultVacuumLines) {
-        setValue('vacuumLines', part.defaultVacuumLines)
-      }
     } else {
       setValue('partId', '')
     }
@@ -396,16 +433,19 @@ export default function CreateODLPage() {
                               }}
                             />
                           )}
-                          renderOption={(props, option) => (
-                            <Box component="li" {...props}>
-                              <Box>
-                                <Typography variant="subtitle2">{option.partNumber}</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {option.description}
-                                </Typography>
+                          renderOption={(props, option) => {
+                            const { key, ...otherProps } = props;
+                            return (
+                              <Box component="li" key={key} {...otherProps}>
+                                <Box>
+                                  <Typography variant="subtitle2">{option.partNumber}</Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {option.description}
+                                  </Typography>
+                                </Box>
                               </Box>
-                            </Box>
-                          )}
+                            );
+                          }}
                           noOptionsText="Nessuna parte trovata"
                         />
                       )}
@@ -476,108 +516,249 @@ export default function CreateODLPage() {
               <Divider sx={{ my: 4 }} />
 
               <Typography variant="h6" gutterBottom>
-                Configurazioni Avanzate (Opzionali)
+                Configurazioni per Reparto (Opzionali)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Configura parametri specifici per ogni reparto. Se non specificati, verranno utilizzati i valori di default della parte.
               </Typography>
               
-              <Grid container spacing={3}>
-                {/* Dimensions Override */}
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Controller
-                    name="length"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseFloat(e.target.value) || undefined)}
-                        label="Lunghezza (mm)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 0, step: 0.1 } }}
+              {/* Autoclave Configuration */}
+              <Accordion sx={{ mb: 2 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip label="Autoclavi" color="primary" size="small" />
+                    <Typography variant="subtitle1">Configurazione Autoclavi</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partAutoclave.curingCycleId"
+                        control={control}
+                        render={({ field }) => (
+                          <FormControl fullWidth>
+                            <InputLabel>Ciclo di Cura (override)</InputLabel>
+                            <Select {...field} value={field.value || ''} label="Ciclo di Cura (override)">
+                              <MenuItem value="">
+                                <em>Usa default della parte</em>
+                              </MenuItem>
+                              {curingCycles.map((cycle) => (
+                                <MenuItem key={cycle.id} value={cycle.id}>
+                                  {cycle.name} ({cycle.duration}min)
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
                       />
-                    )}
-                  />
-                </Grid>
-                
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Controller
-                    name="width"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseFloat(e.target.value) || undefined)}
-                        label="Larghezza (mm)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 0, step: 0.1 } }}
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partAutoclave.vacuumLines"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <TextField
+                            {...field}
+                            value={value === undefined ? '' : value}
+                            onChange={(e) => onChange(e.target.value === '' ? undefined : parseInt(e.target.value) || undefined)}
+                            label="Linee Vacuum"
+                            type="number"
+                            fullWidth
+                            InputProps={{ inputProps: { min: 1, max: 10 } }}
+                            placeholder="Default della parte"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </Grid>
-                
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Controller
-                    name="height"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseFloat(e.target.value) || undefined)}
-                        label="Altezza (mm)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 0, step: 0.1 } }}
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partAutoclave.setupTime"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <TextField
+                            {...field}
+                            value={value === undefined ? '' : value}
+                            onChange={(e) => onChange(e.target.value === '' ? undefined : parseInt(e.target.value) || undefined)}
+                            label="Tempo Setup (minuti)"
+                            type="number"
+                            fullWidth
+                            InputProps={{ inputProps: { min: 1 } }}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </Grid>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partAutoclave.loadPosition"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Posizione Carico Preferita"
+                            fullWidth
+                            placeholder="es. Zona A, Livello 2"
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Controller
+                        name="partAutoclave.notes"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Note Specifiche Autoclave"
+                            multiline
+                            rows={2}
+                            fullWidth
+                            placeholder="Note specifiche per il processo in autoclave..."
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
 
-                {/* Curing Cycle */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Controller
-                    name="curingCycleId"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControl fullWidth>
-                        <InputLabel>Ciclo di Cura (override)</InputLabel>
-                        <Select {...field} value={field.value || ''} label="Ciclo di Cura (override)">
-                          <MenuItem value="">
-                            <em>Usa default della parte</em>
-                          </MenuItem>
-                          {curingCycles.map((cycle) => (
-                            <MenuItem key={cycle.id} value={cycle.id}>
-                              {cycle.name} ({cycle.duration}min)
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-
-                {/* Vacuum Lines */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Controller
-                    name="vacuumLines"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseInt(e.target.value) || undefined)}
-                        label="Linee Vacuum (override)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 1, max: 10 } }}
-                        placeholder="Default della parte"
+              {/* Cleanroom Configuration */}
+              <Accordion sx={{ mb: 2 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip label="Clean Room" color="success" size="small" />
+                    <Typography variant="subtitle1">Configurazione Clean Room</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partCleanroom.resinType"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Tipo Resina"
+                            fullWidth
+                            placeholder="es. Epoxy, Poliestere"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </Grid>
-              </Grid>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partCleanroom.prepregCode"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Codice Prepreg"
+                            fullWidth
+                            placeholder="es. T300/5208"
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <Controller
+                        name="partCleanroom.roomTemperature"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <TextField
+                            {...field}
+                            value={value === undefined ? '' : value}
+                            onChange={(e) => onChange(e.target.value === '' ? undefined : parseFloat(e.target.value) || undefined)}
+                            label="Temperatura Stanza (°C)"
+                            type="number"
+                            fullWidth
+                            InputProps={{ inputProps: { min: 15, max: 30, step: 0.1 } }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <Controller
+                        name="partCleanroom.humidity"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <TextField
+                            {...field}
+                            value={value === undefined ? '' : value}
+                            onChange={(e) => onChange(e.target.value === '' ? undefined : parseFloat(e.target.value) || undefined)}
+                            label="Umidità (%)"
+                            type="number"
+                            fullWidth
+                            InputProps={{ inputProps: { min: 0, max: 100, step: 1 } }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <Controller
+                        name="partCleanroom.shelfLife"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <TextField
+                            {...field}
+                            value={value === undefined ? '' : value}
+                            onChange={(e) => onChange(e.target.value === '' ? undefined : parseInt(e.target.value) || undefined)}
+                            label="Shelf Life (giorni)"
+                            type="number"
+                            fullWidth
+                            InputProps={{ inputProps: { min: 1 } }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* NDI Configuration */}
+              <Accordion sx={{ mb: 2 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip label="NDI" color="warning" size="small" />
+                    <Typography variant="subtitle1">Configurazione NDI</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partNDI.inspectionTime"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <TextField
+                            {...field}
+                            value={value === undefined ? '' : value}
+                            onChange={(e) => onChange(e.target.value === '' ? undefined : parseInt(e.target.value) || undefined)}
+                            label="Tempo Ispezione (minuti)"
+                            type="number"
+                            fullWidth
+                            InputProps={{ inputProps: { min: 1 } }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="partNDI.calibrationReq"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Requisiti Calibrazione"
+                            fullWidth
+                            placeholder="es. Calibrazione giornaliera"
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
             </Paper>
           </Grid>
 
@@ -597,16 +778,9 @@ export default function CreateODLPage() {
                     {selectedPart.description}
                   </Typography>
                   
-                  {selectedPart.defaultCuringCycleId && (
-                    <Typography variant="body2">
-                      <strong>Ciclo Default:</strong> Configurato
-                    </Typography>
-                  )}
-                  {selectedPart.defaultVacuumLines && (
-                    <Typography variant="body2">
-                      <strong>Linee Vacuum:</strong> {selectedPart.defaultVacuumLines}
-                    </Typography>
-                  )}
+                  <Typography variant="body2">
+                    <strong>Configurazioni:</strong> Personalizzabili per reparto
+                  </Typography>
                 </CardContent>
               </Card>
             )}
@@ -630,7 +804,7 @@ export default function CreateODLPage() {
                 </Typography>
                 
                 <Typography variant="body2" paragraph>
-                  <strong>Configurazioni Avanzate:</strong> Se specificate, sovrascrivono i valori di default della parte.
+                  <strong>Configurazioni per Reparto:</strong> Personalizza parametri specifici per Autoclavi, Clean Room e NDI.
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
