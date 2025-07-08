@@ -56,7 +56,7 @@ export default function AutoclaviManagementPage() {
           Gestione Dati Reparto Autoclavi
         </Typography>
         <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-          Configurazione parametri e dati supplementari per l'ottimizzazione del reparto autoclavi
+          Configurazione parametri e dati supplementari per l&apos;ottimizzazione del reparto autoclavi
         </Typography>
       </Box>
 

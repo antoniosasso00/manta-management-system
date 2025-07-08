@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
           </div>
           
           <div style="margin-top: 10mm; text-align: center; font-size: 10px; color: #666;">
-            <p>MES Aerospazio - Sistema di gestione produzione</p>
+            <p>Gestione Produzione - Sistema di gestione produzione</p>
             <p>Export generato il ${new Date().toLocaleString('it-IT')}</p>
           </div>
         </body>

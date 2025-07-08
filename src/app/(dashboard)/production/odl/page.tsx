@@ -469,7 +469,7 @@ export default function ODLPage() {
           <DialogTitle>Conferma Eliminazione</DialogTitle>
           <DialogContent>
             <Typography>
-              Sei sicuro di voler eliminare l'ODL {deleteDialog.odl?.odlNumber}?
+              Sei sicuro di voler eliminare l&apos;ODL {deleteDialog.odl?.odlNumber}?
               Questa azione non può essere annullata.
             </Typography>
           </DialogContent>

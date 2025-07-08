@@ -1,5 +1,5 @@
 /**
- * Touch Target Audit Utilities per MES Aerospazio
+ * Touch Target Audit Utilities per Gestione Produzione
  * Verifica conformità WCAG 2.1 AA (44px minimum touch targets)
  */
 
@@ -343,7 +343,7 @@ export function auditDOMTouchTargets(): TouchTargetAuditResult[] {
 }
 
 /**
- * Raccomandazioni specifiche per MES Aerospazio
+ * Raccomandazioni specifiche per Gestione Produzione
  */
 export const MES_TOUCH_TARGET_GUIDELINES = {
   // Operatori usano smartphone personali

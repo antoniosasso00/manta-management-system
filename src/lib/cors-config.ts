@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Configurazione CORS robusta per MES Aerospazio
+ * Configurazione CORS robusta per Gestione Produzione
  * Gestisce cross-origin requests per deployment in ambiente industriale
  */
 

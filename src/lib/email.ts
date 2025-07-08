@@ -60,7 +60,7 @@ export class EmailService {
 
     return this.sendEmail({
       to: email,
-      subject: 'Reset Password - MES Aerospazio',
+      subject: 'Reset Password - Gestione Produzione',
       html,
       text,
     })
@@ -164,7 +164,7 @@ export class EmailService {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Reset Password - MES Aerospazio</title>
+          <title>Reset Password - Gestione Produzione</title>
           <style>
             body {
               font-family: Arial, sans-serif;
@@ -206,14 +206,14 @@ export class EmailService {
         </head>
         <body>
           <div class="header">
-            <h1>MES Aerospazio</h1>
+            <h1>Gestione Produzione</h1>
             <p>Manufacturing Execution System</p>
           </div>
           
           <div class="content">
             <h2>Reset Password</h2>
             <p>Ciao ${data.name},</p>
-            <p>Hai richiesto di reimpostare la password per il tuo account MES Aerospazio.</p>
+            <p>Hai richiesto di reimpostare la password per il tuo account Gestione Produzione.</p>
             <p>Clicca sul pulsante qui sotto per reimpostare la tua password:</p>
             
             <a href="${data.resetUrl}" class="button">Reimposta Password</a>
@@ -231,7 +231,7 @@ export class EmailService {
           
           <div class="footer">
             <p>Questa è una email automatica, non rispondere a questo messaggio.</p>
-            <p>© 2024 MES Aerospazio - Manufacturing Execution System</p>
+            <p>© 2024 Gestione Produzione - Manufacturing Execution System</p>
           </div>
         </body>
       </html>
@@ -247,11 +247,11 @@ export class EmailService {
     expiresIn: string
   }): string {
     return `
-MES Aerospazio - Reset Password
+Gestione Produzione - Reset Password
 
 Ciao ${data.name},
 
-Hai richiesto di reimpostare la password per il tuo account MES Aerospazio.
+Hai richiesto di reimpostare la password per il tuo account Gestione Produzione.
 
 Per reimpostare la tua password, visita questo link:
 ${data.resetUrl}
@@ -261,7 +261,7 @@ IMPORTANTE:
 - Se non hai richiesto questo reset, ignora questa email
 - Il link può essere utilizzato una sola volta
 
-© 2024 MES Aerospazio - Manufacturing Execution System
+© 2024 Gestione Produzione - Manufacturing Execution System
     `
   }
 }

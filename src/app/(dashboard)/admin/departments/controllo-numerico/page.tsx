@@ -110,7 +110,7 @@ export default function ControlloNumericoManagementPage() {
         <Typography variant="body2">
           <strong>Stato: Mockup</strong> - Estensione della gestione dati Controllo Numerico.
           La tabella <code>PartControlloNumerico</code> esiste già nel database con campi completi 
-          ma l'interfaccia di gestione sarà implementata in una fase successiva.
+          ma l&apos;interfaccia di gestione sarà implementata in una fase successiva.
         </Typography>
       </Alert>
 

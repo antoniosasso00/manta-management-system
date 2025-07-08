@@ -106,7 +106,7 @@ export default function SettingsPage() {
       smtpUser: 'noreply@mantaaero.com',
       smtpPassword: '********',
       fromEmail: 'noreply@mantaaero.com',
-      fromName: 'MES Aerospazio',
+      fromName: 'Gestione Produzione',
     },
     system: {
       sessionTimeout: 30,

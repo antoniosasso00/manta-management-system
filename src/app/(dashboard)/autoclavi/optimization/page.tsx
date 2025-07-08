@@ -9,7 +9,7 @@ import { OptimizationWizard } from '@/components/autoclavi/optimization/Optimiza
 import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
-  title: 'Ottimizzazione Batch Autoclavi | MES Aerospazio',
+  title: 'Ottimizzazione Batch Autoclavi | Gestione Produzione',
   description: 'Sistema di ottimizzazione automatica per batch autoclavi',
 };
 
@@ -93,7 +93,7 @@ export default async function OptimizationPage() {
         {availableODLs.length === 0 && (
           <Alert severity="warning" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              Nessun ODL disponibile per l'ottimizzazione. Gli ODL devono essere nello stato IN_AUTOCLAVE o CLEANROOM_COMPLETED e avere tool associati.
+              Nessun ODL disponibile per l&apos;ottimizzazione. Gli ODL devono essere nello stato IN_AUTOCLAVE o CLEANROOM_COMPLETED e avere tool associati.
             </Typography>
           </Alert>
         )}
@@ -101,7 +101,7 @@ export default async function OptimizationPage() {
         {availableAutoclaves.length === 0 && (
           <Alert severity="warning" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              Nessun autoclave attiva trovata. Contatta l'amministratore per configurare le autoclavi.
+              Nessun autoclave attiva trovata. Contatta l&apos;amministratore per configurare le autoclavi.
             </Typography>
           </Alert>
         )}

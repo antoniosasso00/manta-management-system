@@ -1,5 +1,5 @@
 /**
- * Production-ready Redis-based rate limiting for MES Aerospazio
+ * Production-ready Redis-based rate limiting for Gestione Produzione
  * Supports distributed deployments and persistent rate limits
  */
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Card,
@@ -68,7 +68,7 @@ export default function ToolsPage() {
 
   useEffect(() => {
     applyFilters()
-  }, [searchTerm, tools])
+  }, [searchTerm, tools, applyFilters])
 
   const loadTools = async () => {
     setLoading(true)
@@ -130,7 +130,7 @@ export default function ToolsPage() {
     }
   }
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...tools]
 
     if (searchTerm) {
@@ -142,7 +142,7 @@ export default function ToolsPage() {
     }
 
     setFilteredTools(filtered)
-  }
+  }, [tools, searchTerm])
 
   const getStatusColor = (isActive: boolean) => {
     return isActive ? 'success' : 'error'

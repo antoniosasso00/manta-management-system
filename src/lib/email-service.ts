@@ -57,7 +57,7 @@ export class EmailService {
         enabled: process.env.EMAIL_SERVICE_ENABLED === 'true',
         provider: process.env.EMAIL_PROVIDER || 'console',
         fromEmail: process.env.EMAIL_FROM || 'noreply@mes-aerospazio.com',
-        fromName: process.env.EMAIL_FROM_NAME || 'MES Aerospazio',
+        fromName: process.env.EMAIL_FROM_NAME || 'Gestione Produzione',
         replyTo: process.env.EMAIL_REPLY_TO,
       }
 
@@ -71,7 +71,7 @@ export class EmailService {
         enabled: false,
         provider: 'console',
         fromEmail: 'noreply@mes-aerospazio.com',
-        fromName: 'MES Aerospazio',
+        fromName: 'Gestione Produzione',
       }
     }
   }
@@ -164,7 +164,7 @@ export class EmailService {
 
     return this.sendEmail({
       to: email,
-      subject: 'Reset Password - MES Aerospazio',
+      subject: 'Reset Password - Gestione Produzione',
       html,
       text,
     })
@@ -306,7 +306,7 @@ export class EmailService {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Reset Password - MES Aerospazio</title>
+          <title>Reset Password - Gestione Produzione</title>
           <style>
             body {
               font-family: 'Segoe UI', Arial, sans-serif;
@@ -382,14 +382,14 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>MES Aerospazio</h1>
+              <h1>Gestione Produzione</h1>
               <p>Manufacturing Execution System</p>
             </div>
             
             <div class="content">
               <h2>Reset Password</h2>
               <p>Ciao <strong>${data.name}</strong>,</p>
-              <p>Hai richiesto di reimpostare la password per il tuo account MES Aerospazio.</p>
+              <p>Hai richiesto di reimpostare la password per il tuo account Gestione Produzione.</p>
               <p>Clicca sul pulsante qui sotto per reimpostare la tua password:</p>
               
               <div style="text-align: center;">
@@ -412,7 +412,7 @@ export class EmailService {
             
             <div class="footer">
               <p>Questa è una email automatica, non rispondere a questo messaggio.</p>
-              <p>© 2024 MES Aerospazio - Manufacturing Execution System</p>
+              <p>© 2024 Gestione Produzione</p>
               <p>Se hai problemi, contatta l'amministratore di sistema.</p>
             </div>
           </div>
@@ -430,11 +430,11 @@ export class EmailService {
     expiresIn: string
   }): string {
     return `
-MES Aerospazio - Reset Password
+Gestione Produzione - Reset Password
 
 Ciao ${data.name},
 
-Hai richiesto di reimpostare la password per il tuo account MES Aerospazio.
+Hai richiesto di reimpostare la password per il tuo account Gestione Produzione.
 
 Per reimpostare la tua password, visita questo link:
 ${data.resetUrl}
@@ -445,7 +445,7 @@ IMPORTANTE:
 - Il link può essere utilizzato una sola volta
 - Per sicurezza, non condividere questo link con nessuno
 
-© 2024 MES Aerospazio - Manufacturing Execution System
+© 2024 Gestione Produzione
 
 Se hai problemi, contatta l'amministratore di sistema.
     `
@@ -457,7 +457,7 @@ Se hai problemi, contatta l'amministratore di sistema.
   async testConfiguration(): Promise<EmailResult> {
     return this.sendEmail({
       to: this.config.fromEmail,
-      subject: 'Test Email - MES Aerospazio',
+      subject: 'Test Email - Gestione Produzione',
       html: '<h1>Email Service Test</h1><p>This is a test email to verify email configuration.</p>',
       text: 'Email Service Test - This is a test email to verify email configuration.',
     })

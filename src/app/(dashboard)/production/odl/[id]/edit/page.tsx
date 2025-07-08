@@ -159,7 +159,7 @@ export default function EditODLPage() {
       fetchChangeLogs()
       loadCuringCycles()
     }
-  }, [odlId])
+  }, [odlId, fetchODLDetails, fetchChangeLogs, loadCuringCycles])
 
   // ODL number uniqueness check with debounce (excluding current ODL)
   const debouncedOdlCheck = useCallback(
@@ -219,7 +219,7 @@ export default function EditODLPage() {
     []
   )
 
-  const fetchODLDetails = async () => {
+  const fetchODLDetails = useCallback(async () => {
     try {
       const response = await fetch(`/api/odl/${odlId}`)
       
@@ -244,9 +244,9 @@ export default function EditODLPage() {
     } catch (error: any) {
       setError(error.message)
     }
-  }
+  }, [odlId, reset])
 
-  const fetchChangeLogs = async () => {
+  const fetchChangeLogs = useCallback(async () => {
     // Mock change logs - in production this would come from API
     const mockLogs: ChangeLog[] = [
       {
@@ -267,9 +267,9 @@ export default function EditODLPage() {
       }
     ]
     setChangeLogs(mockLogs)
-  }
+  }, [])
 
-  const loadCuringCycles = async () => {
+  const loadCuringCycles = useCallback(async () => {
     try {
       const response = await fetch('/api/curing-cycles')
       const data = await response.json()
@@ -277,7 +277,7 @@ export default function EditODLPage() {
     } catch (error) {
       console.error('Error loading curing cycles:', error)
     }
-  }
+  }, [])
 
   const handlePartSelection = (part: Part | null) => {
     setSelectedPart(part)
@@ -403,7 +403,7 @@ export default function EditODLPage() {
           Modifica ODL {odl.odlNumber}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Modifica i dati dell'Ordine di Lavoro. Tutte le modifiche saranno registrate nel log.
+          Modifica i dati dell&apos;Ordine di Lavoro. Tutte le modifiche saranno registrate nel log.
         </Typography>
       </Box>
 

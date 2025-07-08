@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Container,
   Typography,
@@ -227,7 +227,7 @@ export default function AdminAuditPage() {
 
   useEffect(() => {
     loadAuditData()
-  }, [])
+  }, [loadAuditData])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -239,9 +239,9 @@ export default function AdminAuditPage() {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [autoRefresh])
+  }, [autoRefresh, loadAuditData])
 
-  const loadAuditData = async () => {
+  const loadAuditData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -255,7 +255,7 @@ export default function AdminAuditPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const handleExport = () => {
     // TODO: Implementare esportazione quando saranno definiti i requisiti

@@ -67,7 +67,7 @@ export default function DepartmentsIndexPage() {
             Gestione Dati Reparti
           </Typography>
           <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-            Configurazione dati supplementari per l'ottimizzazione di ogni reparto
+            Configurazione dati supplementari per l&apos;ottimizzazione di ogni reparto
           </Typography>
         </Box>
         <Button 
@@ -145,7 +145,7 @@ export default function DepartmentsIndexPage() {
           </Typography>
           <Typography variant="body2" color="textSecondary" paragraph>
             Le pagine di gestione dati permettono di configurare i parametri supplementari 
-            necessari per l'ottimizzazione automatica di ogni reparto. I dati configurati 
+            necessari per l&apos;ottimizzazione automatica di ogni reparto. I dati configurati 
             vengono utilizzati dal microservizio di ottimizzazione per calcolare i batch 
             ottimali e pianificare la produzione.
           </Typography>

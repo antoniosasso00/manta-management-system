@@ -5,7 +5,7 @@ import { Providers } from "@/components/providers/Providers";
 export const metadata: Metadata = {
   metadataBase: new URL('https://manta-management-system.netlify.app'),
   title: {
-    default: "Manta Group - MES Aerospazio",
+    default: "Manta Group - Gestione Produzione",
     template: "%s | Manta Group MES"
   },
   description: "Manufacturing Execution System per la produzione di componenti aerospaziali in fibra di carbonio",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Manta Group MES',
-    title: 'Manta Group - MES Aerospazio',
+    title: 'Manta Group - Gestione Produzione',
     description: 'Manufacturing Execution System per la produzione aerospaziale',
     url: 'https://manta-management-system.netlify.app',
     images: [
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Manta Group MES Aerospazio - Manufacturing Execution System',
+        alt: 'Manta Group - Sistema di Gestione Produzione',
       },
     ],
   },

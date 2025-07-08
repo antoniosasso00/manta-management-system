@@ -107,7 +107,7 @@ export default function CleanroomManagementPage() {
       <Alert severity="info" icon={<InfoIcon />}>
         <Typography variant="body2">
           <strong>Stato: Mockup</strong> - Questa è una preview della futura gestione dati Clean Room.
-          La tabella <code>PartCleanroom</code> è stata creata nel database ma l'interfaccia completa 
+          La tabella <code>PartCleanroom</code> è stata creata nel database ma l&apos;interfaccia completa 
           sarà implementata in una fase successiva.
         </Typography>
       </Alert>

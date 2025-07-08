@@ -107,7 +107,7 @@ export default function NDIManagementPage() {
       <Alert severity="info" icon={<InfoIcon />}>
         <Typography variant="body2">
           <strong>Stato: Mockup</strong> - Questa è una preview della futura gestione dati NDI.
-          La tabella <code>PartNDI</code> è stata creata nel database ma l'interfaccia completa 
+          La tabella <code>PartNDI</code> è stata creata nel database ma l&apos;interfaccia completa 
           sarà implementata in una fase successiva.
         </Typography>
       </Alert>

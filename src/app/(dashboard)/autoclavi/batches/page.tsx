@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -52,9 +52,9 @@ export default function BatchesPage() {
 
   useEffect(() => {
     fetchBatches();
-  }, []);
+  }, [fetchBatches]);
 
-  const fetchBatches = async () => {
+  const fetchBatches = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch('/api/autoclavi/batches');
@@ -69,7 +69,7 @@ export default function BatchesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [enqueueSnackbar]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -231,7 +231,7 @@ export default function BatchesPage() {
           </Box>
         ) : currentBatches.length === 0 ? (
           <Alert severity="info">
-            Nessun batch in stato "{statusTabs[activeTab]?.label.toLowerCase()}"
+            Nessun batch in stato &quot;{statusTabs[activeTab]?.label.toLowerCase()}&quot;
             {activeTab === 0 && (
               <Box mt={1}>
                 <Button

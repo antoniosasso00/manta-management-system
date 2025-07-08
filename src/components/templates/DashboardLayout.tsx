@@ -181,7 +181,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
                   lineHeight: 1.2,
                 }}
               >
-                {isSmallMobile ? 'MES' : 'MES Aerospazio'}
+                {isSmallMobile ? 'Produzione' : 'Gestione Produzione'}
               </Link>
             </Typography>
             
@@ -285,7 +285,7 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
               align="center"
               sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
             >
-              © 2024 {isSmallMobile ? 'MES' : 'MES Aerospazio - Manufacturing Execution System'}
+              © 2024 {isSmallMobile ? 'Produzione' : 'Gestione Produzione'}
             </Typography>
           </Container>
         </Box>

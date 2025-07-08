@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Card,
@@ -56,7 +56,7 @@ export default function MyDepartmentODLPage() {
 
   useEffect(() => {
     applyFilters()
-  }, [searchTerm, odlList])
+  }, [searchTerm, odlList, applyFilters])
 
   const loadMyODL = async () => {
     setLoading(true)
@@ -101,7 +101,7 @@ export default function MyDepartmentODLPage() {
     }
   }
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...odlList]
 
     if (searchTerm) {
@@ -113,7 +113,7 @@ export default function MyDepartmentODLPage() {
     }
 
     setFilteredODL(filtered)
-  }
+  }, [odlList, searchTerm])
 
   const handleStartTimer = async (odlId: string) => {
     try {

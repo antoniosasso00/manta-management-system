@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
   Container,
@@ -194,15 +194,15 @@ export default function ODLDetailPage() {
     if (odlId) {
       fetchODLDetails()
     }
-  }, [odlId])
+  }, [odlId, fetchODLDetails])
 
   useEffect(() => {
     if (odl) {
       generateQRCode()
     }
-  }, [odl])
+  }, [odl, generateQRCode])
 
-  const fetchODLDetails = async () => {
+  const fetchODLDetails = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/odl/${odlId}`)
@@ -218,9 +218,9 @@ export default function ODLDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [odlId])
 
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
     if (!odl) return
 
     try {
@@ -245,7 +245,7 @@ export default function ODLDetailPage() {
     } catch (error) {
       console.error('Errore nella generazione del QR code:', error)
     }
-  }
+  }, [odl])
 
   const handleTransfer = async () => {
     try {
@@ -527,7 +527,7 @@ export default function ODLDetailPage() {
               
               <Alert severity="info" sx={{ mb: 3 }}>
                 Le configurazioni specifiche per {deptNames[tabIndex - 1]} verranno gestite 
-                automaticamente man mano che l'ODL avanza nel workflow produttivo.
+                automaticamente man mano che l&apos;ODL avanza nel workflow produttivo.
               </Alert>
 
               <Grid container spacing={3}>
@@ -539,7 +539,7 @@ export default function ODLDetailPage() {
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Gli strumenti necessari verranno assegnati automaticamente 
-                        in base alla configurazione della parte quando l'ODL entra 
+                        in base alla configurazione della parte quando l&apos;ODL entra 
                         nel reparto {deptNames[tabIndex - 1]}.
                       </Typography>
                     </CardContent>
@@ -555,7 +555,7 @@ export default function ODLDetailPage() {
                       <Typography variant="body2" color="text.secondary">
                         I parametri specifici (temperature, pressioni, tempi) 
                         saranno configurati dal responsabile del reparto al 
-                        momento dell'assegnazione.
+                        momento dell&apos;assegnazione.
                       </Typography>
                     </CardContent>
                   </Card>

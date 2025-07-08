@@ -58,8 +58,8 @@ export class PDFExportService {
     // Setup PDF metadata
     pdf.setProperties({
       title: config.title,
-      subject: 'Report ODL - MES Aerospazio',
-      author: 'MES Aerospazio',
+      subject: 'Report ODL - Gestione Produzione',
+      author: 'Gestione Produzione',
       creator: 'MES Sistema'
     })
 
@@ -146,8 +146,8 @@ export class PDFExportService {
 
     pdf.setProperties({
       title: 'QR Labels Sheet',
-      subject: 'Etichette QR - MES Aerospazio',
-      author: 'MES Aerospazio'
+      subject: 'Etichette QR - Gestione Produzione',
+      author: 'Gestione Produzione'
     })
 
     const pageWidth = pdf.internal.pageSize.width
@@ -424,7 +424,7 @@ export class PDFExportService {
     )
     
     pdf.text(
-      'MES Aerospazio - Sistema di gestione produzione',
+      'Gestione Produzione - Sistema di gestione produzione',
       pageWidth / 2,
       pageHeight - 5,
       { align: 'center' }

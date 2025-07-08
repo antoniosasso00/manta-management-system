@@ -245,7 +245,7 @@ async function generatePDFExport(data: any[], filters: any, includeMetadata: boo
     filters: filters,
     events: data.slice(0, 100), // Limita per PDF
     metadata: includeMetadata ? {
-      system: 'MES Aerospazio',
+      system: 'Gestione Produzione',
       version: '1.0',
       exportedBy: 'Admin'
     } : null

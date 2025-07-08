@@ -1,6 +1,6 @@
 {
-  "name": "Manta Group - MES Aerospazio",
-  "short_name": "Manta MES",
+  "name": "Manta Group - Gestione Produzione",
+  "short_name": "Produzione",
   "description": "Manufacturing Execution System per la produzione aerospaziale",
   "start_url": "/",
   "display": "standalone",

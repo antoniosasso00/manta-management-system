@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Schema di validazione robusta per dati QR Code nel sistema MES Aerospazio
+ * Schema di validazione robusta per dati QR Code nel sistema Gestione Produzione
  * Garantisce sicurezza e integrità dei dati scansionati
  */
 
