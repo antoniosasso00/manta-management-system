@@ -584,7 +584,7 @@ export default function CreateODLPage() {
                 </Box>
                 
                 <Typography variant="body2" paragraph>
-                  <strong>Progressivo ODL:</strong> Inserisci manualmente un identificativo univoco per l'ordine di lavoro.
+                  <strong>Progressivo ODL:</strong> Inserisci manualmente un identificativo univoco per l&apos;ordine di lavoro.
                 </Typography>
                 
                 <Typography variant="body2" paragraph>
@@ -596,7 +596,7 @@ export default function CreateODLPage() {
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
-                  I tool e le configurazioni specifiche per reparto verranno gestite man mano che l'ODL avanza nel workflow.
+                  I tool e le configurazioni specifiche per reparto verranno gestite man mano che l&apos;ODL avanza nel workflow.
                 </Typography>
               </CardContent>
             </Card>

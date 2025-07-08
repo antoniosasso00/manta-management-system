@@ -671,7 +671,7 @@ export default function QRScannerPage() {
                           textShadow: '0 2px 4px rgba(0,0,0,0.8)'
                         }}
                       >
-                        Inquadra il QR code nell'area di scansione
+                        Inquadra il QR code nell&apos;area di scansione
                       </Typography>
                     </Box>
                   </Box>
@@ -952,7 +952,7 @@ export default function QRScannerPage() {
               {' '}(stato: <strong>{autoclaveDialog.batch?.status}</strong>).
             </Typography>
             <Typography variant="body1">
-              Vuoi avanzare l'intero batch al prossimo stato?
+              Vuoi avanzare l&apos;intero batch al prossimo stato?
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Questo influenzerà tutti i {autoclaveDialog.batch?.odlCount} ODL del batch.
@@ -1187,7 +1187,7 @@ export default function QRScannerPage() {
             {' '}(stato: <strong>{autoclaveDialog.batch?.status}</strong>).
           </Typography>
           <Typography variant="body1">
-            Vuoi avanzare l'intero batch al prossimo stato?
+            Vuoi avanzare l&apos;intero batch al prossimo stato?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Questo influenzerà tutti i {autoclaveDialog.batch?.odlCount} ODL del batch.
