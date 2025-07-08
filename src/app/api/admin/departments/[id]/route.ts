@@ -175,7 +175,6 @@ export async function DELETE(
     // Check if department has active ODLs
     const activeODLs = await prisma.oDL.count({
       where: {
-        currentDepartmentId: resolvedParams.id,
         status: { in: ['CREATED', 'ON_HOLD'] }
       }
     });
