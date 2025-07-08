@@ -121,8 +121,8 @@ export function ODLSelectionStep({
               </Typography>
               
               <List dense>
-                {(odls as any[]).map((odl) => (
-                  <ListItem key={odl.id} disablePadding>
+                {(odls as any[]).map((odl, index) => (
+                  <ListItem key={`${cycle}-${odl.id}-${index}`} disablePadding>
                     <ListItemIcon>
                       <Checkbox
                         edge="start"
@@ -145,17 +145,11 @@ export function ODLSelectionStep({
                         </Box>
                       }
                       secondary={
-                        <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                        <Box>
                           <Typography variant="caption" color="text.secondary">
-                            {odl.part.partTools.length} tool
+                            {odl.part.partTools.length} tool • {odl.vacuumLines || odl.part.defaultVacuumLines || 1} linee vuoto
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            •
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {odl.vacuumLines || odl.part.defaultVacuumLines || 1} linee vuoto
-                          </Typography>
-                        </Stack>
+                        </Box>
                       }
                     />
                   </ListItem>
@@ -195,8 +189,8 @@ export function ODLSelectionStep({
           </Box>
 
           <List>
-            {availableAutoclaves.map((autoclave) => (
-              <ListItem key={autoclave.id} disablePadding>
+            {availableAutoclaves.map((autoclave, index) => (
+              <ListItem key={`autoclave-${autoclave.id}-${index}`} disablePadding>
                 <ListItemIcon>
                   <Checkbox
                     edge="start"
@@ -214,12 +208,13 @@ export function ODLSelectionStep({
                     </Box>
                   }
                   secondary={
-                    <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                    <Box sx={{ mt: 0.5 }}>
                       <Chip
                         icon={<Straighten fontSize="small" />}
                         label={`${autoclave.maxWidth} x ${autoclave.maxLength} mm`}
                         size="small"
                         variant="outlined"
+                        sx={{ mr: 1 }}
                       />
                       <Chip
                         label={`${autoclave.vacuumLines} linee`}
@@ -227,7 +222,7 @@ export function ODLSelectionStep({
                         color="primary"
                         variant="outlined"
                       />
-                    </Stack>
+                    </Box>
                   }
                 />
               </ListItem>

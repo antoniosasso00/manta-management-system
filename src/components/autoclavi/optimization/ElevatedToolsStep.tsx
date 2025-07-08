@@ -211,13 +211,13 @@ export function ElevatedToolsStep({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedTools.map((tool) => {
+                {sortedTools.map((tool, index) => {
                   const isSelected = selectedElevatedTools.includes(tool.tool_id);
                   const isRecommended = tool.recommendation === 'ELEVATE';
 
                   return (
                     <TableRow
-                      key={tool.tool_id}
+                      key={`${tool.tool_id}-${index}`}
                       hover
                       selected={isSelected}
                       onClick={() => handleToolToggle(tool.tool_id)}
