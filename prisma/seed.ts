@@ -1,6 +1,5 @@
 import { PrismaClient, UserRole, DepartmentRole } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { seedProduction } from './seed-production'
 
 const prisma = new PrismaClient()
 
@@ -47,34 +46,6 @@ async function main() {
   })
 
   console.log('✅ Users created')
-
-  // Crea dati di produzione
-  await seedProduction()
-
-  // Assegna operatore al reparto Clean Room
-  const cleanRoom = await prisma.department.findUnique({
-    where: { code: 'CLEANROOM' }
-  })
-
-  if (cleanRoom) {
-    await prisma.user.update({
-      where: { id: operatorUser.id },
-      data: {
-        departmentId: cleanRoom.id,
-        departmentRole: DepartmentRole.OPERATORE
-      }
-    })
-
-    await prisma.user.update({
-      where: { id: supervisorUser.id },
-      data: {
-        departmentId: cleanRoom.id,
-        departmentRole: DepartmentRole.CAPO_TURNO
-      }
-    })
-
-    console.log('✅ Users assigned to departments')
-  }
 
   console.log('✅ Seed completed successfully!')
   console.log('\n📋 Login credentials:')

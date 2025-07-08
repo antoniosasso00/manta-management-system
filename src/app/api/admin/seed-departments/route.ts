@@ -4,6 +4,36 @@ import { prisma } from '@/lib/prisma'
 
 export const runtime = 'nodejs'
 
+// GET per verificare lo stato dei reparti
+export async function GET() {
+  try {
+    const session = await requireAuth()
+    
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Accesso negato' },
+        { status: 403 }
+      )
+    }
+
+    const departments = await prisma.department.findMany({
+      select: { code: true, name: true, type: true, isActive: true }
+    })
+
+    return NextResponse.json({
+      count: departments.length,
+      departments: departments
+    })
+
+  } catch (error) {
+    console.error('Errore durante la verifica reparti:', error)
+    return NextResponse.json(
+      { error: 'Errore durante la verifica reparti' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST() {
   try {
     const session = await requireAuth()
@@ -16,7 +46,22 @@ export async function POST() {
       )
     }
 
-    console.log('🏭 Inizializzazione reparti...')
+    // Verifica se i reparti esistono già
+    const existingDepartments = await prisma.department.count()
+    
+    if (existingDepartments > 0) {
+      const departments = await prisma.department.findMany({
+        select: { code: true, name: true, type: true }
+      })
+      
+      return NextResponse.json({
+        message: 'Reparti già presenti nel database',
+        count: existingDepartments,
+        departments: departments
+      })
+    }
+
+    console.log('🏭 Creazione reparti (database vuoto)...')
 
     // Lista completa dei reparti standard
     const departmentsData = [
