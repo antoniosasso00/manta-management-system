@@ -97,8 +97,8 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   }
 
   const handleDrawerToggle = useCallback(() => {
-    setSidebarOpen(!sidebarOpen)
-  }, [sidebarOpen])
+    setSidebarOpen(prev => !prev)
+  }, [])
 
   const handleDrawerClose = useCallback(() => {
     setSidebarOpen(false)
