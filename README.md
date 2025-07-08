@@ -1,152 +1,478 @@
 # MES Aerospazio - Manufacturing Execution System
 
-Sistema di esecuzione della produzione per componenti aerospaziali, specializzato nella produzione di compositi in fibra di carbonio. Il sistema traccia ordini di lavorazione (ODL) attraverso i reparti di produzione utilizzando scansione di codici QR e ottimizzazione automatica dei lotti.
+Sistema MES (Manufacturing Execution System) completo per la produzione di componenti aerospaziali in fibra di carbonio. Sviluppato con Next.js 15, TypeScript e architettura Domain-Driven Design.
 
-## Caratteristiche Principali
+## 🚀 Panoramica
 
-### 🏭 Gestione Produzione
-- **Tracciamento ODL**: Monitoraggio completo degli ordini di lavorazione attraverso tutti i reparti
-- **Sistema QR Code**: Generazione e scansione di codici QR per il tracciamento degli ODL
-- **Flusso di Produzione**: Clean Room (Laminazione) → Autoclavi (Polimerizzazione) → NDI → Rifilatura
-- **Workflow Automatico**: Trasferimento automatico degli ODL tra reparti con validazione
+MES Aerospazio è una soluzione enterprise per il tracking real-time della produzione aerospaziale, specializzata nella lavorazione di compositi in fibra di carbonio. Il sistema integra:
 
-### 📱 Interfaccia Mobile-First
-- **Scanner QR Offline**: Funzionalità di scansione offline con sincronizzazione automatica
-- **Design Industriale**: Ottimizzato per smartphone in ambiente produttivo
-- **Touch Targets**: Minimo 44px per utilizzo con guanti industriali
+- **Tracking QR Code**: Sistema completo di generazione e scansione QR per ODL (Ordini Di Lavoro)
+- **Workflow Automatici**: Trasferimento automatico ODL tra reparti con validazioni
+- **Ottimizzazione AI**: Algoritmi di bin packing 2D per batch autoclavi
+- **Controllo Qualità**: Sistema integrato di ispezioni e non conformità
+- **Multi-tenant**: Gestione ruoli e permessi multi-livello
+- **Offline-First**: Scanner QR funzionante offline con sync automatico
 
-### 👥 Sistema di Autenticazione
-- **Ruoli Multi-livello**: Ruoli globali (ADMIN, SUPERVISOR, OPERATOR) + ruoli di reparto
-- **Gestione Password Completa**: Registrazione, login, cambio password, reset password
-- **Protezione Route**: Tutte le route protette tramite middleware
+## 📋 Indice
 
-### 🔧 Gestione Reparti e Turni
-- **Reparti di Produzione**: Clean Room, Autoclavi, NDI, Rifilatura
-- **Turni Standard**: 6-14, 14-22 con tracciamento supervisori di turno
-- **Nomenclature Specifiche**: Codici parte specifici per ogni reparto
+- [Requisiti](#requisiti)
+- [Installazione](#installazione)
+- [Configurazione](#configurazione)
+- [Architettura](#architettura)
+- [Funzionalità](#funzionalità)
+- [Utilizzo](#utilizzo)
+- [API Documentation](#api-documentation)
+- [Sviluppo](#sviluppo)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Roadmap](#roadmap)
 
-## Tecnologie Utilizzate
+## 📦 Requisiti
 
-- **Next.js 15.3.4** con App Router e Turbopack
-- **React 19.0.0** con TypeScript 5.x in modalità strict
-- **Material-UI v7** con styling Emotion
-- **NextAuth.js v5** con adapter Prisma e sessioni JWT
-- **Prisma ORM 6.x** con database PostgreSQL
-- **Validazione Zod** per type safety runtime
-- **Architettura Ibrida**: Core monolitico Next.js + microservizi Python per algoritmi
+- Node.js 20+ 
+- PostgreSQL 16+
+- Redis 7+
+- Docker & Docker Compose
+- npm 10+
 
-## Avvio Rapido
+## 🛠️ Installazione
 
-### Prima Installazione
+### Setup Rapido (Prima Installazione)
+
 ```bash
+# 1. Clona il repository
+git clone https://github.com/mantaaero/mes-aerospazio.git
+cd mes-aerospazio
+
+# 2. Installa dipendenze
 npm install
+
+# 3. Avvia servizi Docker
 docker compose up -d
+
+# 4. Setup database
 npm run db:push
-npm run db:seed-complete
+
+# 5. Avvia applicazione
 npm run dev
+
+# 6. Apri http://localhost:3000 e vai su /register per creare primo utente
 ```
 
-Credenziali di test (solo sviluppo locale):
-- Admin: `admin@mantaaero.com / password123`
-- Supervisor: `capo.cleanroom@mantaaero.com / password123`
-- Operator: `op1.cleanroom@mantaaero.com / password123`
+### Setup Completo (Con Dati Test)
 
-### Comandi Sviluppo
 ```bash
-npm run dev          # Server di sviluppo con Turbopack
-npm run dev -- -p 3001  # Specifica porta personalizzata
-npm run build        # Build di produzione
-npm run lint         # Controllo ESLint
-npm run type-check   # Controllo TypeScript
-```
-
-### Database
-```bash
-docker compose up -d        # Avvia PostgreSQL e Redis
-npm run db:generate         # Genera client Prisma
-npm run db:push            # Applica modifiche schema (sviluppo)
-npm run db:migrate         # Crea migrazioni (produzione)
-npm run db:studio          # Apri Prisma Studio
-npm run db:seed-complete   # Popola database con dati di test
-```
-
-### Setup Completo con Microservizi
-```bash
-# 1. Avvia infrastruttura
+# 1. Avvia infrastruttura completa
 docker compose up -d
 cd manta-optimization-service && docker compose -f docker-compose.dev.yml up -d && cd ..
 
-# 2. Setup database
+# 2. Setup database con dati test
 npm run db:push && npm run db:seed-complete
 
-# 3. Configura ambiente
+# 3. Configura microservizio
 echo "OPTIMIZATION_SERVICE_URL=http://localhost:8000" >> .env.local
 
-# 4. Avvia Next.js
-npm run dev -- -p 3001
+# 4. Avvia applicazione
+npm run dev
 
-# URL disponibili:
-# - App: http://localhost:3001
-# - Microservice: http://localhost:8000  
-# - Ottimizzazione: http://localhost:3001/autoclavi/optimization
+# Login test: admin@mantaaero.com / password123
 ```
 
-## Architettura
+## ⚙️ Configurazione
 
-### Struttura del Progetto
+### Variabili Ambiente (.env.local)
+
+```env
+# Database
+DATABASE_URL="postgresql://postgres:password@localhost:5432/mes_aerospazio"
+
+# Authentication
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-32-char-secret-key-here"
+
+# Email (opzionale)
+EMAIL_SERVER_HOST="smtp.gmail.com"
+EMAIL_SERVER_PORT="587"
+EMAIL_SERVER_USER="your-email@gmail.com"
+EMAIL_SERVER_PASSWORD="your-app-password"
+EMAIL_FROM="noreply@mantaaero.com"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+
+# Microservices
+OPTIMIZATION_SERVICE_URL="http://localhost:8000"
+```
+
+## 🏗️ Architettura
+
+### Stack Tecnologico
+
+- **Frontend**: Next.js 15.3.4, React 19, Material-UI v7
+- **Backend**: Next.js API Routes, Prisma ORM 6.x
+- **Database**: PostgreSQL 16, Redis 7
+- **Authentication**: NextAuth.js v5 con JWT
+- **Microservizi**: Python/FastAPI per ottimizzazione
+- **Deployment**: Netlify con Neon PostgreSQL
+
+### Struttura Progetto
+
 ```
 src/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Pagine autenticazione
-│   ├── (dashboard)/       # Dashboard principale
-│   └── api/               # Route API
-├── components/            # Sistema Atomic Design
-├── domains/               # Domini business (DDD)
-├── lib/                   # Infrastruttura core
-├── services/              # Servizi API ed esterni
-└── utils/                 # Utilità business
+│   ├── (dashboard)/       # Area principale app
+│   ├── api/               # API endpoints
+│   └── layout.tsx         # Root layout
+├── components/            # Atomic Design System
+│   ├── atoms/             # Componenti base
+│   ├── molecules/         # Componenti composti
+│   ├── organisms/         # Componenti complessi
+│   └── templates/         # Layout pagine
+├── domains/               # Domini DDD
+│   ├── core/             # Parti, ODL, Strumenti
+│   ├── production/       # Tracking produzione
+│   ├── autoclave/        # Gestione autoclavi
+│   ├── quality/          # Controllo qualità
+│   └── user/             # Gestione utenti
+├── lib/                   # Infrastruttura
+│   ├── auth.ts           # NextAuth config
+│   ├── prisma.ts         # Database client
+│   └── theme.ts          # Material-UI theme
+├── services/              # Servizi esterni
+├── utils/                 # Utilities
+└── middleware.ts          # Route protection
 ```
 
 ### Pattern Architetturali
-- **Domain-Driven Design**: Organizzato per domini business
-- **Atomic Design**: Gerarchia componenti UI (atoms → molecules → organisms)
-- **Type Safety**: TypeScript end-to-end con validazione runtime
 
-## Stato Attuale
+- **Domain-Driven Design**: Organizzazione per domini business
+- **Atomic Design**: Gerarchia componenti UI strutturata
+- **Service Layer**: Tutti i servizi con metodi statici
+- **Repository Pattern**: Accesso dati tramite Prisma
+- **DTO Pattern**: Validazione con Zod schemas
 
-### ✅ Funzionalità Implementate
-- Sistema di autenticazione completo con ruoli multi-livello
-- Gestione ODL con tracciamento attraverso i reparti
-- Scanner QR con funzionalità offline
-- Dashboard reparti con metriche produzione
-- Workflow automatico trasferimento ODL
-- Sistema amministrazione utenti e reparti
-- Nomenclature specifiche per reparto
+## 🎯 Funzionalità
 
-### 🚧 In Sviluppo
-- Modulo NDI (Non-Destructive Inspection)
-- Sistema di reportistica avanzata  
-- Algoritmi di ottimizzazione autoclavi (microservizio Python)
-- Pagine gestione per capi reparto e capi turno
+### 1. Sistema QR Code
 
-### 📋 Prossimi Sviluppi
-- Pagine amministrazione complete (`/admin/departments`, `/admin/settings`)
-- Algoritmi di nesting 2D per ottimizzazione caricamento autoclavi
-- Sistema di notifiche real-time
-- Dashboard analitiche avanzate
+- **Generazione**: QR univoci per ogni ODL con dati embedded
+- **Scanner Mobile**: WebRTC scanner ottimizzato per smartphone industriali
+- **Offline Mode**: Funziona senza connessione con cache locale
+- **Auto-Sync**: Sincronizzazione automatica quando online
 
-## Conformità Aerospaziale
+### 2. Tracking Produzione
 
-- **Tracciabilità Completa**: Tutti gli eventi di produzione registrati per audit trail
-- **Standard Qualità**: Conformità agli standard di qualità aerospaziale
-- **Formato ODL**: Codici parte alfanumerici unici (formato: 8G5350A0...)
-- **Contesto Business Italiano**: UI in italiano, convenzioni manifatturiere italiane
+- **Real-time**: Eventi entry/exit istantanei
+- **Timeline**: Storico completo movimenti ODL
+- **KPI Dashboard**: Metriche performance per reparto
+- **Analisi Tempi**: Tempi ciclo, lead time, efficienza
 
-## Note per Sviluppatori
+### 3. Gestione ODL (Ordini Di Lavoro)
 
-Consultare `CLAUDE.md` per:
-- Dettagli architetturali completi
-- Standard di sviluppo e workflow
-- Gestione multi-Claude e porte
-- Protocolli pre-commit obbligatori
-- Pattern specifici Material-UI v7
+- **CRUD Completo**: Creazione, modifica, cancellazione
+- **Stati ODL**: PIANIFICATO → IN_PRODUZIONE → COMPLETATO
+- **Assegnazione Reparti**: Manuale o automatica via workflow
+- **Priorità**: Alta, Media, Bassa con ordinamento
+
+### 4. Reparti Produzione
+
+Ogni reparto ha configurazioni specifiche:
+
+- **Clean Room**: Sequenze laminazione, tipo resina, tempo ciclo
+- **Autoclavi**: Cicli cura, linee vacuum, temperatura/pressione
+- **NDI**: Metodi ispezione, criteri accettazione
+- **Controllo Numerico**: Programmi CNC, tempo setup
+- **Montaggio**: Sequenze assemblaggio, componenti
+- **Verniciatura**: Tipo vernice, strati, tempo asciugatura
+- **Honeycomb**: Tipo core, dimensioni celle
+- **Motori**: Configurazioni motore, test richiesti
+
+### 5. Ottimizzazione Batch Autoclavi
+
+- **Algoritmo 2D Bin Packing**: Massimizza utilizzo spazio
+- **Compatibilità Cicli**: Raggruppa ODL con cicli cura simili
+- **Gestione Strumenti**: Considera altezza strumenti elevati
+- **Visualizzazione**: Layout grafico interattivo batch
+- **Simulazione**: Preview ottimizzazione prima conferma
+
+### 6. Controllo Qualità
+
+- **Piani Ispezione**: Personalizzati per part number
+- **Non Conformità**: Gestione NC con workflow
+- **Azioni Correttive**: Sistema CAPA integrato
+- **Certificati**: Generazione certificati conformità
+- **Audit Trail**: Tracciabilità completa modifiche
+
+### 7. Gestione Utenti e Ruoli
+
+**Ruoli Sistema**:
+- `ADMIN`: Accesso completo sistema
+- `SUPERVISOR`: Gestione produzione
+- `OPERATOR`: Operazioni base
+
+**Ruoli Reparto**:
+- `CAPO_REPARTO`: Responsabile reparto
+- `CAPO_TURNO`: Supervisore turno
+- `OPERATORE`: Operatore produzione
+
+### 8. Import/Export Dati
+
+- **Excel Sync**: Import/export parti, ODL, strumenti
+- **Sistema Gamma**: Integrazione con MES legacy
+- **Export CSV**: Dati produzione e qualità
+- **Report PDF**: ODL, certificati, analisi
+
+### 9. Dashboard e Reporting
+
+- **KPI Real-time**: OEE, throughput, scarti
+- **Grafici Interattivi**: Trend produzione con Recharts
+- **Report Personalizzati**: Template configurabili
+- **Export Multipli**: PDF, Excel, CSV
+
+### 10. Amministrazione Sistema
+
+- **Gestione Reparti**: Configurazione parametri produzione
+- **Audit Logs**: Monitoraggio tutte operazioni
+- **Backup**: Export completo dati sistema
+- **Impostazioni**: Configurazioni globali
+
+## 💻 Utilizzo
+
+### Login e Autenticazione
+
+```bash
+# Credenziali test (solo sviluppo locale)
+Admin: admin@mantaaero.com / password123
+Supervisor: capo.cleanroom@mantaaero.com / password123  
+Operator: op1.cleanroom@mantaaero.com / password123
+```
+
+### Workflow Tipico Produzione
+
+1. **Creazione ODL**
+   - Menu → Produzione → ODL → Crea Nuovo
+   - Inserire dati ODL e quantità
+   - Sistema genera QR automaticamente
+
+2. **Tracking con QR**
+   - Operatore scansiona QR all'ingresso reparto
+   - Sistema registra entry automatico
+   - Al termine, scansiona per exit
+
+3. **Trasferimento Reparti**
+   - Workflow automatico sposta ODL
+   - Validazioni business rules
+   - Notifiche reparto successivo
+
+4. **Controllo Qualità**
+   - Ispezioni a campione o 100%
+   - Registrazione non conformità
+   - Azioni correttive se necessario
+
+5. **Completamento**
+   - ODL completato dopo ultimo reparto
+   - Generazione certificati
+   - Archiviazione documentazione
+
+### Ottimizzazione Autoclavi
+
+1. **Accesso**: Menu → Autoclavi → Ottimizzazione
+2. **Selezione ODL**: Check ODL compatibili
+3. **Analisi**: Click "Analizza Ottimizzazione"
+4. **Review**: Visualizza layout proposto
+5. **Conferma**: Crea batch ottimizzato
+
+## 🔌 API Documentation
+
+### Autenticazione
+
+Tutte le API richiedono autenticazione tramite NextAuth session cookie.
+
+### Endpoints Principali
+
+#### ODL Management
+```http
+GET    /api/odl                      # Lista ODL con filtri
+POST   /api/odl                      # Crea nuovo ODL
+GET    /api/odl/[id]                 # Dettaglio ODL
+PUT    /api/odl/[id]                 # Aggiorna ODL
+DELETE /api/odl/[id]                 # Elimina ODL
+POST   /api/odl/[id]/assign-department # Assegna reparto
+```
+
+#### Production Tracking
+```http
+POST   /api/production/events         # Registra evento
+GET    /api/production/events/odl/[id] # Eventi per ODL
+GET    /api/production/stats          # Statistiche
+GET    /api/production/dashboard/kpi  # KPI dashboard
+```
+
+#### Autoclavi
+```http
+GET    /api/autoclavi/batches         # Lista batch
+POST   /api/autoclavi/batches         # Crea batch
+POST   /api/autoclavi/optimization/analyze  # Analizza
+POST   /api/autoclavi/optimization/execute  # Esegui
+```
+
+#### Parts & Tools
+```http
+GET    /api/parts                     # Lista parti
+POST   /api/parts                     # Crea parte
+GET    /api/tools                     # Lista strumenti
+POST   /api/tools                     # Crea strumento
+```
+
+### Formato Risposte
+
+```typescript
+// Successo
+{
+  "success": true,
+  "data": { ... }
+}
+
+// Errore
+{
+  "success": false,
+  "error": "Messaggio errore"
+}
+```
+
+## 🧪 Testing
+
+### Test Manuali
+
+```bash
+# 1. Setup ambiente test
+npm run db:seed-complete
+
+# 2. Test scanner QR
+- Vai su /qr-scanner
+- Usa smartphone per test mobile
+- Verifica offline mode
+
+# 3. Test workflow
+- Crea ODL test
+- Traccia attraverso reparti
+- Verifica trasferimenti automatici
+```
+
+### Test Automatici (TODO)
+
+```bash
+# Unit tests
+npm run test
+
+# Integration tests  
+npm run test:integration
+
+# E2E tests
+npm run test:e2e
+```
+
+## 🚀 Deployment
+
+### Netlify (Consigliato)
+
+1. **Setup Database**
+   - Crea database PostgreSQL su Neon
+   - Configura connection string
+
+2. **Environment Variables**
+   ```
+   DATABASE_URL=postgresql://...
+   NEXTAUTH_URL=https://your-app.netlify.app
+   NEXTAUTH_SECRET=your-secret-key
+   ```
+
+3. **Deploy**
+   - Connetti repo GitHub
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+
+### Docker Production
+
+```bash
+# Build image
+docker build -t mes-aerospazio .
+
+# Run container
+docker run -p 3000:3000 \
+  -e DATABASE_URL=... \
+  -e NEXTAUTH_URL=... \
+  -e NEXTAUTH_SECRET=... \
+  mes-aerospazio
+```
+
+## 🛤️ Roadmap
+
+### In Sviluppo
+
+1. **Sistema Audit Completo** (Alta Priorità)
+   - Export audit logs
+   - Notifiche eventi critici
+   - Retention policy configurabile
+
+2. **Email Service** (Alta Priorità)
+   - Provider multipli (SendGrid, SMTP)
+   - Template email personalizzati
+   - Queue con retry logic
+
+3. **Modulo NDI Avanzato** (Media Priorità)
+   - Metodologie ispezione multiple
+   - Integrazione strumenti NDI
+   - Report difettosità
+
+### Funzionalità Future
+
+1. **Ottimizzazione Avanzata**
+   - Machine Learning per previsioni
+   - Simulazione multi-scenario
+   - Ottimizzazione multi-obiettivo
+
+2. **Real-time Notifications**
+   - WebSocket per eventi live
+   - Push notifications mobile
+   - Dashboard monitoring
+
+3. **Analytics Avanzate**
+   - Business Intelligence integrata
+   - Predictive maintenance
+   - Supply chain visibility
+
+4. **Integrazioni**
+   - ERP (SAP, Oracle)
+   - PLM systems
+   - IoT sensori produzione
+
+## 🤝 Contribuire
+
+1. Fork il repository
+2. Crea feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'feat: add amazing feature'`)
+4. Push al branch (`git push origin feature/AmazingFeature`)
+5. Apri Pull Request
+
+### Convenzioni
+
+- **Commit**: Conventional Commits (feat, fix, docs, etc.)
+- **Code Style**: ESLint + Prettier configurati
+- **TypeScript**: Strict mode abilitato
+- **Testing**: Minimo 80% coverage per nuove features
+
+## 📄 Licenza
+
+Proprietario - © 2024 Manta Aerospace. Tutti i diritti riservati.
+
+## 📞 Supporto
+
+- **Email**: support@mantaaero.com
+- **Documentation**: [docs.mantaaero.com](https://docs.mantaaero.com)
+- **Issues**: [GitHub Issues](https://github.com/mantaaero/mes-aerospazio/issues)
+
+---
+
+Sviluppato con ❤️ da Manta Aerospace Team
