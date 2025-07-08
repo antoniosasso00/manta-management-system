@@ -12,7 +12,7 @@ const assignDepartmentSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -25,7 +25,7 @@ export async function POST(
       return NextResponse.json({ error: 'Permessi insufficienti' }, { status: 403 })
     }
 
-    const { id: odlId } = params
+    const { id: odlId } = await params
     const body = await request.json()
     
     const validatedData = assignDepartmentSchema.parse(body)
