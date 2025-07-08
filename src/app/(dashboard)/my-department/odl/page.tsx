@@ -6,19 +6,16 @@ import {
   Card,
   CardContent,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Chip,
   TextField,
   InputAdornment,
   IconButton,
   Button,
-  Tooltip
+  Tooltip,
+  Container,
+  Grid,
+  CircularProgress
 } from '@mui/material'
 import {
   Assignment,
@@ -29,6 +26,7 @@ import {
   Visibility
 } from '@mui/icons-material'
 import { useRouter } from 'next/navigation'
+import { DataTable, Column } from '@/components/atoms'
 
 interface MyODL {
   id: string
@@ -153,34 +151,165 @@ export default function MyDepartmentODLPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <Box className="p-4">
-        <Typography>Caricamento...</Typography>
-      </Box>
-    )
-  }
+  // Configurazione colonne per DataTable
+  const columns: Column<MyODL>[] = [
+    {
+      id: 'odlNumber',
+      label: 'ODL',
+      mobilePriority: 'always',
+      format: (value) => (
+        <Typography variant="body2" fontWeight="bold">
+          {value as string}
+        </Typography>
+      )
+    },
+    {
+      id: 'partNumber',
+      label: 'Parte',
+      mobilePriority: 'always',
+      format: (value, row) => (
+        <Box>
+          <Typography variant="body2">
+            {value as string}
+          </Typography>
+          <Typography variant="caption" color="textSecondary">
+            {row.description}
+          </Typography>
+        </Box>
+      )
+    },
+    {
+      id: 'priority',
+      label: 'Priorità',
+      mobilePriority: 'expanded',
+      format: (value) => (
+        <Chip
+          label={value as string}
+          color={getPriorityColor(value as string)}
+          size="small"
+        />
+      )
+    },
+    {
+      id: 'quantity',
+      label: 'Quantità',
+      mobileLabel: 'Qtà',
+      mobilePriority: 'expanded',
+      align: 'right'
+    },
+    {
+      id: 'timeInDepartment',
+      label: 'Tempo Lavorazione',
+      mobileLabel: 'Tempo',
+      mobilePriority: 'always',
+      format: (value) => (
+        <Typography 
+          variant="body2" 
+          color={(value as number) > 0 ? 'primary' : 'textSecondary'}
+        >
+          {(value as number) > 0 ? formatTime(value as number) : 'Non iniziato'}
+        </Typography>
+      )
+    },
+    {
+      id: 'isTimerActive',
+      label: 'Timer',
+      mobilePriority: 'always',
+      format: (value) => (
+        value ? (
+          <Chip
+            label="ATTIVO"
+            color="success"
+            size="small"
+            icon={<PlayArrow />}
+          />
+        ) : (
+          <Chip
+            label="FERMO"
+            color="default"
+            size="small"
+            icon={<Stop />}
+          />
+        )
+      )
+    },
+    {
+      id: 'lastScan',
+      label: 'Ultima Scansione',
+      mobileLabel: 'Scan',
+      mobilePriority: 'expanded',
+      format: (value) => (
+        <Typography variant="body2" color="textSecondary">
+          {value ? new Date(value as string).toLocaleString('it-IT') : '-'}
+        </Typography>
+      )
+    },
+    {
+      id: 'id',
+      label: 'Azioni',
+      mobilePriority: 'always',
+      align: 'center',
+      format: (value, row) => (
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+          {row.isTimerActive ? (
+            <Tooltip title="Ferma timer">
+              <IconButton 
+                size="small" 
+                color="error"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleStopTimer(row.id)
+                }}
+              >
+                <Stop />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Avvia timer">
+              <IconButton 
+                size="small" 
+                color="success"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleStartTimer(row.id)
+                }}
+              >
+                <PlayArrow />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="Visualizza dettagli">
+            <IconButton size="small">
+              <Visibility />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )
+    }
+  ]
+
 
   return (
-    <Box className="p-4 space-y-6">
-      {/* Header */}
-      <Box className="flex items-center justify-between">
-        <Typography variant="h4" className="flex items-center gap-2">
-          <Assignment />
-          I Miei ODL
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<QrCodeScanner />}
-          onClick={() => router.push('/qr-scanner')}
-        >
-          Scanner QR
-        </Button>
-      </Box>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Assignment />
+            I Miei ODL
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<QrCodeScanner />}
+            onClick={() => router.push('/qr-scanner')}
+            sx={{ minHeight: 44 }}
+          >
+            Scanner QR
+          </Button>
+        </Box>
 
-      {/* Search */}
-      <Card>
-        <CardContent>
+        {/* Search */}
+        <Paper sx={{ p: 2 }}>
           <TextField
             fullWidth
             placeholder="Cerca ODL, parte, descrizione..."
@@ -194,136 +323,30 @@ export default function MyDepartmentODLPage() {
               ),
             }}
           />
-        </CardContent>
-      </Card>
+        </Paper>
 
-      {/* ODL Table */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            ODL Assegnati ({filteredODL.length})
-          </Typography>
+        {/* ODL Table */}
+        <Paper sx={{ p: 3 }}>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h6">
+              ODL Assegnati ({filteredODL.length})
+            </Typography>
+          </Box>
           
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ODL</TableCell>
-                  <TableCell>Parte</TableCell>
-                  <TableCell>Priorità</TableCell>
-                  <TableCell>Quantità</TableCell>
-                  <TableCell>Tempo Lavorazione</TableCell>
-                  <TableCell>Timer</TableCell>
-                  <TableCell>Ultima Scansione</TableCell>
-                  <TableCell>Azioni</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredODL.map((odl) => (
-                  <TableRow key={odl.id} hover>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="bold">
-                        {odl.odlNumber}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box>
-                        <Typography variant="body2">
-                          {odl.partNumber}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {odl.description}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={odl.priority}
-                        color={getPriorityColor(odl.priority)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {odl.quantity}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography 
-                        variant="body2" 
-                        color={odl.timeInDepartment > 0 ? 'primary' : 'textSecondary'}
-                      >
-                        {odl.timeInDepartment > 0 ? formatTime(odl.timeInDepartment) : 'Non iniziato'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      {odl.isTimerActive ? (
-                        <Chip
-                          label="ATTIVO"
-                          color="success"
-                          size="small"
-                          icon={<PlayArrow />}
-                        />
-                      ) : (
-                        <Chip
-                          label="FERMO"
-                          color="default"
-                          size="small"
-                          icon={<Stop />}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="textSecondary">
-                        {odl.lastScan ? new Date(odl.lastScan).toLocaleString('it-IT') : '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box className="flex gap-1">
-                        {odl.isTimerActive ? (
-                          <Tooltip title="Ferma timer">
-                            <IconButton 
-                              size="small" 
-                              color="error"
-                              onClick={() => handleStopTimer(odl.id)}
-                            >
-                              <Stop />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title="Avvia timer">
-                            <IconButton 
-                              size="small" 
-                              color="success"
-                              onClick={() => handleStartTimer(odl.id)}
-                            >
-                              <PlayArrow />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        <Tooltip title="Visualizza dettagli">
-                          <IconButton size="small">
-                            <Visibility />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredODL.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} align="center">
-                      <Typography color="textSecondary">
-                        Nessun ODL assegnato
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
+          <DataTable
+            columns={columns}
+            data={filteredODL}
+            loading={loading}
+            totalCount={filteredODL.length}
+            page={0}
+            rowsPerPage={filteredODL.length}
+            onPageChange={() => {}}
+            onRowsPerPageChange={() => {}}
+            emptyMessage="Nessun ODL assegnato"
+            mobileView="cards"
+          />
+        </Paper>
+      </Box>
+    </Container>
   )
 }

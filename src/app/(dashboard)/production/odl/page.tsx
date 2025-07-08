@@ -7,12 +7,6 @@ import {
   Typography,
   Box,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
   IconButton,
   TextField,
@@ -46,6 +40,7 @@ import {
   Assignment,
   PlaylistAdd
 } from '@mui/icons-material'
+import { DataTable, Column } from '@/components/atoms'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 import { ODLStatus, Priority } from '@prisma/client'
 import { useAuth } from '@/hooks/useAuth'
@@ -249,6 +244,117 @@ export default function ODLPage() {
   const canEdit = user?.role && ['ADMIN', 'SUPERVISOR'].includes(user.role)
   const canDelete = user?.role === 'ADMIN'
 
+  // Configurazione colonne per DataTable
+  const columns: Column<ODL>[] = [
+    {
+      id: 'odlNumber',
+      label: 'ODL',
+      mobileLabel: 'ODL',
+      mobilePriority: 'always',
+      format: (value, row) => (
+        <Typography variant="body2" fontWeight="bold">
+          {value as string}
+        </Typography>
+      )
+    },
+    {
+      id: 'partNumber',
+      label: 'Parte',
+      mobileLabel: 'Parte',
+      mobilePriority: 'always',
+      format: (value, row) => (
+        <Box>
+          <Typography variant="body2">
+            {value as string}
+          </Typography>
+          <Typography variant="caption" color="textSecondary">
+            {row.description}
+          </Typography>
+        </Box>
+      )
+    },
+    {
+      id: 'status',
+      label: 'Stato',
+      mobilePriority: 'always',
+      format: (value) => (
+        <Chip
+          label={getStatusLabel(value as ODLStatus)}
+          color={getStatusColor(value as ODLStatus)}
+          size="small"
+        />
+      )
+    },
+    {
+      id: 'priority',
+      label: 'Priorità',
+      mobilePriority: 'expanded',
+      format: (value) => (
+        <Chip
+          label={value as string}
+          color={getPriorityColor(value as Priority)}
+          size="small"
+        />
+      )
+    },
+    {
+      id: 'quantity',
+      label: 'Quantità',
+      mobileLabel: 'Qtà',
+      mobilePriority: 'expanded',
+      align: 'right'
+    },
+    {
+      id: 'dueDate',
+      label: 'Scadenza',
+      mobilePriority: 'expanded',
+      format: (value) => value ? new Date(value as string).toLocaleDateString('it-IT') : '-'
+    },
+    {
+      id: 'id',
+      label: 'Azioni',
+      mobilePriority: 'always',
+      align: 'center',
+      format: (value, row) => (
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+          <IconButton size="small" href={`/production/odl/${row.id}`}>
+            <Visibility />
+          </IconButton>
+          {canEdit && (
+            <IconButton size="small" href={`/production/odl/${row.id}/edit`}>
+              <Edit />
+            </IconButton>
+          )}
+          <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
+            <IconButton 
+              size="small" 
+              onClick={(e) => {
+                e.stopPropagation()
+                setAssignmentDialog({ open: true, odl: row })
+              }}
+              color="primary"
+              title="Assegna manualmente a reparto"
+            >
+              <Assignment />
+            </IconButton>
+          </RoleBasedAccess>
+          {canDelete && (
+            <IconButton 
+              size="small" 
+              onClick={(e) => {
+                e.stopPropagation()
+                setDeleteDialog({ open: true, odl: row })
+              }}
+              color="error"
+            >
+              <Delete />
+            </IconButton>
+          )}
+        </Box>
+      )
+    }
+  ]
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
         <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR', 'OPERATOR']}>
@@ -397,106 +503,18 @@ export default function ODLPage() {
                   )}
                 </Box>
 
-                {loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>ODL</TableCell>
-                          <TableCell>Parte</TableCell>
-                          <TableCell>Stato</TableCell>
-                          <TableCell>Priorità</TableCell>
-                          <TableCell>Quantità</TableCell>
-                          <TableCell>Scadenza</TableCell>
-                          <TableCell>Azioni</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {filteredOdls.map((odl) => (
-                          <TableRow key={odl.id} hover>
-                            <TableCell>
-                              <Typography variant="body2" fontWeight="bold">
-                                {odl.odlNumber}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Box>
-                                <Typography variant="body2">
-                                  {odl.partNumber}
-                                </Typography>
-                                <Typography variant="caption" color="textSecondary">
-                                  {odl.description}
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={getStatusLabel(odl.status)}
-                                color={getStatusColor(odl.status)}
-                                size="small"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={odl.priority}
-                                color={getPriorityColor(odl.priority)}
-                                size="small"
-                              />
-                            </TableCell>
-                            <TableCell>{odl.quantity}</TableCell>
-                            <TableCell>
-                              {odl.dueDate ? new Date(odl.dueDate).toLocaleDateString('it-IT') : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <IconButton size="small" href={`/production/odl/${odl.id}`}>
-                                  <Visibility />
-                                </IconButton>
-                                {canEdit && (
-                                  <IconButton size="small" href={`/production/odl/${odl.id}/edit`}>
-                                    <Edit />
-                                  </IconButton>
-                                )}
-                                <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
-                                  <IconButton 
-                                    size="small" 
-                                    onClick={() => setAssignmentDialog({ open: true, odl })}
-                                    color="primary"
-                                    title="Assegna manualmente a reparto"
-                                  >
-                                    <Assignment />
-                                  </IconButton>
-                                </RoleBasedAccess>
-                                {canDelete && (
-                                  <IconButton 
-                                    size="small" 
-                                    onClick={() => setDeleteDialog({ open: true, odl })}
-                                    color="error"
-                                  >
-                                    <Delete />
-                                  </IconButton>
-                                )}
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {filteredOdls.length === 0 && !loading && (
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <Typography color="textSecondary">
-                                Nessun ODL trovato
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                )}
+                <DataTable
+                  columns={columns}
+                  data={filteredOdls}
+                  loading={loading}
+                  totalCount={filteredOdls.length}
+                  page={0}
+                  rowsPerPage={filteredOdls.length} // Mostra tutti i risultati filtrati
+                  onPageChange={() => {}}
+                  onRowsPerPageChange={() => {}}
+                  emptyMessage="Nessun ODL trovato"
+                  mobileView="cards"
+                />
               </Paper>
             )}
 

@@ -208,3 +208,68 @@ body {
   width: var(--touch-target-min) !important;
   height: var(--touch-target-min) !important;
 }
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Previene overflow orizzontale */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  /* Garantisce che tutti i container rispettino i limiti dello schermo */
+  * {
+    max-width: 100vw;
+  }
+  
+  /* Fix per tabelle responsive */
+  .MuiTableContainer-root {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ottimizza dimensioni font per leggibilità mobile */
+  .MuiTypography-body1 {
+    font-size: 0.875rem;
+  }
+  
+  .MuiTypography-body2 {
+    font-size: 0.813rem;
+  }
+  
+  /* Padding ridotto per maximizzare spazio schermo */
+  .MuiContainer-root {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* Touch targets più grandi per uso industriale */
+  .MuiButton-root,
+  .MuiIconButton-root {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Migliora spaziatura per tocco */
+  .MuiTableCell-root {
+    padding: 8px;
+  }
+  
+  /* Nasconde scrollbar orizzontale ma mantiene funzionalità */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .MuiContainer-root {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}

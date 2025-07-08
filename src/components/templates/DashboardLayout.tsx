@@ -262,8 +262,16 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
           bgcolor: 'background.default',
           pt: isMobile && !title && !autoBreadcrumbs.length ? '64px' : 0,
           minHeight: { xs: 'calc(100vh - 64px)', sm: 'auto' },
+          overflowX: 'hidden', // Previene overflow orizzontale
+          position: 'relative',
         }}>
-          {children}
+          <Box sx={{ 
+            maxWidth: '100%', 
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch', // Smooth scrolling su iOS
+          }}>
+            {children}
+          </Box>
         </Box>
 
         {/* Footer - semplificato per mobile */}
