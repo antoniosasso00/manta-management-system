@@ -63,6 +63,7 @@ import {
   Sync as SyncIcon
 } from '@mui/icons-material'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme } from '@/contexts/ThemeContext'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 
@@ -129,6 +130,7 @@ interface UserSettings {
 
 export default function SettingsPage() {
   const { user } = useAuth()
+  const { mode: currentTheme, setTheme } = useTheme()
   const [currentTab, setCurrentTab] = useState(0)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -155,7 +157,7 @@ export default function SettingsPage() {
       channels: ['email', 'push']
     },
     ui: {
-      theme: 'light',
+      theme: currentTheme,
       fontSize: 14,
       tableDensity: 'standard',
       keyboardShortcuts: true
@@ -179,13 +181,25 @@ export default function SettingsPage() {
     loadSettings()
   }, [])
 
+  // Sincronizza il tema locale quando cambia il tema nel context
+  useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      ui: { ...prev.ui, theme: currentTheme }
+    }))
+  }, [currentTheme])
+
   const loadSettings = async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/auth/profile/settings')
       if (response.ok) {
         const data = await response.json()
-        setSettings(prev => ({ ...prev, ...data }))
+        setSettings(prev => ({ 
+          ...prev, 
+          ...data,
+          ui: { ...prev.ui, theme: currentTheme, ...data.ui }
+        }))
       }
     } catch (error) {
       console.error('Error loading settings:', error)
@@ -200,9 +214,9 @@ export default function SettingsPage() {
       setError(null)
       
       const response = await fetch('/api/auth/profile/settings', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: JSON.stringify({ ui: settings.ui })
       })
 
       if (!response.ok) {
@@ -266,6 +280,11 @@ export default function SettingsPage() {
       ...prev,
       ui: { ...prev.ui, [field]: value }
     }))
+    
+    // Se è il tema, aggiorna anche il context
+    if (field === 'theme') {
+      setTheme(value)
+    }
   }
 
   const updateGamma = (field: string, value: any) => {

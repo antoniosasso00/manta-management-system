@@ -21,10 +21,14 @@ import {
   AdminPanelSettings as AdminIcon,
   Settings as SettingsIcon,
   Close as CloseIcon,
+  Brightness4 as DarkModeIcon,
+  Brightness7 as LightModeIcon,
+  BrightnessAuto as AutoModeIcon,
 } from '@mui/icons-material'
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme as useThemeContext } from '@/contexts/ThemeContext'
 import { UserRole } from '@prisma/client'
 
 export function UserMenu() {
@@ -32,6 +36,7 @@ export function UserMenu() {
   const { user, isAdmin } = useAuth()
   const router = useRouter()
   const theme = useTheme()
+  const { mode: themeMode, setTheme: setThemeMode } = useThemeContext()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const [isImpersonating, setIsImpersonating] = useState(false)
   
@@ -96,6 +101,37 @@ export function UserMenu() {
       }
     } catch (error) {
       console.error('Error stopping impersonation:', error)
+    }
+  }
+
+  const handleThemeToggle = () => {
+    const nextTheme = themeMode === 'light' ? 'dark' : themeMode === 'dark' ? 'auto' : 'light'
+    setThemeMode(nextTheme)
+  }
+
+  const getThemeIcon = () => {
+    switch (themeMode) {
+      case 'light':
+        return <LightModeIcon fontSize="small" />
+      case 'dark':
+        return <DarkModeIcon fontSize="small" />
+      case 'auto':
+        return <AutoModeIcon fontSize="small" />
+      default:
+        return <LightModeIcon fontSize="small" />
+    }
+  }
+
+  const getThemeLabel = () => {
+    switch (themeMode) {
+      case 'light':
+        return 'Tema: Chiaro'
+      case 'dark':
+        return 'Tema: Scuro'
+      case 'auto':
+        return 'Tema: Automatico'
+      default:
+        return 'Tema: Chiaro'
     }
   }
 
@@ -211,6 +247,17 @@ export function UserMenu() {
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Impostazioni</ListItemText>
+        </MenuItem>
+
+        {/* Theme Toggle */}
+        <MenuItem 
+          onClick={() => handleMenuAction(handleThemeToggle)}
+          sx={{ minHeight: { xs: 48, sm: 'auto' } }}
+        >
+          <ListItemIcon>
+            {getThemeIcon()}
+          </ListItemIcon>
+          <ListItemText>{getThemeLabel()}</ListItemText>
         </MenuItem>
 
         {/* Admin Panel */}

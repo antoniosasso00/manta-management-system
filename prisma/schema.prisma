@@ -20,6 +20,7 @@ model User {
   updatedAt                DateTime             @updatedAt
   departmentId             String?
   departmentRole           DepartmentRole?
+  settings                 Json?
   accounts                 Account[]
   auditLogs                AuditLog[]
   capaAssignments          CorrectiveAction[]   @relation("CAPAAssignee")

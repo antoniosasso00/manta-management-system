@@ -7,36 +7,7 @@ export const roboto = Roboto({
   display: 'swap',
 })
 
-export const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-    },
-    secondary: {
-      main: '#dc004e',
-      light: '#e33371',
-      dark: '#9a0036',
-    },
-    error: {
-      main: '#d32f2f',
-    },
-    warning: {
-      main: '#ed6c02',
-    },
-    info: {
-      main: '#0288d1',
-    },
-    success: {
-      main: '#2e7d32',
-    },
-    background: {
-      default: '#fafafa',
-      paper: '#ffffff',
-    },
-  },
+const baseThemeConfig = {
   typography: {
     fontFamily: roboto.style.fontFamily,
     h1: {
@@ -170,10 +141,43 @@ export const theme = createTheme({
       },
     },
   },
-})
+} as const;
 
-export const darkTheme = createTheme({
-  ...theme,
+export const createLightTheme = () => createTheme({
+  ...baseThemeConfig,
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
+    },
+    secondary: {
+      main: '#dc004e',
+      light: '#e33371',
+      dark: '#9a0036',
+    },
+    error: {
+      main: '#d32f2f',
+    },
+    warning: {
+      main: '#ed6c02',
+    },
+    info: {
+      main: '#0288d1',
+    },
+    success: {
+      main: '#2e7d32',
+    },
+    background: {
+      default: '#fafafa',
+      paper: '#ffffff',
+    },
+  },
+});
+
+export const createDarkTheme = () => createTheme({
+  ...baseThemeConfig,
   palette: {
     mode: 'dark',
     primary: {
@@ -186,9 +190,29 @@ export const darkTheme = createTheme({
       light: '#fce4ec',
       dark: '#f06292',
     },
+    error: {
+      main: '#f44336',
+    },
+    warning: {
+      main: '#ff9800',
+    },
+    info: {
+      main: '#2196f3',
+    },
+    success: {
+      main: '#4caf50',
+    },
     background: {
       default: '#121212',
       paper: '#1e1e1e',
     },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
   },
-})
+});
+
+// Manteniamo i temi statici per compatibilità
+export const theme = createLightTheme();
+export const darkTheme = createDarkTheme();
