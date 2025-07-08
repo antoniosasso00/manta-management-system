@@ -136,11 +136,8 @@ model ODL {
   gammaId                String?
   lastSyncAt             DateTime?
   syncStatus             SyncStatus           @default(SUCCESS)
-  curingCycleId          String?
-  vacuumLines            Int?
   autoclaveLoadItems     AutoclaveLoadItem[]
   nonConformities        NonConformity[]
-  curingCycle            CuringCycle?         @relation("ODLCuringCycle", fields: [curingCycleId], references: [id])
   part                   Part                 @relation(fields: [partId], references: [id])
   events                 ProductionEvent[]
   qualityCertificates    QualityCertificate[]
@@ -151,7 +148,6 @@ model ODL {
   @@index([partId, status])
   @@index([status, priority, createdAt])
   @@index([gammaId])
-  @@index([curingCycleId])
   @@index([createdAt])
   @@map("odls")
 }
@@ -310,7 +306,6 @@ model CuringCycle {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   autoclaveLoads    AutoclaveLoad[]
-  odls              ODL[]           @relation("ODLCuringCycle")
   defaultParts      Part[]          @relation("DefaultCuringCycle")
   partAutoclaves    PartAutoclave[]
 

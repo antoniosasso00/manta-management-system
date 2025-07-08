@@ -66,14 +66,13 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Verifica se ci sono ODL o carichi associati
-    const [odls, loads, partConfigs] = await Promise.all([
-      prisma.oDL.count({ where: { curingCycleId: id } }),
+    // Verifica se ci sono carichi o configurazioni part associati
+    const [loads, partConfigs] = await Promise.all([
       prisma.autoclaveLoad.count({ where: { curingCycleId: id } }),
       prisma.partAutoclave.count({ where: { curingCycleId: id } })
     ]);
 
-    if (odls > 0 || loads > 0 || partConfigs > 0) {
+    if (loads > 0 || partConfigs > 0) {
       return NextResponse.json(
         { error: 'Impossibile eliminare: ciclo in uso' },
         { status: 400 }

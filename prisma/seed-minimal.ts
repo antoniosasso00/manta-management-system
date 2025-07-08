@@ -235,9 +235,6 @@ async function main() {
       qrCode: qrCode,
       gammaId: 'GM-TEST-001',
       curingCycleId: curingCycle.id,
-      length: 2400,
-      width: 800,
-      height: 25,
       vacuumLines: 2,
     },
   })

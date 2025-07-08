@@ -31,7 +31,6 @@ export async function POST(
     const batch = await prisma.autoclaveLoad.findUnique({
       where: { id: params.id },
       include: {
-        curingCycle: true,
         loadItems: true,
       },
     });
@@ -47,8 +46,11 @@ export async function POST(
         status: 'CLEANROOM_COMPLETED',
       },
       include: {
-        part: true,
-        curingCycle: true,
+        part: {
+          include: {
+            defaultCuringCycle: true,
+          }
+        }
       },
     });
 
@@ -61,7 +63,7 @@ export async function POST(
 
     // Verifica compatibilità cicli di cura
     const incompatibleOdls = odls.filter(odl => {
-      const odlCycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
+      const odlCycleId = odl.part.defaultCuringCycleId;
       return odlCycleId !== batch.curingCycleId;
     });
 

@@ -964,7 +964,7 @@ async function main() {
       status: ODLStatus.IN_CLEANROOM,
       gammaId: 'GM-ODL-001',
       curingCycleId: curingCycles[0].id,
-      length: 2400, width: 800, height: 25, vacuumLines: 2,
+      vacuumLines: 2,
     },
     {
       odlNumber: 'ODL-24-002',
@@ -975,7 +975,7 @@ async function main() {
       status: ODLStatus.IN_CLEANROOM,
       gammaId: 'GM-ODL-002',
       curingCycleId: curingCycles[1].id,
-      length: 1800, width: 300, height: 80, vacuumLines: 1,
+      vacuumLines: 1,
     },
     {
       odlNumber: 'ODL-24-003',
@@ -986,7 +986,7 @@ async function main() {
       status: ODLStatus.IN_CLEANROOM,
       gammaId: 'GM-ODL-003',
       curingCycleId: curingCycles[4].id,
-      length: 800, width: 800, height: 200, vacuumLines: 1,
+      vacuumLines: 1,
     }
   ]
 
@@ -1022,7 +1022,7 @@ async function main() {
         qrCode: 'QR-ODL-24-021',
         gammaId: 'GM-ODL-002',
         curingCycleId: curingCycles[1].id,
-        length: 1800, width: 300, height: 80, vacuumLines: 1,
+        vacuumLines: 1,
       },
     }),
     prisma.oDL.create({
@@ -1035,7 +1035,7 @@ async function main() {
         qrCode: 'QR-ODL-24-022',
         gammaId: 'GM-ODL-003',
         curingCycleId: curingCycles[4].id,
-        length: 800, width: 800, height: 200, vacuumLines: 1,
+        vacuumLines: 1,
       },
     }),
     
@@ -1050,7 +1050,7 @@ async function main() {
         qrCode: 'QR-ODL-24-004',
         gammaId: 'GM-ODL-004',
         curingCycleId: curingCycles[0].id,
-        length: 2200, width: 750, height: 20, vacuumLines: 2,
+        vacuumLines: 2,
       },
     }),
     prisma.oDL.create({
@@ -1063,7 +1063,7 @@ async function main() {
         qrCode: 'QR-ODL-24-005',
         gammaId: 'GM-ODL-005',
         curingCycleId: curingCycles[2].id,
-        length: 3000, width: 400, height: 80, vacuumLines: 3,
+        vacuumLines: 3,
       },
     }),
     prisma.oDL.create({
@@ -1076,7 +1076,7 @@ async function main() {
         qrCode: 'QR-ODL-24-006',
         gammaId: 'GM-ODL-006',
         curingCycleId: curingCycles[1].id,
-        length: 1800, width: 600, height: 30, vacuumLines: 2,
+        vacuumLines: 2,
       },
     }),
     prisma.oDL.create({
@@ -1089,7 +1089,7 @@ async function main() {
         qrCode: 'QR-ODL-24-007',
         gammaId: 'GM-ODL-007',
         curingCycleId: curingCycles[4].id,
-        length: 1200, width: 600, height: 10, vacuumLines: 1,
+        vacuumLines: 1,
       },
     }),
     
@@ -1104,7 +1104,7 @@ async function main() {
         qrCode: 'QR-ODL-24-008',
         gammaId: 'GM-ODL-008',
         curingCycleId: curingCycles[3].id,
-        length: 2800, width: 1200, height: 15, vacuumLines: 4,
+        vacuumLines: 4,
       },
     }),
     prisma.oDL.create({
@@ -1117,7 +1117,7 @@ async function main() {
         qrCode: 'QR-ODL-24-009',
         gammaId: 'GM-ODL-009',
         curingCycleId: curingCycles[1].id,
-        length: 1500, width: 1200, height: 100, vacuumLines: 3,
+        vacuumLines: 3,
       },
     }),
     
@@ -1132,7 +1132,7 @@ async function main() {
         qrCode: 'QR-ODL-24-010',
         gammaId: 'GM-ODL-010',
         curingCycleId: curingCycles[2].id,
-        length: 3500, width: 1000, height: 15, vacuumLines: 4,
+        vacuumLines: 4,
       },
     }),
     prisma.oDL.create({
@@ -1145,7 +1145,7 @@ async function main() {
         qrCode: 'QR-ODL-24-011',
         gammaId: 'GM-ODL-011',
         curingCycleId: curingCycles[3].id,
-        length: 1200, width: 600, height: 40, vacuumLines: 2,
+        vacuumLines: 2,
       },
     }),
     
@@ -1160,7 +1160,7 @@ async function main() {
         qrCode: 'QR-ODL-24-012',
         gammaId: 'GM-ODL-012',
         curingCycleId: curingCycles[0].id,
-        length: 2800, width: 900, height: 35, vacuumLines: 3,
+        vacuumLines: 3,
       },
     }),
     prisma.oDL.create({
@@ -1173,7 +1173,7 @@ async function main() {
         qrCode: 'QR-ODL-24-013',
         gammaId: 'GM-ODL-013',
         curingCycleId: curingCycles[0].id,
-        length: 2000, width: 1800, height: 40, vacuumLines: 4,
+        vacuumLines: 4,
       },
     }),
     
@@ -1188,7 +1188,7 @@ async function main() {
         qrCode: 'QR-ODL-24-014',
         gammaId: 'GM-ODL-014',
         curingCycleId: curingCycles[1].id,
-        length: 2000, width: 800, height: 25, vacuumLines: 2,
+        vacuumLines: 2,
       },
     }),
     
@@ -1203,7 +1203,7 @@ async function main() {
         qrCode: 'QR-ODL-24-015',
         gammaId: 'GM-ODL-015',
         curingCycleId: curingCycles[2].id,
-        length: 4200, width: 1500, height: 50, vacuumLines: 6,
+        vacuumLines: 6,
       },
     }),
     
@@ -1218,7 +1218,7 @@ async function main() {
         qrCode: 'QR-ODL-24-016',
         gammaId: 'GM-ODL-016',
         curingCycleId: curingCycles[0].id,
-        length: 2400, width: 800, height: 25, vacuumLines: 2,
+        vacuumLines: 2,
       },
     }),
     
@@ -1233,7 +1233,7 @@ async function main() {
         qrCode: 'QR-ODL-24-017',
         gammaId: 'GM-ODL-017',
         curingCycleId: curingCycles[0].id,
-        length: 2200, width: 750, height: 20, vacuumLines: 2,
+        vacuumLines: 2,
       },
     }),
     prisma.oDL.create({
@@ -1246,7 +1246,7 @@ async function main() {
         qrCode: 'QR-ODL-24-018',
         gammaId: 'GM-ODL-018',
         curingCycleId: curingCycles[3].id,
-        length: 2800, width: 1200, height: 15, vacuumLines: 4,
+        vacuumLines: 4,
       },
     }),
     prisma.oDL.create({
@@ -1259,7 +1259,7 @@ async function main() {
         qrCode: 'QR-ODL-24-019',
         gammaId: 'GM-ODL-019',
         curingCycleId: curingCycles[2].id,
-        length: 3000, width: 400, height: 80, vacuumLines: 3,
+        vacuumLines: 3,
       },
     }),
     prisma.oDL.create({
@@ -1272,7 +1272,7 @@ async function main() {
         qrCode: 'QR-ODL-24-020',
         gammaId: 'GM-ODL-020',
         curingCycleId: curingCycles[4].id,
-        length: 1200, width: 600, height: 10, vacuumLines: 1,
+        vacuumLines: 1,
       },
     }),
   ])

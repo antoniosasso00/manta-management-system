@@ -147,7 +147,7 @@ export function ODLSelectionStep({
                       secondary={
                         <Box>
                           <Typography variant="caption" color="text.secondary">
-                            {odl.part.partTools.length} tool • {odl.vacuumLines || odl.part.defaultVacuumLines || 1} linee vuoto
+                            {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
                           </Typography>
                         </Box>
                       }

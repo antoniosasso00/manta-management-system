@@ -17,14 +17,6 @@ export interface ODLEntity {
   lastSyncAt?: Date | null
   syncStatus: SyncStatus
   
-  // Override dimensions (if different from part standard)
-  length?: number | null
-  width?: number | null
-  height?: number | null
-  
-  // Override production data (if different from part standard)
-  curingCycle?: string | null
-  vacuumLines?: number | null
   
   // Relations
   part?: Part
@@ -46,14 +38,7 @@ export class ODL implements ODLEntity {
   public lastSyncAt?: Date | null
   public syncStatus: SyncStatus
   
-  // Override dimensions
-  public length?: number | null
-  public width?: number | null
-  public height?: number | null
   
-  // Override production data
-  public curingCycle?: string | null
-  public vacuumLines?: number | null
   
   // Relations
   public part?: Part
@@ -71,11 +56,6 @@ export class ODL implements ODLEntity {
     this.gammaId = data.gammaId
     this.lastSyncAt = data.lastSyncAt
     this.syncStatus = data.syncStatus
-    this.length = data.length
-    this.width = data.width
-    this.height = data.height
-    this.curingCycle = data.curingCycle
-    this.vacuumLines = data.vacuumLines
     this.part = data.part
   }
 
@@ -146,25 +126,6 @@ export class ODL implements ODLEntity {
     this.markAsUpdated()
   }
 
-  public updateDimensions(dimensions: {
-    length?: number
-    width?: number
-    height?: number
-  }): void {
-    this.length = dimensions.length ?? null
-    this.width = dimensions.width ?? null
-    this.height = dimensions.height ?? null
-    this.markAsUpdated()
-  }
-
-  public updateProductionData(data: {
-    curingCycle?: string
-    vacuumLines?: number
-  }): void {
-    this.curingCycle = data.curingCycle ?? null
-    this.vacuumLines = data.vacuumLines ?? null
-    this.markAsUpdated()
-  }
 
   public markAsSynced(gammaId?: string): void {
     this.lastSyncAt = new Date()
@@ -181,29 +142,6 @@ export class ODL implements ODLEntity {
   }
 
   // Getters for effective values (considering part defaults)
-  public getEffectiveLength(): number | null {
-    return this.length ?? this.part?.standardLength ?? null
-  }
-
-  public getEffectiveWidth(): number | null {
-    return this.width ?? this.part?.standardWidth ?? null
-  }
-
-  public getEffectiveHeight(): number | null {
-    return this.height ?? this.part?.standardHeight ?? null
-  }
-
-  public getEffectiveCuringCycle(): string | null {
-    return this.curingCycle ?? this.part?.defaultCuringCycle ?? null
-  }
-
-  public getEffectiveVacuumLines(): number | null {
-    return this.vacuumLines ?? this.part?.defaultVacuumLines ?? null
-  }
-
-  public hasEffectiveDimensions(): boolean {
-    return !!(this.getEffectiveLength() && this.getEffectiveWidth() && this.getEffectiveHeight())
-  }
 
   public isInProduction(): boolean {
     return [

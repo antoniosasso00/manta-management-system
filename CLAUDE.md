@@ -260,6 +260,38 @@ npm run build && npm run lint && npm run type-check
 3. **Department Management**: Pages for department heads and shift supervisors
 4. **Python Microservices**: Optimization algorithms for autoclave nesting (2D bin packing)
 
+## Schema Relazionale e Gerarchia Dati (IMPORTANTE)
+
+### Principio Chiave: Part Number come Fonte di Verità
+- **Chiave Primaria**: Il `partNumber` è la chiave primaria del business domain
+- **Gerarchia Dati**: `ODL` → `Part` → Configurazioni Reparto-Specifiche
+- **Eliminazione Ridondanza**: Rimossi `curingCycleId`, `vacuumLines`, `length`, `width`, `height` dal modello ODL
+
+### Flusso Dati Corretto
+```
+ODL.partId → Part.partNumber → PartAutoclave.{curingCycleId, vacuumLines, setupTime}
+                              → PartCleanroom.{layupSequence, resinType, cycleTime}
+                              → PartNDI.{inspectionMethod, acceptanceCriteria}
+                              → PartTool.{toolId} → Tool.{base, height, weight}
+```
+
+### Accesso ai Dati di Configurazione
+- **Ciclo di Cura**: `odl.part.defaultCuringCycleId` (NOT `odl.curingCycleId`)
+- **Linee Vacuum**: `odl.part.defaultVacuumLines` (NOT `odl.vacuumLines`)
+- **Dimensioni**: Tool-based tramite `odl.part.partTools[0].tool.{base, height}` (NOT ODL fields)
+- **Configurazioni Reparto**: Via `PartAutoclave`, `PartCleanroom`, `PartNDI`
+
+### Pattern di Query Corretti
+```typescript
+// ✅ CORRETTO - Usa configurazione Part
+const cycleId = odl.part.defaultCuringCycleId;
+const vacuumLines = odl.part.defaultVacuumLines;
+
+// ❌ SBAGLIATO - Campi rimossi dal modello ODL
+const cycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
+const dimensions = { length: odl.length, width: odl.width };
+```
+
 ## Memories
 - **Rispondi in italiano**: Indicates a preference for Italian language interactions when possible
 - **Project Documentation**: Aggiorna i requisiti e i documenti quando vengono definite nuove funzionalità

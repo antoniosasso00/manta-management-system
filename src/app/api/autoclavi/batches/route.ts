@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         autoclave: true,
-        curingCycle: true,
         loadItems: {
           include: {
             odl: {
@@ -86,8 +85,11 @@ export async function POST(request: NextRequest) {
         status: 'CLEANROOM_COMPLETED', // Solo ODL completati in Clean Room
       },
       include: {
-        part: true,
-        curingCycle: true,
+        part: {
+          include: {
+            defaultCuringCycle: true,
+          }
+        }
       },
     });
 
@@ -112,7 +114,7 @@ export async function POST(request: NextRequest) {
 
     // Controlla che tutti gli ODL siano compatibili con il ciclo
     const incompatibleOdls = odls.filter(odl => {
-      const odlCycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
+      const odlCycleId = odl.part.defaultCuringCycleId;
       return odlCycleId !== validatedData.curingCycleId;
     });
 
@@ -169,7 +171,6 @@ export async function POST(request: NextRequest) {
       where: { id: batch.id },
       include: {
         autoclave: true,
-        curingCycle: true,
         loadItems: {
           include: {
             odl: {

@@ -82,11 +82,6 @@ interface ODL {
   priority: string
   quantity: number
   notes?: string
-  length?: number
-  width?: number
-  height?: number
-  vacuumLines?: number
-  curingCycleId?: string
   part: {
     id: string
     partNumber: string
@@ -243,11 +238,6 @@ export default function EditODLPage() {
         priority: data.priority,
         expectedCompletionDate: data.expectedCompletionDate ? new Date(data.expectedCompletionDate) : undefined,
         notes: data.notes || '',
-        length: data.length,
-        width: data.width,
-        height: data.height,
-        curingCycleId: data.curingCycleId || '',
-        vacuumLines: data.vacuumLines
       })
       
       setSelectedPart(data.part)
@@ -392,11 +382,6 @@ export default function EditODLPage() {
       'odlNumber': 'Progressivo ODL',
       'partId': 'Parte',
       'notes': 'Note',
-      'length': 'Lunghezza',
-      'width': 'Larghezza',
-      'height': 'Altezza',
-      'vacuumLines': 'Linee Vacuum',
-      'curingCycleId': 'Ciclo di Cura'
     }
     return labels[field] || field
   }

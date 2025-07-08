@@ -48,8 +48,6 @@ export class ODLService {
         quantity: input.quantity,
         priority: input.priority,
         qrCode: qrCode,
-        curingCycleId: input.partAutoclave?.curingCycleId,
-        vacuumLines: input.partAutoclave?.vacuumLines,
       },
       include: {
         part: true
@@ -270,8 +268,6 @@ export class ODLService {
         partId: input.partId,
         quantity: input.quantity,
         priority: input.priority,
-        curingCycleId: input.partAutoclave?.curingCycleId,
-        vacuumLines: input.partAutoclave?.vacuumLines,
       },
       include: {
         part: true

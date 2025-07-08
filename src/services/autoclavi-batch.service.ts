@@ -389,7 +389,7 @@ export class AutoclaviBatchService {
 
     // Verifica compatibilità cicli
     const incompatible = odls.filter(odl => {
-      const odlCycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
+      const odlCycleId = odl.part.defaultCuringCycleId;
       return odlCycleId !== data.curingCycleId;
     });
 

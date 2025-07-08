@@ -51,9 +51,9 @@ export class OptimizationIntegrationService {
         quantity: odl.quantity,
         
         // Dimensioni (usa le dimensioni del tooling principale)
-        length: odl.length || tools[0]?.tool.base || 0,
-        width: odl.width || tools[0]?.tool.height || 0,
-        height: odl.height || 0.1, // Default minimo
+        length: tools[0]?.tool.base || 0,
+        width: tools[0]?.tool.height || 0,
+        height: 0.1, // Default minimo
         
         // Parametri ciclo di cura
         curing_cycle_id: config.curingCycleId,

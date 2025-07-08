@@ -37,8 +37,7 @@ export async function GET(request: NextRequest) {
           include: {
             defaultCuringCycle: true,
           },
-        },
-        curingCycle: true,
+        }
       },
       orderBy: [
         { priority: 'desc' },
@@ -51,7 +50,7 @@ export async function GET(request: NextRequest) {
     let filteredOdls = odls;
     if (curingCycleId) {
       filteredOdls = odls.filter(odl => {
-        const odlCycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
+        const odlCycleId = odl.part.defaultCuringCycleId;
         return odlCycleId === curingCycleId;
       });
     }
@@ -61,8 +60,8 @@ export async function GET(request: NextRequest) {
     const cycleNames: Record<string, string> = {};
 
     for (const odl of filteredOdls) {
-      const cycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
-      const cycle = odl.curingCycle || odl.part.defaultCuringCycle;
+      const cycleId = odl.part.defaultCuringCycleId;
+      const cycle = odl.part.defaultCuringCycle;
       
       if (cycleId && cycle) {
         if (!groupedByCycle[cycleId]) {
@@ -91,8 +90,8 @@ export async function GET(request: NextRequest) {
         quantity: odl.quantity,
         priority: odl.priority,
         createdAt: odl.createdAt,
-        curingCycleId: odl.curingCycleId || odl.part.defaultCuringCycleId,
-        curingCycleName: (odl.curingCycle || odl.part.defaultCuringCycle)?.name,
+        curingCycleId: odl.part.defaultCuringCycleId,
+        curingCycleName: odl.part.defaultCuringCycle?.name,
       })),
       groupedByCycle,
       cycleNames,

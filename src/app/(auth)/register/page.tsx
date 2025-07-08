@@ -216,7 +216,7 @@ export default function RegisterPage() {
             {/* Password strength indicator */}
             {watchedPassword && passwordStrength && (
               <Box sx={{ mt: 2, mb: 2 }}>
-                <Typography variant="body2" sx={{ mb: 1 }}>
+                <Typography variant="body2" component="span" sx={{ mb: 1 }}>
                   Sicurezza password: 
                   <Chip
                     label={passwordStrength.level === 'weak' ? 'Debole' : 
