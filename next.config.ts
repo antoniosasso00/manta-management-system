@@ -147,8 +147,8 @@ const nextConfig: NextConfig = {
   // Note: Webpack config disabled when using Turbopack
   // Turbopack handles bundling automatically
 
-  // Output configuration for production
-  output: process.env.NODE_ENV === 'production' && !process.env.NETLIFY ? 'standalone' : undefined,
+  // Output configuration for production  
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
 
   // Power Pack features (if using Next.js Pro)
   poweredByHeader: false, // Remove X-Powered-By header
