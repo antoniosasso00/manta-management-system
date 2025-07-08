@@ -40,11 +40,13 @@ import {
   Search,
   Refresh,
   Visibility,
-  QrCodeScanner
+  QrCodeScanner,
+  Assignment
 } from '@mui/icons-material'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 import { ODLStatus, Priority } from '@prisma/client'
 import { useAuth } from '@/hooks/useAuth'
+import ODLManualAssignment from '@/components/production/ODLManualAssignment'
 
 interface ODL {
   id: string
@@ -81,6 +83,8 @@ export default function ODLPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; odl: ODL | null }>({ open: false, odl: null })
+  const [assignmentDialog, setAssignmentDialog] = useState<{ open: boolean; odl: ODL | null }>({ open: false, odl: null })
+  const [departments, setDepartments] = useState<any[]>([])
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'info' })
 
   const filteredOdls = odls.filter(odl => {
@@ -97,7 +101,20 @@ export default function ODLPage() {
 
   useEffect(() => {
     loadODLs()
+    loadDepartments()
   }, [])
+
+  const loadDepartments = async () => {
+    try {
+      const response = await fetch('/api/departments')
+      if (response.ok) {
+        const data = await response.json()
+        setDepartments(data.departments || [])
+      }
+    } catch (error) {
+      console.error('Errore caricamento reparti:', error)
+    }
+  }
 
   const loadODLs = async () => {
     setLoading(true)
@@ -425,6 +442,16 @@ export default function ODLPage() {
                                   <Edit />
                                 </IconButton>
                               )}
+                              <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => setAssignmentDialog({ open: true, odl })}
+                                  color="primary"
+                                  title="Assegna manualmente a reparto"
+                                >
+                                  <Assignment />
+                                </IconButton>
+                              </RoleBasedAccess>
                               {canDelete && (
                                 <IconButton 
                                   size="small" 
@@ -482,6 +509,30 @@ export default function ODLPage() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Dialog assegnazione manuale ODL */}
+        <ODLManualAssignment
+          open={assignmentDialog.open}
+          onClose={() => setAssignmentDialog({ open: false, odl: null })}
+          odl={assignmentDialog.odl ? {
+            id: assignmentDialog.odl.id,
+            odlNumber: assignmentDialog.odl.odlNumber,
+            status: assignmentDialog.odl.status,
+            part: {
+              partNumber: assignmentDialog.odl.partNumber,
+              description: assignmentDialog.odl.description
+            }
+          } : null}
+          departments={departments}
+          onAssignmentComplete={() => {
+            loadODLs()
+            setSnackbar({
+              open: true,
+              message: 'ODL assegnato con successo al reparto',
+              severity: 'success'
+            })
+          }}
+        />
 
         {/* Snackbar per notifiche */}
         <Snackbar

@@ -293,11 +293,22 @@ export class TrackingService {
       }
     })
 
+    // ODL pronti per questo reparto (completati dal reparto precedente o CREATED per primo reparto)
+    const readyODLs = await this.getODLsReadyForDepartment(department.type)
+
     const odlInPreparation: ODLTrackingStatus[] = []
     const odlInProduction: ODLTrackingStatus[] = []
     const odlCompleted: ODLTrackingStatus[] = []
 
-    // Classifica gli ODL in base al loro stato
+    // Aggiungi ODL pronti per questo reparto alla preparazione
+    for (const readyODL of readyODLs) {
+      const trackingStatus = await this.getODLTrackingStatus(readyODL.id)
+      if (trackingStatus) {
+        odlInPreparation.push(trackingStatus)
+      }
+    }
+
+    // Classifica gli ODL che hanno già eventi in questo reparto
     for (const odl of odlsWithEvents) {
       const trackingStatus = await this.getODLTrackingStatus(odl.id)
       if (!trackingStatus) continue
@@ -305,13 +316,25 @@ export class TrackingService {
       const lastEvent = odl.events[0]
       
       if (!lastEvent) {
-        odlInPreparation.push(trackingStatus)
+        // Verifica se non è già stato aggiunto come "ready"
+        if (!readyODLs.find(ready => ready.id === odl.id)) {
+          odlInPreparation.push(trackingStatus)
+        }
       } else if (lastEvent.eventType === EventType.ENTRY) {
         odlInProduction.push(trackingStatus)
       } else if (lastEvent.eventType === EventType.EXIT) {
-        odlCompleted.push(trackingStatus)
+        // Verifica se ODL è già progredito oltre questo reparto
+        const hasProgressedBeyond = await this.hasODLProgressedBeyondDepartment(odl, department.type)
+        
+        // Mostra in "completati" solo se non è ancora progredito al reparto successivo
+        if (!hasProgressedBeyond) {
+          odlCompleted.push(trackingStatus)
+        }
       } else {
-        odlInPreparation.push(trackingStatus)
+        // Verifica se non è già stato aggiunto come "ready"
+        if (!readyODLs.find(ready => ready.id === odl.id)) {
+          odlInPreparation.push(trackingStatus)
+        }
       }
     }
 
@@ -336,5 +359,119 @@ export class TrackingService {
         efficiency: Math.round(efficiency)
       }
     }
+  }
+
+  /**
+   * Verifica se un ODL è progredito oltre il reparto specificato nel workflow
+   */
+  private static async hasODLProgressedBeyondDepartment(
+    odl: any, 
+    currentDepartmentType: string
+  ): Promise<boolean> {
+    // Definisce la sequenza del workflow
+    const workflowSequence = [
+      'CLEANROOM',
+      'AUTOCLAVE', 
+      'CONTROLLO_NUMERICO',
+      'NDI',
+      'MONTAGGIO',
+      'VERNICIATURA',
+      'CONTROLLO_QUALITA'
+    ]
+
+    // Trova la posizione del reparto corrente nel workflow
+    const currentPosition = workflowSequence.indexOf(currentDepartmentType)
+    if (currentPosition === -1) {
+      // Se il reparto non è nel workflow principale (es. HONEYCOMB, MOTORI), non nascondere
+      return false
+    }
+
+    // Verifica lo stato attuale dell'ODL
+    const currentODL = await prisma.oDL.findUnique({
+      where: { id: odl.id },
+      select: { status: true }
+    })
+
+    if (!currentODL) return false
+
+    // Mappa gli stati ODL alle posizioni del workflow
+    const statusToPosition: Record<string, number> = {
+      'CREATED': -1,
+      'IN_CLEANROOM': 0,
+      'CLEANROOM_COMPLETED': 0,
+      'IN_AUTOCLAVE': 1,
+      'AUTOCLAVE_COMPLETED': 1,
+      'IN_CONTROLLO_NUMERICO': 2,
+      'CONTROLLO_NUMERICO_COMPLETED': 2,
+      'IN_NDI': 3,
+      'NDI_COMPLETED': 3,
+      'IN_MONTAGGIO': 4,
+      'MONTAGGIO_COMPLETED': 4,
+      'IN_VERNICIATURA': 5,
+      'VERNICIATURA_COMPLETED': 5,
+      'IN_CONTROLLO_QUALITA': 6,
+      'CONTROLLO_QUALITA_COMPLETED': 6,
+      'COMPLETED': 7
+    }
+
+    const odlCurrentPosition = statusToPosition[currentODL.status] ?? -1
+    
+    // L'ODL è progredito oltre se la sua posizione corrente è maggiore 
+    // della posizione del reparto che stiamo visualizzando
+    return odlCurrentPosition > currentPosition
+  }
+
+  /**
+   * Trova ODL pronti per iniziare lavorazione in un reparto specifico
+   */
+  private static async getODLsReadyForDepartment(departmentType: string): Promise<any[]> {
+    // Definisce la sequenza del workflow
+    const workflowSequence = [
+      'CLEANROOM',
+      'AUTOCLAVE', 
+      'CONTROLLO_NUMERICO',
+      'NDI',
+      'MONTAGGIO',
+      'VERNICIATURA',
+      'CONTROLLO_QUALITA'
+    ]
+
+    const departmentPosition = workflowSequence.indexOf(departmentType)
+    
+    let readyStatuses: string[] = []
+
+    if (departmentPosition === 0) {
+      // Primo reparto: accetta ODL CREATED
+      readyStatuses = ['CREATED']
+    } else if (departmentPosition > 0) {
+      // Reparti successivi: accetta ODL completati dal reparto precedente
+      const previousDepartment = workflowSequence[departmentPosition - 1]
+      readyStatuses = [`${previousDepartment}_COMPLETED`]
+    } else {
+      // Reparti speciali (HONEYCOMB, MOTORI): accetta CREATED
+      readyStatuses = ['CREATED']
+    }
+
+    // Cerca ODL con stati appropriati che NON hanno ancora eventi in questo reparto
+    const readyODLs = await prisma.oDL.findMany({
+      where: {
+        status: {
+          in: readyStatuses as any[]
+        },
+        // Escludi ODL che hanno già eventi in questo reparto
+        events: {
+          none: {
+            department: {
+              type: departmentType as any
+            }
+          }
+        }
+      },
+      include: {
+        part: true
+      }
+    })
+
+    return readyODLs
   }
 }
