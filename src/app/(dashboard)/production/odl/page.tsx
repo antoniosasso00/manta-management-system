@@ -28,7 +28,9 @@ import {
   Fab,
   Alert,
   Snackbar,
-  CircularProgress
+  CircularProgress,
+  Tabs,
+  Tab
 } from '@mui/material'
 import {
   Engineering,
@@ -41,12 +43,14 @@ import {
   Refresh,
   Visibility,
   QrCodeScanner,
-  Assignment
+  Assignment,
+  PlaylistAdd
 } from '@mui/icons-material'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 import { ODLStatus, Priority } from '@prisma/client'
 import { useAuth } from '@/hooks/useAuth'
 import ODLManualAssignment from '@/components/production/ODLManualAssignment'
+import BulkODLAssignment from '@/components/production/BulkODLAssignment'
 
 interface ODL {
   id: string
@@ -85,6 +89,7 @@ export default function ODLPage() {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; odl: ODL | null }>({ open: false, odl: null })
   const [assignmentDialog, setAssignmentDialog] = useState<{ open: boolean; odl: ODL | null }>({ open: false, odl: null })
   const [departments, setDepartments] = useState<any[]>([])
+  const [tabValue, setTabValue] = useState(0)
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'info' })
 
   const filteredOdls = odls.filter(odl => {
@@ -307,178 +312,210 @@ export default function ODLPage() {
               </Grid>
             </Grid>
 
-            {/* Filtri */}
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>Filtri</Typography>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    fullWidth
-                    placeholder="Cerca ODL, parte, descrizione..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Search />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Stato"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <MenuItem value="">Tutti gli stati</MenuItem>
-                    <MenuItem value="CREATED">Creato</MenuItem>
-                    <MenuItem value="IN_CLEANROOM">In Clean Room</MenuItem>
-                    <MenuItem value="IN_AUTOCLAVE">In Autoclavi</MenuItem>
-                    <MenuItem value="IN_NDI">In NDI</MenuItem>
-                    <MenuItem value="COMPLETED">Completato</MenuItem>
-                    <MenuItem value="ON_HOLD">In Attesa</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Priorità"
-                    value={priorityFilter}
-                    onChange={(e) => setPriorityFilter(e.target.value)}
-                  >
-                    <MenuItem value="">Tutte le priorità</MenuItem>
-                    <MenuItem value="URGENT">Urgente</MenuItem>
-                    <MenuItem value="HIGH">Alta</MenuItem>
-                    <MenuItem value="NORMAL">Normale</MenuItem>
-                    <MenuItem value="LOW">Bassa</MenuItem>
-                  </TextField>
-                </Grid>
-              </Grid>
+            {/* Tab Navigation */}
+            <Paper sx={{ mb: 3 }}>
+              <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+                <Tab label="Gestione ODL" />
+                <Tab label="Assegnazione Multipla" icon={<PlaylistAdd />} />
+              </Tabs>
             </Paper>
 
-            {/* Tabella ODL */}
-            <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6">
-                  ODL ({filteredOdls.length})
-                </Typography>
-                {canEdit && (
-                  <Button
-                    variant="contained"
-                    startIcon={<Add />}
-                    href="/production/odl/create"
-                  >
-                    Nuovo ODL
-                  </Button>
-                )}
-              </Box>
+            {/* Tab Content */}
+            {tabValue === 0 && (
+              <>
+                {/* Filtri */}
+                <Paper sx={{ p: 3 }}>
+                  <Typography variant="h6" gutterBottom>Filtri</Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        fullWidth
+                        placeholder="Cerca ODL, parte, descrizione..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Search />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Stato"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <MenuItem value="">Tutti gli stati</MenuItem>
+                        <MenuItem value="CREATED">Creato</MenuItem>
+                        <MenuItem value="IN_CLEANROOM">In Clean Room</MenuItem>
+                        <MenuItem value="IN_AUTOCLAVE">In Autoclavi</MenuItem>
+                        <MenuItem value="IN_NDI">In NDI</MenuItem>
+                        <MenuItem value="COMPLETED">Completato</MenuItem>
+                        <MenuItem value="ON_HOLD">In Attesa</MenuItem>
+                      </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Priorità"
+                        value={priorityFilter}
+                        onChange={(e) => setPriorityFilter(e.target.value)}
+                      >
+                        <MenuItem value="">Tutte le priorità</MenuItem>
+                        <MenuItem value="URGENT">Urgente</MenuItem>
+                        <MenuItem value="HIGH">Alta</MenuItem>
+                        <MenuItem value="NORMAL">Normale</MenuItem>
+                        <MenuItem value="LOW">Bassa</MenuItem>
+                      </TextField>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </>
+            )}
 
-              {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                  <CircularProgress />
+            {/* Tabella ODL - Solo nel primo tab */}
+            {tabValue === 0 && (
+              <Paper sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h6">
+                    ODL ({filteredOdls.length})
+                  </Typography>
+                  {canEdit && (
+                    <Button
+                      variant="contained"
+                      startIcon={<Add />}
+                      href="/production/odl/create"
+                    >
+                      Nuovo ODL
+                    </Button>
+                  )}
                 </Box>
-              ) : (
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>ODL</TableCell>
-                        <TableCell>Parte</TableCell>
-                        <TableCell>Stato</TableCell>
-                        <TableCell>Priorità</TableCell>
-                        <TableCell>Quantità</TableCell>
-                        <TableCell>Scadenza</TableCell>
-                        <TableCell>Azioni</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredOdls.map((odl) => (
-                        <TableRow key={odl.id} hover>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight="bold">
-                              {odl.odlNumber}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Box>
-                              <Typography variant="body2">
-                                {odl.partNumber}
-                              </Typography>
-                              <Typography variant="caption" color="textSecondary">
-                                {odl.description}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={getStatusLabel(odl.status)}
-                              color={getStatusColor(odl.status)}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={odl.priority}
-                              color={getPriorityColor(odl.priority)}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>{odl.quantity}</TableCell>
-                          <TableCell>
-                            {odl.dueDate ? new Date(odl.dueDate).toLocaleDateString('it-IT') : '-'}
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <IconButton size="small" href={`/production/odl/${odl.id}`}>
-                                <Visibility />
-                              </IconButton>
-                              {canEdit && (
-                                <IconButton size="small" href={`/production/odl/${odl.id}/edit`}>
-                                  <Edit />
-                                </IconButton>
-                              )}
-                              <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
-                                <IconButton 
-                                  size="small" 
-                                  onClick={() => setAssignmentDialog({ open: true, odl })}
-                                  color="primary"
-                                  title="Assegna manualmente a reparto"
-                                >
-                                  <Assignment />
-                                </IconButton>
-                              </RoleBasedAccess>
-                              {canDelete && (
-                                <IconButton 
-                                  size="small" 
-                                  onClick={() => setDeleteDialog({ open: true, odl })}
-                                  color="error"
-                                >
-                                  <Delete />
-                                </IconButton>
-                              )}
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {filteredOdls.length === 0 && !loading && (
+
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
                         <TableRow>
-                          <TableCell colSpan={7} align="center">
-                            <Typography color="textSecondary">
-                              Nessun ODL trovato
-                            </Typography>
-                          </TableCell>
+                          <TableCell>ODL</TableCell>
+                          <TableCell>Parte</TableCell>
+                          <TableCell>Stato</TableCell>
+                          <TableCell>Priorità</TableCell>
+                          <TableCell>Quantità</TableCell>
+                          <TableCell>Scadenza</TableCell>
+                          <TableCell>Azioni</TableCell>
                         </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </Paper>
+                      </TableHead>
+                      <TableBody>
+                        {filteredOdls.map((odl) => (
+                          <TableRow key={odl.id} hover>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight="bold">
+                                {odl.odlNumber}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Box>
+                                <Typography variant="body2">
+                                  {odl.partNumber}
+                                </Typography>
+                                <Typography variant="caption" color="textSecondary">
+                                  {odl.description}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={getStatusLabel(odl.status)}
+                                color={getStatusColor(odl.status)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={odl.priority}
+                                color={getPriorityColor(odl.priority)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>{odl.quantity}</TableCell>
+                            <TableCell>
+                              {odl.dueDate ? new Date(odl.dueDate).toLocaleDateString('it-IT') : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                <IconButton size="small" href={`/production/odl/${odl.id}`}>
+                                  <Visibility />
+                                </IconButton>
+                                {canEdit && (
+                                  <IconButton size="small" href={`/production/odl/${odl.id}/edit`}>
+                                    <Edit />
+                                  </IconButton>
+                                )}
+                                <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
+                                  <IconButton 
+                                    size="small" 
+                                    onClick={() => setAssignmentDialog({ open: true, odl })}
+                                    color="primary"
+                                    title="Assegna manualmente a reparto"
+                                  >
+                                    <Assignment />
+                                  </IconButton>
+                                </RoleBasedAccess>
+                                {canDelete && (
+                                  <IconButton 
+                                    size="small" 
+                                    onClick={() => setDeleteDialog({ open: true, odl })}
+                                    color="error"
+                                  >
+                                    <Delete />
+                                  </IconButton>
+                                )}
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {filteredOdls.length === 0 && !loading && (
+                          <TableRow>
+                            <TableCell colSpan={7} align="center">
+                              <Typography color="textSecondary">
+                                Nessun ODL trovato
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Paper>
+            )}
+
+            {/* Bulk Assignment Tab */}
+            {tabValue === 1 && (
+              <RoleBasedAccess requiredRoles={['ADMIN', 'SUPERVISOR']}>
+                <BulkODLAssignment
+                  departments={departments}
+                  onAssignmentComplete={(successCount, failedCount) => {
+                    setSnackbar({
+                      open: true,
+                      message: `Assegnazione completata: ${successCount} ODL assegnati${failedCount > 0 ? `, ${failedCount} falliti` : ''}`,
+                      severity: failedCount > 0 ? 'warning' : 'success'
+                    })
+                    loadODLs() // Reload per aggiornare stats
+                  }}
+                />
+              </RoleBasedAccess>
+            )}
           </Box>
         </RoleBasedAccess>
 
