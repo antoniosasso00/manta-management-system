@@ -46,6 +46,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '@/hooks/useAuth';
 import { TabContext, TabList } from '@mui/lab'
+import { RetryManager, ConnectivityChecker, fetchWithRetry } from '@/utils/network-helpers';
 
 // QR Scanner con @zxing/browser
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -111,6 +112,7 @@ export default function QRScannerPage() {
   const [scanResult, setScanResult] = useState<QRData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isEffectivelyOnline, setIsEffectivelyOnline] = useState(false);
   const [recentScans, setRecentScans] = useState<ScanEvent[]>([]);
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -126,26 +128,60 @@ export default function QRScannerPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<BrowserMultiFormatReader | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const connectivityCleanupRef = useRef<(() => void) | null>(null);
 
-  // Monitor stato online/offline
+  // Monitor stato online/offline con test connettività effettiva
   useEffect(() => {
-    const handleOnlineStatus = () => setIsOnline(navigator.onLine);
+    // Cleanup previous connectivity monitoring
+    if (connectivityCleanupRef.current) {
+      connectivityCleanupRef.current();
+    }
+
+    // Start enhanced connectivity monitoring
+    const cleanup = ConnectivityChecker.startMonitoring((effectivelyOnline) => {
+      setIsEffectivelyOnline(effectivelyOnline);
+      // Mantieni anche il check basic per fallback
+      setIsOnline(navigator.onLine);
+    }, 30000); // Check ogni 30 secondi
+
+    connectivityCleanupRef.current = cleanup;
+
+    // Event listeners per cambiamenti browser
+    const handleOnlineStatus = async () => {
+      const basicOnline = navigator.onLine;
+      setIsOnline(basicOnline);
+      
+      if (basicOnline) {
+        // Test effettivo quando browser dice online
+        const effectivelyOnline = await ConnectivityChecker.isEffectivelyOnline();
+        setIsEffectivelyOnline(effectivelyOnline);
+      } else {
+        setIsEffectivelyOnline(false);
+      }
+    };
+
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
+    
+    // Test iniziale
+    handleOnlineStatus();
     
     return () => {
       window.removeEventListener('online', handleOnlineStatus);
       window.removeEventListener('offline', handleOnlineStatus);
+      if (connectivityCleanupRef.current) {
+        connectivityCleanupRef.current();
+      }
     };
   }, []);
 
-  // Carica dati da localStorage all'avvio
+  // Carica dati da localStorage all'avvio e sync quando torna online
   useEffect(() => {
     loadOfflineData();
-    if (isOnline) {
-      syncOfflineData();
+    if (isEffectivelyOnline) {
+      syncOfflineDataWithRetry();
     }
-  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isEffectivelyOnline]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Timer per ODL attivo
   useEffect(() => {
@@ -219,6 +255,69 @@ export default function QRScannerPage() {
     
     setRecentScans([...recentScans]);
     saveToLocalStorage(recentScans, activeTimer);
+  };
+
+  const syncOfflineDataWithRetry = async () => {
+    try {
+      await RetryManager.withRetry(async () => {
+        const unsyncedScans = recentScans.filter(scan => !scan.synced);
+        
+        if (unsyncedScans.length === 0) {
+          return; // Nulla da sincronizzare
+        }
+
+        // Sync in batch per migliorare performance
+        const syncPromises = unsyncedScans.map(async (scan) => {
+          const response = await fetchWithRetry('/api/production/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              odlId: scan.odlId,
+              departmentId: user?.departmentId,
+              eventType: scan.eventType,
+              timestamp: scan.timestamp,
+              userId: user?.id
+            })
+          }, {
+            maxRetries: 2, // Retry meno aggressivo per singoli eventi
+            baseDelay: 500
+          });
+
+          if (response.ok) {
+            scan.synced = true;
+            return { scan, success: true };
+          } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+        });
+
+        // Aspetta completamento di tutti i sync
+        const results = await Promise.allSettled(syncPromises);
+        
+        // Log risultati per debugging
+        const successful = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        
+        if (successful > 0) {
+          console.log(`[QR Sync] Sincronizzati ${successful} eventi con successo`);
+        }
+        
+        if (failed > 0) {
+          console.warn(`[QR Sync] Falliti ${failed} eventi durante la sincronizzazione`);
+          // Non lanciare errore se alcuni eventi sono riusciti
+        }
+
+        // Aggiorna state anche se alcuni eventi hanno fallito
+        setRecentScans([...recentScans]);
+        saveToLocalStorage(recentScans, activeTimer);
+      }, {
+        maxRetries: 3,
+        baseDelay: 1000,
+        maxDelay: 10000
+      });
+    } catch (error) {
+      console.error('[QR Sync] Sync completo fallito dopo tutti i retry:', error);
+    }
   };
 
   const startScanning = async () => {
@@ -333,10 +432,10 @@ export default function QRScannerPage() {
       setRecentScans(updatedScans);
       saveToLocalStorage(updatedScans, eventType === 'ENTRY' ? activeTimer : null);
 
-      // Prova sync online
-      if (isOnline) {
+      // Prova sync online con retry logic
+      if (isEffectivelyOnline) {
         try {
-          const response = await fetch('/api/production/events', {
+          const response = await fetchWithRetry('/api/production/events', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -346,21 +445,23 @@ export default function QRScannerPage() {
               userId: user.id,
               duration: newScan.duration
             })
+          }, {
+            maxRetries: 2,
+            baseDelay: 1000
           });
 
-          if (response.ok) {
-            newScan.synced = true;
-            
-            // Gestione speciale per reparto AUTOCLAVI
-            if (eventType === 'EXIT' && user.departmentId === 'AUTOCLAVI') {
-              await handleAutoclaveExit(scanResult.id);
-            } else if (eventType === 'EXIT') {
-              // Attiva trasferimento automatico per altri reparti
-              await triggerAutoTransfer(scanResult.id);
-            }
+          newScan.synced = true;
+          
+          // Gestione speciale per reparto AUTOCLAVI
+          if (eventType === 'EXIT' && user.departmentId === 'AUTOCLAVI') {
+            await handleAutoclaveExit(scanResult.id);
+          } else if (eventType === 'EXIT') {
+            // Attiva trasferimento automatico per altri reparti
+            await triggerAutoTransfer(scanResult.id);
           }
         } catch (syncError) {
-          console.error('Sync error:', syncError);
+          console.error('[QR Scanner] Sync immediato fallito, verrà riprovato automaticamente:', syncError);
+          // L'evento rimane non sincronizzato e verrà riprovato dal sync automatico
         }
       }
 
@@ -375,24 +476,25 @@ export default function QRScannerPage() {
 
   const triggerAutoTransfer = async (odlId: string) => {
     try {
-      await fetch('/api/workflow/transfer', {
+      await fetchWithRetry('/api/workflow/transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ odlId })
+      }, {
+        maxRetries: 2,
+        baseDelay: 1000
       });
     } catch (error) {
-      console.error('Auto transfer error:', error);
+      console.error('[QR Scanner] Auto transfer error:', error);
     }
   };
 
   const handleAutoclaveExit = async (odlId: string) => {
     try {
-      const response = await fetch(`/api/autoclavi/batches/by-odl/${odlId}`);
-      
-      if (!response.ok) {
-        await triggerAutoTransfer(odlId);
-        return;
-      }
+      const response = await fetchWithRetry(`/api/autoclavi/batches/by-odl/${odlId}`, {}, {
+        maxRetries: 2,
+        baseDelay: 1000
+      });
 
       const data = await response.json();
       const batch = data.batch;
@@ -403,7 +505,7 @@ export default function QRScannerPage() {
         await triggerAutoTransfer(odlId);
       }
     } catch (error) {
-      console.error('Autoclave exit handling error:', error);
+      console.error('[QR Scanner] Autoclave exit handling error:', error);
       await triggerAutoTransfer(odlId);
     }
   };
@@ -412,7 +514,7 @@ export default function QRScannerPage() {
     const { batch, odlId } = autoclaveDialog;
     
     try {
-      const response = await fetch('/api/autoclavi/batches/advance', {
+      const response = await fetchWithRetry('/api/autoclavi/batches/advance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -420,6 +522,9 @@ export default function QRScannerPage() {
           targetStatus: 'COMPLETED',
           scannedOdlId: odlId
         })
+      }, {
+        maxRetries: 2,
+        baseDelay: 1000
       });
 
       const result = await response.json();
@@ -454,18 +559,29 @@ export default function QRScannerPage() {
       <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
         {/* Status Bar */}
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Chip 
-            icon={isOnline ? <Cloud /> : <CloudOff />}
-            label={isOnline ? 'Online' : 'Offline'}
-            color={isOnline ? 'success' : 'warning'}
-            size="small"
-          />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Chip 
+              icon={isEffectivelyOnline ? <Cloud /> : <CloudOff />}
+              label={isEffectivelyOnline ? 'Online' : 'Offline'}
+              color={isEffectivelyOnline ? 'success' : 'warning'}
+              size="small"
+            />
+            {isOnline && !isEffectivelyOnline && (
+              <Chip 
+                label="API Non Disponibili"
+                color="error"
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Box>
           
-          {!isOnline && recentScans.some(s => !s.synced) && (
+          {!isEffectivelyOnline && recentScans.some(s => !s.synced) && (
             <IconButton
               color="primary"
-              onClick={syncOfflineData}
+              onClick={syncOfflineDataWithRetry}
               sx={{ width: 44, height: 44 }}
+              disabled={loading}
             >
               <Sync />
             </IconButton>
@@ -978,15 +1094,22 @@ export default function QRScannerPage() {
     );
   }
 
-  // Desktop layout (existing layout with minor improvements)
+  // Desktop layout with enhanced connectivity monitoring
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Chip 
-          icon={isOnline ? <Cloud /> : <CloudOff />}
-          label={isOnline ? 'Online' : 'Offline'}
-          color={isOnline ? 'success' : 'warning'}
+          icon={isEffectivelyOnline ? <Cloud /> : <CloudOff />}
+          label={isEffectivelyOnline ? 'Online' : 'Offline'}
+          color={isEffectivelyOnline ? 'success' : 'warning'}
         />
+        {isOnline && !isEffectivelyOnline && (
+          <Chip 
+            label="API Non Disponibili"
+            color="error"
+            variant="outlined"
+          />
+        )}
       </Box>
 
       {/* Timer Attivo */}
@@ -1163,13 +1286,14 @@ export default function QRScannerPage() {
       </Paper>
 
       {/* Sync Manual Button */}
-      {!isOnline && recentScans.some(s => !s.synced) && (
+      {!isEffectivelyOnline && recentScans.some(s => !s.synced) && (
         <Fab
           color="primary"
           sx={{ position: 'fixed', bottom: 16, right: 16 }}
-          onClick={syncOfflineData}
+          onClick={syncOfflineDataWithRetry}
+          disabled={loading}
         >
-          <Cloud />
+          <Sync />
         </Fab>
       )}
 
