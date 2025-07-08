@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const totalCount = await prisma.curingCycle.count({ where })
 
     // Get curing cycles
-    const curingCycles = await prisma.curingCycle.findMany({
+    const rawCuringCycles = await prisma.curingCycle.findMany({
       where,
       skip,
       take: limit,
@@ -72,11 +72,19 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Add computed fields
+    const curingCycles = rawCuringCycles.map(cycle => ({
+      ...cycle,
+      totalDuration: cycle.phase1Duration + (cycle.phase2Duration || 0),
+      maxTemperature: Math.max(cycle.phase1Temperature, cycle.phase2Temperature || 0),
+      maxPressure: Math.max(cycle.phase1Pressure, cycle.phase2Pressure || 0),
+    }))
+
     const totalPages = Math.ceil(totalCount / limit)
     const hasMore = page < totalPages
 
     return NextResponse.json({
-      data: curingCycles,
+      cycles: curingCycles,
       pagination: {
         page,
         limit,

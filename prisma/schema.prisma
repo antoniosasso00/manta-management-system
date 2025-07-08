@@ -136,9 +136,6 @@ model ODL {
   gammaId                String?
   lastSyncAt             DateTime?
   syncStatus             SyncStatus           @default(SUCCESS)
-  length                 Float?
-  width                  Float?
-  height                 Float?
   curingCycleId          String?
   vacuumLines            Int?
   autoclaveLoadItems     AutoclaveLoadItem[]

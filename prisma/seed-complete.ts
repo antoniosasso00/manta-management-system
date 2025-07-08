@@ -34,6 +34,9 @@ async function main() {
   await prisma.autoclaveLoad.deleteMany()
   await prisma.partTool.deleteMany()
   await prisma.oDL.deleteMany()
+  await prisma.partAutoclave.deleteMany()  // Cancella prima delle foreign keys
+  await prisma.partNDI.deleteMany()        // Cancella prima delle foreign keys  
+  await prisma.partCleanroom.deleteMany()  // Cancella prima delle foreign keys
   await prisma.part.deleteMany()
   await prisma.tool.deleteMany()
   await prisma.autoclave.deleteMany()

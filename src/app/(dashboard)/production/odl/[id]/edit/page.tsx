@@ -26,7 +26,10 @@ import {
   CardContent,
   Divider,
   IconButton,
-  Tooltip
+  Tooltip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material'
 import {
   Timeline,
@@ -45,11 +48,13 @@ import {
   Edit as EditIcon,
   CheckCircle as CheckIcon,
   Schedule as ScheduleIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import DepartmentConfigurationSection from '@/components/production/DepartmentConfigurationSection'
 import { debounce } from 'lodash'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -60,12 +65,10 @@ const editODLFormSchema = z.object({
   partId: z.string().cuid('Selezionare una parte'),
   quantity: z.number().int().min(1, 'Quantità deve essere almeno 1'),
   priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']),
+  expectedCompletionDate: z.date().optional(),
   notes: z.string().optional(),
   
   // Optional override fields
-  length: z.number().positive().optional(),
-  width: z.number().positive().optional(),
-  height: z.number().positive().optional(),
   curingCycleId: z.string().cuid().optional(),
   vacuumLines: z.number().int().min(1).max(10).optional(),
 })
@@ -238,6 +241,7 @@ export default function EditODLPage() {
         partId: data.part.id,
         quantity: data.quantity,
         priority: data.priority,
+        expectedCompletionDate: data.expectedCompletionDate ? new Date(data.expectedCompletionDate) : undefined,
         notes: data.notes || '',
         length: data.length,
         width: data.width,
@@ -539,6 +543,29 @@ export default function EditODLPage() {
                   />
                 </Grid>
 
+                {/* Expected Completion Date */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Controller
+                    name="expectedCompletionDate"
+                    control={control}
+                    render={({ field: { onChange, value, ...field } }) => (
+                      <TextField
+                        {...field}
+                        value={value ? value.toISOString().split('T')[0] : ''}
+                        onChange={(e) => onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                        label="Data Completamento Prevista (opzionale)"
+                        type="date"
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{
+                          min: new Date().toISOString().split('T')[0]
+                        }}
+                        placeholder="Seleziona data..."
+                      />
+                    )}
+                  />
+                </Grid>
+
                 {/* Priority */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Controller
@@ -591,109 +618,12 @@ export default function EditODLPage() {
 
               <Divider sx={{ my: 4 }} />
 
-              <Typography variant="h6" gutterBottom>
-                Configurazioni Avanzate (Override)
-              </Typography>
-              
-              <Grid container spacing={3}>
-                {/* Dimensions */}
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Controller
-                    name="length"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseFloat(e.target.value) || undefined)}
-                        label="Lunghezza (mm)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 0, step: 0.1 } }}
-                      />
-                    )}
-                  />
-                </Grid>
-                
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Controller
-                    name="width"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseFloat(e.target.value) || undefined)}
-                        label="Larghezza (mm)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 0, step: 0.1 } }}
-                      />
-                    )}
-                  />
-                </Grid>
-                
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Controller
-                    name="height"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseFloat(e.target.value) || undefined)}
-                        label="Altezza (mm)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 0, step: 0.1 } }}
-                      />
-                    )}
-                  />
-                </Grid>
-
-                {/* Curing Cycle */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Controller
-                    name="curingCycleId"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControl fullWidth>
-                        <InputLabel>Ciclo di Cura (override)</InputLabel>
-                        <Select {...field} value={field.value || ''} label="Ciclo di Cura (override)">
-                          <MenuItem value="">
-                            <em>Usa default della parte</em>
-                          </MenuItem>
-                          {curingCycles.map((cycle) => (
-                            <MenuItem key={cycle.id} value={cycle.id}>
-                              {cycle.name} ({cycle.duration}min)
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-
-                {/* Vacuum Lines */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Controller
-                    name="vacuumLines"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <TextField
-                        {...field}
-                        value={value || ''}
-                        onChange={(e) => onChange(parseInt(e.target.value) || undefined)}
-                        label="Linee Vacuum (override)"
-                        type="number"
-                        fullWidth
-                        InputProps={{ inputProps: { min: 1, max: 10 } }}
-                        placeholder="Default della parte"
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
+              <DepartmentConfigurationSection
+                control={control}
+                errors={errors}
+                curingCycles={curingCycles}
+                mode="edit"
+              />
 
               {/* Actions */}
               <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

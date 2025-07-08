@@ -66,7 +66,14 @@ export function AutoclaveSelection({
   const fetchAutoclaves = async () => {
     try {
       const response = await fetch('/api/autoclavi');
-      if (!response.ok) throw new Error('Errore caricamento autoclavi');
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('Accesso non autorizzato. Effettua il login per continuare.');
+        } else {
+          throw new Error('Errore caricamento autoclavi');
+        }
+        return;
+      }
       
       const data = await response.json();
       setAutoclaves(data.autoclaves || []);
@@ -79,7 +86,14 @@ export function AutoclaveSelection({
   const fetchCuringCycles = async () => {
     try {
       const response = await fetch('/api/curing-cycles');
-      if (!response.ok) throw new Error('Errore caricamento cicli');
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('Accesso non autorizzato. Effettua il login per continuare.');
+        } else {
+          throw new Error('Errore caricamento cicli');
+        }
+        return;
+      }
       
       const data = await response.json();
       setCuringCycles(data.cycles || []);
