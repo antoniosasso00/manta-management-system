@@ -94,6 +94,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: {
             email: credentials.email as string,
           },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            password: true,
+            isActive: true,
+            role: true,
+            departmentId: true,
+            departmentRole: true,
+            // settings field excluded for production compatibility
+            // Will be re-enabled once database migrations are applied
+          }
         })
 
         if (!user || !user.password || !user.isActive) {
