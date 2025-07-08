@@ -27,26 +27,36 @@ export function useRealTimeUpdates({
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const enabledRef = useRef(enabled)
+  const onUpdateRef = useRef(onUpdate)
+  const onErrorRef = useRef(onError)
 
-  // Update ref quando enabled cambia
+  // Update refs quando cambiano le props
   useEffect(() => {
     enabledRef.current = enabled
     setIsRunning(enabled)
   }, [enabled])
 
+  useEffect(() => {
+    onUpdateRef.current = onUpdate
+  }, [onUpdate])
+
+  useEffect(() => {
+    onErrorRef.current = onError
+  }, [onError])
+
   const executeUpdate = useCallback(async () => {
     try {
-      if (onUpdate && enabledRef.current) {
-        await onUpdate()
+      if (onUpdateRef.current && enabledRef.current) {
+        await onUpdateRef.current()
         setLastUpdate(new Date())
       }
     } catch (error) {
       console.error('Errore durante l\'aggiornamento real-time:', error)
-      if (onError) {
-        onError(error as Error)
+      if (onErrorRef.current) {
+        onErrorRef.current(error as Error)
       }
     }
-  }, [onUpdate, onError])
+  }, [])
 
   const startInterval = useCallback(() => {
     if (intervalRef.current) {
@@ -66,14 +76,14 @@ export function useRealTimeUpdates({
   }, [])
 
   const toggle = useCallback(() => {
-    if (isRunning) {
+    if (enabledRef.current) {
       stopInterval()
       enabledRef.current = false
     } else {
       enabledRef.current = true
       startInterval()
     }
-  }, [isRunning, startInterval, stopInterval])
+  }, [startInterval, stopInterval])
 
   const forceUpdate = useCallback(() => {
     executeUpdate()
@@ -81,34 +91,48 @@ export function useRealTimeUpdates({
 
   const setEnabled = useCallback((newEnabled: boolean) => {
     enabledRef.current = newEnabled
-    if (newEnabled && !isRunning) {
-      startInterval()
-    } else if (!newEnabled && isRunning) {
-      stopInterval()
-    }
-  }, [isRunning, startInterval, stopInterval])
-
-  // Avvia/ferma interval quando enabled cambia
-  useEffect(() => {
-    if (enabled) {
+    if (newEnabled) {
       startInterval()
     } else {
       stopInterval()
     }
+  }, [startInterval, stopInterval])
+
+  // Avvia/ferma interval quando enabled cambia
+  useEffect(() => {
+    if (enabled) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+      intervalRef.current = setInterval(executeUpdate, intervalMs)
+      setIsRunning(true)
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      setIsRunning(false)
+    }
 
     // Cleanup all'unmount
     return () => {
-      stopInterval()
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
     }
-  }, [enabled, startInterval, stopInterval])
+  }, [enabled, executeUpdate, intervalMs])
 
   // Pausa aggiornamenti quando tab è in background (performance optimization)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isRunning) {
-        stopInterval()
+      if (document.hidden) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
       } else if (!document.hidden && enabledRef.current) {
-        startInterval()
+        intervalRef.current = setInterval(executeUpdate, intervalMs)
       }
     }
 
@@ -117,7 +141,7 @@ export function useRealTimeUpdates({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [isRunning, startInterval, stopInterval])
+  }, [executeUpdate, intervalMs])
 
   return {
     isRunning,
@@ -133,6 +157,7 @@ export function useDashboardKPI() {
   const [kpiData, setKpiData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const fetchKPIDataRef = useRef<() => Promise<void>>()
 
   const fetchKPIData = useCallback(async () => {
     try {
@@ -153,6 +178,8 @@ export function useDashboardKPI() {
     }
   }, [])
 
+  fetchKPIDataRef.current = fetchKPIData
+
   const realTimeUpdates = useRealTimeUpdates({
     intervalMs: 30000, // 30 secondi per KPI dashboard
     enabled: true,
@@ -162,8 +189,10 @@ export function useDashboardKPI() {
 
   // Initial fetch
   useEffect(() => {
-    fetchKPIData()
-  }, []) // Rimuoviamo fetchKPIData per evitare loop infinito
+    if (fetchKPIDataRef.current) {
+      fetchKPIDataRef.current()
+    }
+  }, [])
 
   return {
     data: kpiData,
@@ -180,6 +209,7 @@ export function useAuditEvents() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<any>({})
+  const fetchAuditDataRef = useRef<() => Promise<void>>()
 
   const fetchAuditData = useCallback(async () => {
     try {
@@ -208,6 +238,8 @@ export function useAuditEvents() {
     }
   }, [filters])
 
+  fetchAuditDataRef.current = fetchAuditData
+
   const realTimeUpdates = useRealTimeUpdates({
     intervalMs: 60000, // 60 secondi per audit events (meno frequente)
     enabled: false, // Disabilitato di default per audit
@@ -217,8 +249,17 @@ export function useAuditEvents() {
 
   // Initial fetch
   useEffect(() => {
-    fetchAuditData()
-  }, []) // Rimuoviamo fetchAuditData per evitare loop infinito
+    if (fetchAuditDataRef.current) {
+      fetchAuditDataRef.current()
+    }
+  }, [])
+
+  // Re-fetch quando cambiano i filtri
+  useEffect(() => {
+    if (fetchAuditDataRef.current) {
+      fetchAuditDataRef.current()
+    }
+  }, [filters])
 
   return {
     data: auditData,
@@ -236,6 +277,7 @@ export function useUserStats() {
   const [statsData, setStatsData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const fetchStatsDataRef = useRef<() => Promise<void>>()
 
   const fetchStatsData = useCallback(async () => {
     try {
@@ -256,6 +298,8 @@ export function useUserStats() {
     }
   }, [])
 
+  fetchStatsDataRef.current = fetchStatsData
+
   const realTimeUpdates = useRealTimeUpdates({
     intervalMs: 120000, // 2 minuti per stats utente
     enabled: false, // Disabilitato di default per stats
@@ -265,8 +309,10 @@ export function useUserStats() {
 
   // Initial fetch
   useEffect(() => {
-    fetchStatsData()
-  }, []) // Rimuoviamo fetchStatsData per evitare loop infinito
+    if (fetchStatsDataRef.current) {
+      fetchStatsDataRef.current()
+    }
+  }, [])
 
   return {
     data: statsData,
