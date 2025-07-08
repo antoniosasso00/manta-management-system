@@ -62,6 +62,20 @@ export default function ToolsPage() {
   const [toolFormOpen, setToolFormOpen] = useState(false)
   const [selectedTool, setSelectedTool] = useState<any>(null)
 
+  const applyFilters = useCallback(() => {
+    let filtered = [...tools]
+
+    if (searchTerm) {
+      filtered = filtered.filter(tool =>
+        tool.toolPartNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (tool.description && tool.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        tool.material?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    setFilteredTools(filtered)
+  }, [tools, searchTerm])
+
   useEffect(() => {
     loadTools()
   }, [])
@@ -129,20 +143,6 @@ export default function ToolsPage() {
       setLoading(false)
     }
   }
-
-  const applyFilters = useCallback(() => {
-    let filtered = [...tools]
-
-    if (searchTerm) {
-      filtered = filtered.filter(tool =>
-        tool.toolPartNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (tool.description && tool.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        tool.material?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    setFilteredTools(filtered)
-  }, [tools, searchTerm])
 
   const getStatusColor = (isActive: boolean) => {
     return isActive ? 'success' : 'error'

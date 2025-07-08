@@ -153,6 +153,66 @@ export default function EditODLPage() {
   const watchedOdlNumber = watch('odlNumber')
   const watchedPartId = watch('partId')
 
+  const fetchODLDetails = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/odl/${odlId}`)
+      
+      if (!response.ok) {
+        throw new Error('ODL non trovato')
+      }
+
+      const data = await response.json()
+      setOdl(data)
+      
+      // Populate form with current data
+      reset({
+        odlNumber: data.odlNumber,
+        partId: data.part.id,
+        quantity: data.quantity,
+        priority: data.priority,
+        expectedCompletionDate: data.expectedCompletionDate ? new Date(data.expectedCompletionDate) : undefined,
+        notes: data.notes || '',
+      })
+      
+      setSelectedPart(data.part)
+    } catch (error: any) {
+      setError(error.message)
+    }
+  }, [odlId, reset])
+
+  const fetchChangeLogs = useCallback(async () => {
+    // Mock change logs - in production this would come from API
+    const mockLogs: ChangeLog[] = [
+      {
+        id: '1',
+        field: 'priority',
+        oldValue: 'NORMAL',
+        newValue: 'HIGH',
+        timestamp: new Date(Date.now() - 86400000).toISOString(),
+        user: { name: 'Mario Rossi', email: 'mario.rossi@manta.com' }
+      },
+      {
+        id: '2',
+        field: 'quantity',
+        oldValue: '1',
+        newValue: '2',
+        timestamp: new Date(Date.now() - 172800000).toISOString(),
+        user: { name: 'Anna Verdi', email: 'anna.verdi@manta.com' }
+      }
+    ]
+    setChangeLogs(mockLogs)
+  }, [])
+
+  const loadCuringCycles = useCallback(async () => {
+    try {
+      const response = await fetch('/api/curing-cycles')
+      const data = await response.json()
+      setCuringCycles(data.data || [])
+    } catch (error) {
+      console.error('Error loading curing cycles:', error)
+    }
+  }, [])
+
   useEffect(() => {
     if (odlId) {
       fetchODLDetails()
@@ -218,66 +278,6 @@ export default function EditODLPage() {
     }, 300),
     []
   )
-
-  const fetchODLDetails = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/odl/${odlId}`)
-      
-      if (!response.ok) {
-        throw new Error('ODL non trovato')
-      }
-
-      const data = await response.json()
-      setOdl(data)
-      
-      // Populate form with current data
-      reset({
-        odlNumber: data.odlNumber,
-        partId: data.part.id,
-        quantity: data.quantity,
-        priority: data.priority,
-        expectedCompletionDate: data.expectedCompletionDate ? new Date(data.expectedCompletionDate) : undefined,
-        notes: data.notes || '',
-      })
-      
-      setSelectedPart(data.part)
-    } catch (error: any) {
-      setError(error.message)
-    }
-  }, [odlId, reset])
-
-  const fetchChangeLogs = useCallback(async () => {
-    // Mock change logs - in production this would come from API
-    const mockLogs: ChangeLog[] = [
-      {
-        id: '1',
-        field: 'priority',
-        oldValue: 'NORMAL',
-        newValue: 'HIGH',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        user: { name: 'Mario Rossi', email: 'mario.rossi@manta.com' }
-      },
-      {
-        id: '2',
-        field: 'quantity',
-        oldValue: '1',
-        newValue: '2',
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-        user: { name: 'Anna Verdi', email: 'anna.verdi@manta.com' }
-      }
-    ]
-    setChangeLogs(mockLogs)
-  }, [])
-
-  const loadCuringCycles = useCallback(async () => {
-    try {
-      const response = await fetch('/api/curing-cycles')
-      const data = await response.json()
-      setCuringCycles(data.data || [])
-    } catch (error) {
-      console.error('Error loading curing cycles:', error)
-    }
-  }, [])
 
   const handlePartSelection = (part: Part | null) => {
     setSelectedPart(part)

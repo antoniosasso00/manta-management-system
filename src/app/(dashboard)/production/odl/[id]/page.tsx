@@ -190,18 +190,6 @@ export default function ODLDetailPage() {
     notes: ''
   })
 
-  useEffect(() => {
-    if (odlId) {
-      fetchODLDetails()
-    }
-  }, [odlId, fetchODLDetails])
-
-  useEffect(() => {
-    if (odl) {
-      generateQRCode()
-    }
-  }, [odl, generateQRCode])
-
   const fetchODLDetails = useCallback(async () => {
     try {
       setLoading(true)
@@ -246,6 +234,18 @@ export default function ODLDetailPage() {
       console.error('Errore nella generazione del QR code:', error)
     }
   }, [odl])
+
+  useEffect(() => {
+    if (odlId) {
+      fetchODLDetails()
+    }
+  }, [odlId, fetchODLDetails])
+
+  useEffect(() => {
+    if (odl) {
+      generateQRCode()
+    }
+  }, [odl, generateQRCode])
 
   const handleTransfer = async () => {
     try {

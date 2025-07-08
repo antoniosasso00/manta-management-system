@@ -50,6 +50,20 @@ export default function MyDepartmentODLPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
 
+  const applyFilters = useCallback(() => {
+    let filtered = [...odlList]
+
+    if (searchTerm) {
+      filtered = filtered.filter(odl =>
+        odl.odlNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        odl.partNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        odl.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    setFilteredODL(filtered)
+  }, [odlList, searchTerm])
+
   useEffect(() => {
     loadMyODL()
   }, [])
@@ -100,20 +114,6 @@ export default function MyDepartmentODLPage() {
       setLoading(false)
     }
   }
-
-  const applyFilters = useCallback(() => {
-    let filtered = [...odlList]
-
-    if (searchTerm) {
-      filtered = filtered.filter(odl =>
-        odl.odlNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        odl.partNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        odl.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    setFilteredODL(filtered)
-  }, [odlList, searchTerm])
 
   const handleStartTimer = async (odlId: string) => {
     try {

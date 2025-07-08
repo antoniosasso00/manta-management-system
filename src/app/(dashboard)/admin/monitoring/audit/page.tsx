@@ -225,22 +225,6 @@ export default function AdminAuditPage() {
     }
   ]
 
-  useEffect(() => {
-    loadAuditData()
-  }, [loadAuditData])
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (autoRefresh) {
-      interval = setInterval(() => {
-        loadAuditData()
-      }, 30000)
-    }
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [autoRefresh, loadAuditData])
-
   const loadAuditData = useCallback(async () => {
     try {
       setLoading(true)
@@ -256,6 +240,22 @@ export default function AdminAuditPage() {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    loadAuditData()
+  }, [loadAuditData])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (autoRefresh) {
+      interval = setInterval(() => {
+        loadAuditData()
+      }, 30000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [autoRefresh, loadAuditData])
 
   const handleExport = () => {
     // TODO: Implementare esportazione quando saranno definiti i requisiti

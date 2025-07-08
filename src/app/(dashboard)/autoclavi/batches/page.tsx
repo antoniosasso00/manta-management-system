@@ -50,10 +50,6 @@ export default function BatchesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    fetchBatches();
-  }, [fetchBatches]);
-
   const fetchBatches = useCallback(async () => {
     setLoading(true);
     try {
@@ -70,6 +66,10 @@ export default function BatchesPage() {
       setLoading(false);
     }
   }, [enqueueSnackbar]);
+
+  useEffect(() => {
+    fetchBatches();
+  }, [fetchBatches]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
