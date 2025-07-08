@@ -99,18 +99,53 @@ export default function NDIManagementPage() {
           Gestione Dati Reparto NDI
         </Typography>
         <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-          Mockup - Configurazione controlli non distruttivi e criteri di accettazione
+          Preview - Configurazione controlli non distruttivi e criteri di accettazione
         </Typography>
       </Box>
 
-      {/* Status Alert */}
-      <Alert severity="info" icon={<InfoIcon />}>
-        <Typography variant="body2">
-          <strong>Stato: Mockup</strong> - Questa è una preview della futura gestione dati NDI.
-          La tabella <code>PartNDI</code> è stata creata nel database ma l&apos;interfaccia completa 
-          sarà implementata in una fase successiva.
-        </Typography>
-      </Alert>
+      {/* Development Alert */}
+      <Card sx={{ 
+        backgroundColor: '#f3e5f5', 
+        border: '2px solid #9c27b0',
+        mb: 4
+      }}>
+        <CardContent sx={{ textAlign: 'center', py: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <Box sx={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              backgroundColor: '#9c27b0', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center'
+            }}>
+              <InfoIcon sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            
+            <Box>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#6a1b9a' }}>
+                🚧 Pagina in Sviluppo
+              </Typography>
+              <Typography variant="h6" gutterBottom sx={{ color: '#8e24aa' }}>
+                Configurazione Reparto NDI (Controlli Non Distruttivi)
+              </Typography>
+              <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', lineHeight: 1.6 }}>
+                Questa sezione è attualmente in fase di sviluppo. L'interfaccia completa per la gestione 
+                dei parametri di controllo non distruttivo, criteri di accettazione e calibrazione 
+                strumenti sarà disponibile nelle prossime release.
+              </Typography>
+            </Box>
+            
+            <Alert severity="warning" sx={{ maxWidth: 500 }}>
+              <Typography variant="body2">
+                <strong>Schema Database:</strong> La tabella <code>PartNDI</code> è già stata 
+                implementata e pronta per l'integrazione con l'interfaccia utente.
+              </Typography>
+            </Alert>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Planned Features */}
       <Box>

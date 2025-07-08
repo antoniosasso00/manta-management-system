@@ -8,8 +8,22 @@ export const runtime = 'nodejs';
 const departmentUpdateSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
   code: z.string().min(1, 'Code is required').max(10, 'Code must be max 10 characters').optional(),
-  description: z.string().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE']).optional()
+  isActive: z.boolean().optional(),
+  shiftConfiguration: z.object({
+    shift1Start: z.string(),
+    shift1End: z.string(),
+    shift2Start: z.string(),
+    shift2End: z.string(),
+    hasThirdShift: z.boolean(),
+    shift3Start: z.string().optional(),
+    shift3End: z.string().optional()
+  }).optional(),
+  performanceMetrics: z.object({
+    targetEfficiency: z.number().min(0).max(100),
+    targetCycleTime: z.number().min(0),
+    maxODLCapacity: z.number().min(0),
+    avgUtilizationRate: z.number().min(0).max(100)
+  }).optional()
 });
 
 export async function GET(
@@ -107,7 +121,9 @@ export async function PUT(
 
     const updatedDepartment = await prisma.department.update({
       where: { id: resolvedParams.id },
-      data: validated
+      data: {
+        ...validated
+      }
     });
 
     return NextResponse.json(updatedDepartment);
@@ -156,25 +172,29 @@ export async function DELETE(
       return NextResponse.json({ error: 'Department not found' }, { status: 404 });
     }
 
-    // Check if department has associated data
-    if (department.users.length > 0) {
+    // Check if department has active ODLs
+    const activeODLs = await prisma.oDL.count({
+      where: {
+        currentDepartmentId: resolvedParams.id,
+        status: { in: ['CREATED', 'ON_HOLD'] }
+      }
+    });
+
+    if (activeODLs > 0) {
       return NextResponse.json(
-        { error: 'Cannot delete department with assigned users' },
+        { error: 'Cannot delete department with active ODLs' },
         { status: 400 }
       );
     }
 
-    // Check for production events separately
-    const eventCount = await prisma.productionEvent.count({
-      where: { departmentId: resolvedParams.id }
+    // Update users to remove department association
+    await prisma.user.updateMany({
+      where: { departmentId: resolvedParams.id },
+      data: { 
+        departmentId: null,
+        departmentRole: null
+      }
     });
-    
-    if (eventCount > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete department with production events' },
-        { status: 400 }
-      );
-    }
 
     await prisma.department.delete({
       where: { id: resolvedParams.id }

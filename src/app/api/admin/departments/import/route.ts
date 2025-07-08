@@ -10,7 +10,22 @@ const departmentImportSchema = z.object({
     name: z.string().min(1),
     code: z.string().min(1).max(10),
     description: z.string().optional(),
-    status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE')
+    isActive: z.boolean().default(true),
+    shiftConfiguration: z.object({
+      shift1Start: z.string().default('06:00'),
+      shift1End: z.string().default('14:00'),
+      shift2Start: z.string().default('14:00'),
+      shift2End: z.string().default('22:00'),
+      hasThirdShift: z.boolean().default(false),
+      shift3Start: z.string().optional(),
+      shift3End: z.string().optional()
+    }).optional(),
+    performanceMetrics: z.object({
+      targetEfficiency: z.number().min(0).max(100).default(85),
+      targetCycleTime: z.number().min(0).default(120),
+      maxODLCapacity: z.number().min(0).default(20),
+      avgUtilizationRate: z.number().min(0).max(100).default(0)
+    }).optional()
   }))
 });
 

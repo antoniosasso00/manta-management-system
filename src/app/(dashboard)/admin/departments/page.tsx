@@ -20,25 +20,17 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Grid,
   Tooltip,
-  Alert
 } from '@mui/material'
 import {
   Factory,
-  Add,
   Edit,
   People,
   Assignment,
   TrendingUp,
-  Delete,
-  Upload,
   Download,
-  PersonAdd,
-  Groups,
 } from '@mui/icons-material'
-import { FormControl, InputLabel, Select, MenuItem, FormControlLabel, Switch, Tabs, Tab } from '@mui/material'
 
 interface Department {
   id: string
@@ -71,43 +63,12 @@ interface PerformanceMetrics {
   avgUtilizationRate: number
 }
 
-interface FormData {
-  code: string
-  name: string
-  description: string
-  isActive: boolean
-  shiftConfiguration: ShiftConfig
-  performanceMetrics: PerformanceMetrics
-}
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [assignUsersDialogOpen, setAssignUsersDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null)
-  const [activeTab, setActiveTab] = useState(0)
-  const [formData, setFormData] = useState<FormData>({
-    code: '',
-    name: '',
-    description: '',
-    isActive: true,
-    shiftConfiguration: {
-      shift1Start: '06:00',
-      shift1End: '14:00',
-      shift2Start: '14:00',
-      shift2End: '22:00',
-      hasThirdShift: false,
-    },
-    performanceMetrics: {
-      targetEfficiency: 85,
-      targetCycleTime: 120,
-      maxODLCapacity: 20,
-      avgUtilizationRate: 0,
-    },
-  })
+  const [departmentDetailsOpen, setDepartmentDetailsOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
@@ -148,107 +109,21 @@ export default function DepartmentsPage() {
     return `${hours}h ${mins}m`
   }
 
-  const handleEdit = (dept: Department) => {
+  const handleViewDetails = (dept: Department) => {
     setSelectedDepartment(dept)
-    setFormData({
-      code: dept.code,
-      name: dept.name,
-      description: dept.description,
-      isActive: dept.isActive,
-      shiftConfiguration: dept.shiftConfiguration || {
-        shift1Start: '06:00',
-        shift1End: '14:00',
-        shift2Start: '14:00',
-        shift2End: '22:00',
-        hasThirdShift: false,
-      },
-      performanceMetrics: dept.performanceMetrics || {
-        targetEfficiency: 85,
-        targetCycleTime: 120,
-        maxODLCapacity: 20,
-        avgUtilizationRate: 0,
-      },
-    })
-    setEditDialogOpen(true)
-  }
-
-  const handleDelete = (dept: Department) => {
-    setSelectedDepartment(dept)
-    setDeleteDialogOpen(true)
-  }
-
-  const handleAssignUsers = (dept: Department) => {
-    setSelectedDepartment(dept)
-    setAssignUsersDialogOpen(true)
+    setDepartmentDetailsOpen(true)
   }
 
   const handleExport = () => {
     const dataStr = JSON.stringify(departments, null, 2)
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
     
-    const exportFileDefaultName = `departments_${new Date().toISOString().split('T')[0]}.json`
+    const exportFileDefaultName = `departments_report_${new Date().toISOString().split('T')[0]}.json`
     
     const linkElement = document.createElement('a')
     linkElement.setAttribute('href', dataUri)
     linkElement.setAttribute('download', exportFileDefaultName)
     linkElement.click()
-  }
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        try {
-          const importedData = JSON.parse(e.target?.result as string)
-          
-          // Send data to backend API
-          fetch('/api/admin/departments/import', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ departments: importedData })
-          })
-          .then(response => {
-            if (response.ok) {
-              alert('Import completato con successo!')
-              // Reload departments data
-              setRefreshKey(prev => prev + 1)
-            } else {
-              throw new Error('Import failed')
-            }
-          })
-          .catch(() => {
-            alert('Errore durante l\'import dei dati')
-          })
-        } catch {
-          alert('Errore durante la lettura del file')
-        }
-      }
-      reader.readAsText(file)
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      code: '',
-      name: '',
-      description: '',
-      isActive: true,
-      shiftConfiguration: {
-        shift1Start: '06:00',
-        shift1End: '14:00',
-        shift2Start: '14:00',
-        shift2End: '22:00',
-        hasThirdShift: false,
-      },
-      performanceMetrics: {
-        targetEfficiency: 85,
-        targetCycleTime: 120,
-        maxODLCapacity: 20,
-        avgUtilizationRate: 0,
-      },
-    })
-    setSelectedDepartment(null)
   }
 
   if (loading) {
@@ -265,35 +140,15 @@ export default function DepartmentsPage() {
       <Box className="flex items-center justify-between">
         <Typography variant="h4" className="flex items-center gap-2">
           <Factory />
-          Gestione Dipartimenti
+          Overview Dipartimenti
         </Typography>
         <Box className="flex gap-2">
-          <Button
-            variant="outlined"
-            startIcon={<Upload />}
-            component="label"
-          >
-            Importa
-            <input
-              type="file"
-              accept=".json"
-              hidden
-              onChange={handleImport}
-            />
-          </Button>
           <Button
             variant="outlined"
             startIcon={<Download />}
             onClick={handleExport}
           >
-            Esporta
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            Nuovo Dipartimento
+            Esporta Dati
           </Button>
         </Box>
       </Box>
@@ -374,7 +229,7 @@ export default function DepartmentsPage() {
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Elenco Dipartimenti
+            Panoramica Dipartimenti
           </Typography>
           
           <TableContainer component={Paper} variant="outlined">
@@ -389,7 +244,7 @@ export default function DepartmentsPage() {
                   <TableCell>ODL Attivi</TableCell>
                   <TableCell>Tempo Medio</TableCell>
                   <TableCell>Efficienza</TableCell>
-                  <TableCell>Azioni</TableCell>
+                  <TableCell>Dettagli</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -447,29 +302,12 @@ export default function DepartmentsPage() {
                     </TableCell>
                     <TableCell>
                       <Box className="flex gap-1">
-                        <Tooltip title="Modifica">
+                        <Tooltip title="Visualizza Dettagli">
                           <IconButton 
                             size="small"
-                            onClick={() => handleEdit(dept)}
+                            onClick={() => handleViewDetails(dept)}
                           >
                             <Edit />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Assegna Utenti">
-                          <IconButton 
-                            size="small"
-                            onClick={() => handleAssignUsers(dept)}
-                          >
-                            <Groups />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Elimina">
-                          <IconButton 
-                            size="small"
-                            onClick={() => handleDelete(dept)}
-                            disabled={dept.activeODL > 0}
-                          >
-                            <Delete />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -482,354 +320,233 @@ export default function DepartmentsPage() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Dialog */}
+      {/* Department Details Dialog */}
       <Dialog 
-        open={createDialogOpen || editDialogOpen} 
+        open={departmentDetailsOpen}
         onClose={() => {
-          setCreateDialogOpen(false)
-          setEditDialogOpen(false)
-          resetForm()
-          setActiveTab(0)
+          setDepartmentDetailsOpen(false)
+          setSelectedDepartment(null)
         }}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>
-          {editDialogOpen ? 'Modifica Dipartimento' : 'Nuovo Dipartimento'}
+          <Box className="flex items-center gap-2">
+            <Factory />
+            Dettagli Dipartimento - {selectedDepartment?.name}
+          </Box>
         </DialogTitle>
         <DialogContent>
-          <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} sx={{ mb: 2 }}>
-            <Tab label="Informazioni Base" />
-            <Tab label="Configurazione Turni" />
-            <Tab label="Metriche Performance" />
-          </Tabs>
-
-          {/* Tab 1: Informazioni Base */}
-          {activeTab === 0 && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Codice"
-                  placeholder="es. CLEAN"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Nome"
-                  placeholder="es. Clean Room"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </Grid>
+          {selectedDepartment && (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {/* Informazioni Base */}
               <Grid size={{ xs: 12 }}>
-                <TextField
-                  fullWidth
-                  label="Descrizione"
-                  placeholder="Descrizione del dipartimento"
-                  multiline
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.isActive}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    />
-                  }
-                  label="Dipartimento Attivo"
-                />
-              </Grid>
-            </Grid>
-          )}
-
-          {/* Tab 2: Configurazione Turni */}
-          {activeTab === 1 && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Primo Turno
+                <Typography variant="h6" gutterBottom>
+                  Informazioni Generali
                 </Typography>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" color="textSecondary">
+                          Codice
+                        </Typography>
+                        <Typography variant="body1" fontWeight="bold">
+                          {selectedDepartment.code}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" color="textSecondary">
+                          Nome
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedDepartment.name}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <Typography variant="body2" color="textSecondary">
+                          Descrizione
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedDepartment.description || 'Nessuna descrizione'}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" color="textSecondary">
+                          Stato
+                        </Typography>
+                        <Chip
+                          label={selectedDepartment.isActive ? 'Attivo' : 'Inattivo'}
+                          color={getStatusColor(selectedDepartment.isActive)}
+                          size="small"
+                        />
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
               </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Inizio"
-                  type="time"
-                  value={formData.shiftConfiguration.shift1Start}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    shiftConfiguration: {
-                      ...formData.shiftConfiguration,
-                      shift1Start: e.target.value
-                    }
-                  })}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Fine"
-                  type="time"
-                  value={formData.shiftConfiguration.shift1End}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    shiftConfiguration: {
-                      ...formData.shiftConfiguration,
-                      shift1End: e.target.value
-                    }
-                  })}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Secondo Turno
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Inizio"
-                  type="time"
-                  value={formData.shiftConfiguration.shift2Start}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    shiftConfiguration: {
-                      ...formData.shiftConfiguration,
-                      shift2Start: e.target.value
-                    }
-                  })}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Fine"
-                  type="time"
-                  value={formData.shiftConfiguration.shift2End}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    shiftConfiguration: {
-                      ...formData.shiftConfiguration,
-                      shift2End: e.target.value
-                    }
-                  })}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              
-              <Grid size={{ xs: 12 }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.shiftConfiguration.hasThirdShift}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shiftConfiguration: {
-                          ...formData.shiftConfiguration,
-                          hasThirdShift: e.target.checked
-                        }
-                      })}
-                    />
-                  }
-                  label="Abilita Terzo Turno"
-                />
-              </Grid>
-            </Grid>
-          )}
 
-          {/* Tab 3: Metriche Performance */}
-          {activeTab === 2 && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Target Efficienza (%)"
-                  type="number"
-                  value={formData.performanceMetrics.targetEfficiency}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    performanceMetrics: {
-                      ...formData.performanceMetrics,
-                      targetEfficiency: parseInt(e.target.value) || 0
-                    }
-                  })}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Tempo Ciclo Target (min)"
-                  type="number"
-                  value={formData.performanceMetrics.targetCycleTime}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    performanceMetrics: {
-                      ...formData.performanceMetrics,
-                      targetCycleTime: parseInt(e.target.value) || 0
-                    }
-                  })}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Capacità Max ODL"
-                  type="number"
-                  value={formData.performanceMetrics.maxODLCapacity}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    performanceMetrics: {
-                      ...formData.performanceMetrics,
-                      maxODLCapacity: parseInt(e.target.value) || 0
-                    }
-                  })}
-                />
-              </Grid>
+              {/* Metriche Performance */}
               <Grid size={{ xs: 12 }}>
-                <Alert severity="info">
-                  Le metriche di performance verranno utilizzate per il monitoraggio KPI e gli alert automatici.
-                </Alert>
+                <Typography variant="h6" gutterBottom>
+                  Metriche Performance
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Typography variant="body2" color="textSecondary">
+                          Operatori
+                        </Typography>
+                        <Typography variant="h4">
+                          {selectedDepartment.totalOperators}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Typography variant="body2" color="textSecondary">
+                          ODL Attivi
+                        </Typography>
+                        <Typography variant="h4" color="primary">
+                          {selectedDepartment.activeODL}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Typography variant="body2" color="textSecondary">
+                          Tempo Medio
+                        </Typography>
+                        <Typography variant="h4">
+                          {selectedDepartment.averageProcessingTime > 0 ? formatTime(selectedDepartment.averageProcessingTime) : '-'}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Typography variant="body2" color="textSecondary">
+                          Efficienza
+                        </Typography>
+                        <Typography variant="h4">
+                          {selectedDepartment.efficiency > 0 ? (
+                            <Chip
+                              label={`${selectedDepartment.efficiency}%`}
+                              color={getEfficiencyColor(selectedDepartment.efficiency)}
+                              size="small"
+                            />
+                          ) : (
+                            '-'
+                          )}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
               </Grid>
+
+              {/* Configurazione Turni */}
+              {selectedDepartment.shiftConfiguration && (
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Configurazione Turni
+                  </Typography>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Primo Turno
+                          </Typography>
+                          <Typography variant="body1">
+                            {selectedDepartment.shiftConfiguration.shift1Start} - {selectedDepartment.shiftConfiguration.shift1End}
+                          </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Secondo Turno
+                          </Typography>
+                          <Typography variant="body1">
+                            {selectedDepartment.shiftConfiguration.shift2Start} - {selectedDepartment.shiftConfiguration.shift2End}
+                          </Typography>
+                        </Grid>
+                        {selectedDepartment.shiftConfiguration.hasThirdShift && (
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                              Terzo Turno
+                            </Typography>
+                            <Typography variant="body1">
+                              {selectedDepartment.shiftConfiguration.shift3Start} - {selectedDepartment.shiftConfiguration.shift3End}
+                            </Typography>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+
+              {/* Target Performance */}
+              {selectedDepartment.performanceMetrics && (
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Target Performance
+                  </Typography>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <Typography variant="body2" color="textSecondary">
+                            Target Efficienza
+                          </Typography>
+                          <Typography variant="h5">
+                            {selectedDepartment.performanceMetrics.targetEfficiency}%
+                          </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <Typography variant="body2" color="textSecondary">
+                            Tempo Ciclo Target
+                          </Typography>
+                          <Typography variant="h5">
+                            {formatTime(selectedDepartment.performanceMetrics.targetCycleTime)}
+                          </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <Typography variant="body2" color="textSecondary">
+                            Capacità Max ODL
+                          </Typography>
+                          <Typography variant="h5">
+                            {selectedDepartment.performanceMetrics.maxODLCapacity}
+                          </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <Typography variant="body2" color="textSecondary">
+                            Utilizzo Medio
+                          </Typography>
+                          <Typography variant="h5">
+                            {selectedDepartment.performanceMetrics.avgUtilizationRate}%
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
             </Grid>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => {
-            setCreateDialogOpen(false)
-            setEditDialogOpen(false)
-            resetForm()
-            setActiveTab(0)
+            setDepartmentDetailsOpen(false)
+            setSelectedDepartment(null)
           }}>
-            Annulla
-          </Button>
-          <Button 
-            variant="contained"
-            onClick={() => {
-              // In produzione, salverebbe i dati
-              alert(editDialogOpen ? 'Dipartimento aggiornato!' : 'Dipartimento creato!')
-              setCreateDialogOpen(false)
-              setEditDialogOpen(false)
-              resetForm()
-              setActiveTab(0)
-            }}
-          >
-            {editDialogOpen ? 'Aggiorna' : 'Crea'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Conferma Eliminazione</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Sei sicuro di voler eliminare il dipartimento <strong>{selectedDepartment?.name}</strong>?
-          </Typography>
-          <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-            Questa azione non può essere annullata.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>
-            Annulla
-          </Button>
-          <Button 
-            variant="contained" 
-            color="error"
-            onClick={() => {
-              // In produzione, eliminerebbe il dipartimento
-              alert(`Dipartimento ${selectedDepartment?.name} eliminato!`)
-              setDeleteDialogOpen(false)
-              setSelectedDepartment(null)
-            }}
-          >
-            Elimina
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Assign Users Dialog */}
-      <Dialog
-        open={assignUsersDialogOpen}
-        onClose={() => setAssignUsersDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box className="flex items-center gap-2">
-            <Groups />
-            Assegna Utenti a {selectedDepartment?.name}
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Seleziona gli utenti da assegnare al dipartimento. Gli utenti già assegnati ad altri dipartimenti verranno trasferiti.
-          </Typography>
-          
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <strong>Utenti disponibili:</strong> 12 operatori senza reparto
-          </Alert>
-
-          <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Ruolo nel Dipartimento</InputLabel>
-              <Select defaultValue="">
-                <MenuItem value="OPERATORE">Operatore</MenuItem>
-                <MenuItem value="CAPO_TURNO">Capo Turno</MenuItem>
-                <MenuItem value="CAPO_REPARTO">Capo Reparto</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Opzioni Batch
-            </Typography>
-            <Button 
-              variant="outlined" 
-              size="small" 
-              sx={{ mr: 1 }}
-              onClick={() => alert('Selezionati tutti gli utenti senza reparto')}
-            >
-              Seleziona Non Assegnati
-            </Button>
-            <Button 
-              variant="outlined" 
-              size="small"
-              onClick={() => alert('Import CSV in sviluppo')}
-            >
-              Importa da CSV
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAssignUsersDialogOpen(false)}>
-            Annulla
-          </Button>
-          <Button 
-            variant="contained"
-            startIcon={<PersonAdd />}
-            onClick={() => {
-              alert(`Utenti assegnati a ${selectedDepartment?.name}!`)
-              setAssignUsersDialogOpen(false)
-            }}
-          >
-            Assegna Selezionati
+            Chiudi
           </Button>
         </DialogActions>
       </Dialog>

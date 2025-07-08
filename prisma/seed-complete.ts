@@ -28,25 +28,78 @@ async function main() {
 
   // 1. PULIZIA DATABASE
   console.log('🧹 Pulizia database...')
-  await prisma.auditLog.deleteMany()
-  await prisma.productionEvent.deleteMany()
-  await prisma.autoclaveLoadItem.deleteMany()
-  await prisma.autoclaveLoad.deleteMany()
-  await prisma.partTool.deleteMany()
-  await prisma.oDL.deleteMany()
-  await prisma.partAutoclave.deleteMany()  // Cancella prima delle foreign keys
-  await prisma.partNDI.deleteMany()        // Cancella prima delle foreign keys  
-  await prisma.partCleanroom.deleteMany()  // Cancella prima delle foreign keys
-  await prisma.part.deleteMany()
-  await prisma.tool.deleteMany()
-  await prisma.autoclave.deleteMany()
-  await prisma.curingCycle.deleteMany()
-  await prisma.passwordResetToken.deleteMany()
-  await prisma.session.deleteMany()
-  await prisma.account.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.department.deleteMany()
-  await prisma.gammaSyncLog.deleteMany()
+  // Clean tables in correct order to respect foreign keys
+  try {
+    await prisma.productionEvent.deleteMany()
+  } catch (e) { console.log('productionEvent table not found') }
+  
+  try {
+    await prisma.autoclaveLoadItem.deleteMany()
+  } catch (e) { console.log('autoclaveLoadItem table not found') }
+  
+  try {
+    await prisma.autoclaveLoad.deleteMany()
+  } catch (e) { console.log('autoclaveLoad table not found') }
+  
+  try {
+    await prisma.partTool.deleteMany()
+  } catch (e) { console.log('partTool table not found') }
+  
+  try {
+    await prisma.oDL.deleteMany()
+  } catch (e) { console.log('oDL table not found') }
+  
+  try {
+    await prisma.partAutoclave.deleteMany()
+  } catch (e) { console.log('partAutoclave table not found') }
+  
+  try {
+    await prisma.partNDI.deleteMany()
+  } catch (e) { console.log('partNDI table not found') }
+  
+  try {
+    await prisma.partCleanroom.deleteMany()
+  } catch (e) { console.log('partCleanroom table not found') }
+  
+  try {
+    await prisma.part.deleteMany()
+  } catch (e) { console.log('part table not found') }
+  
+  try {
+    await prisma.tool.deleteMany()
+  } catch (e) { console.log('tool table not found') }
+  
+  try {
+    await prisma.autoclave.deleteMany()
+  } catch (e) { console.log('autoclave table not found') }
+  
+  try {
+    await prisma.curingCycle.deleteMany()
+  } catch (e) { console.log('curingCycle table not found') }
+  
+  try {
+    await prisma.passwordResetToken.deleteMany()
+  } catch (e) { console.log('passwordResetToken table not found') }
+  
+  try {
+    await prisma.session.deleteMany()
+  } catch (e) { console.log('session table not found') }
+  
+  try {
+    await prisma.account.deleteMany()
+  } catch (e) { console.log('account table not found') }
+  
+  try {
+    await prisma.user.deleteMany()
+  } catch (e) { console.log('user table not found') }
+  
+  try {
+    await prisma.department.deleteMany()
+  } catch (e) { console.log('department table not found') }
+  
+  try {
+    await prisma.gammaSyncLog.deleteMany()
+  } catch (e) { console.log('gammaSyncLog table not found') }
 
   // 2. CURING CYCLES - Espanso
   console.log('🔥 Creazione cicli di cura...')

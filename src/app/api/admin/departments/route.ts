@@ -10,7 +10,22 @@ const departmentSchema = z.object({
   code: z.string().min(1, 'Code is required').max(10, 'Code must be max 10 characters'),
   type: z.enum(['HONEYCOMB', 'CLEANROOM', 'CONTROLLO_NUMERICO', 'MONTAGGIO', 'AUTOCLAVE', 'NDI', 'VERNICIATURA', 'MOTORI', 'CONTROLLO_QUALITA', 'OTHER']).default('OTHER'),
   description: z.string().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE')
+  isActive: z.boolean().default(true),
+  shiftConfiguration: z.object({
+    shift1Start: z.string().default('06:00'),
+    shift1End: z.string().default('14:00'),
+    shift2Start: z.string().default('14:00'),
+    shift2End: z.string().default('22:00'),
+    hasThirdShift: z.boolean().default(false),
+    shift3Start: z.string().optional(),
+    shift3End: z.string().optional()
+  }).optional(),
+  performanceMetrics: z.object({
+    targetEfficiency: z.number().min(0).max(100).default(85),
+    targetCycleTime: z.number().min(0).default(120),
+    maxODLCapacity: z.number().min(0).default(20),
+    avgUtilizationRate: z.number().min(0).max(100).default(0)
+  }).optional()
 });
 
 export async function GET(request: NextRequest) {
@@ -61,24 +76,70 @@ export async function GET(request: NextRequest) {
         // Calculate efficiency based on completed vs total events
         const efficiency = totalEvents > 0 ? (completedToday / totalEvents) * 100 : 0;
 
+        // Calculate active ODLs in this department
+        const activeODLs = await prisma.oDL.count({
+          where: {
+            currentDepartmentId: dept.id,
+            status: { in: ['CREATED', 'ON_HOLD'] }
+          }
+        });
+
+        // Calculate average processing time for last 7 days
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const recentEvents = await prisma.productionEvent.findMany({
+          where: {
+            departmentId: dept.id,
+            eventType: 'EXIT',
+            timestamp: { gte: sevenDaysAgo }
+          },
+          include: {
+            odl: {
+              include: {
+                productionEvents: {
+                  where: {
+                    departmentId: dept.id,
+                    eventType: 'ENTRY'
+                  },
+                  take: 1,
+                  orderBy: { timestamp: 'desc' }
+                }
+              }
+            }
+          }
+        });
+
+        let avgProcessingTime = 0;
+        if (recentEvents.length > 0) {
+          const processingTimes = recentEvents
+            .filter(event => event.odl.productionEvents.length > 0)
+            .map(event => {
+              const entryTime = event.odl.productionEvents[0].timestamp;
+              const exitTime = event.timestamp;
+              return Math.abs(exitTime.getTime() - entryTime.getTime()) / (1000 * 60); // minutes
+            });
+          
+          if (processingTimes.length > 0) {
+            avgProcessingTime = Math.round(processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length);
+          }
+        }
+
         return {
           id: dept.id,
           name: dept.name,
           code: dept.code,
           description: dept.name,
-          status: dept.isActive ? 'ACTIVE' : 'INACTIVE',
-          currentOperators: dept._count.users,
-          totalCapacity: dept._count.users > 0 ? dept._count.users + 2 : 5, // Simple capacity calculation
+          isActive: dept.isActive,
+          totalOperators: dept._count.users,
+          activeODL: activeODLs,
+          averageProcessingTime: avgProcessingTime,
           efficiency: Math.round(efficiency * 10) / 10,
-          completedToday
+          shiftConfiguration: null,
+          performanceMetrics: null
         };
       })
     );
 
-    return NextResponse.json({
-      departments: departmentsWithStats,
-      total: departmentsWithStats.length
-    });
+    return NextResponse.json(departmentsWithStats);
 
   } catch (error) {
     console.error('Error fetching departments:', error);
@@ -121,7 +182,9 @@ export async function POST(request: NextRequest) {
         name: validated.name,
         code: validated.code,
         type: validated.type,
-        isActive: validated.status === 'ACTIVE'
+        isActive: validated.isActive,
+        shiftConfiguration: validated.shiftConfiguration,
+        performanceMetrics: validated.performanceMetrics
       }
     });
 

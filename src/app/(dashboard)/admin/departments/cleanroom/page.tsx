@@ -99,18 +99,53 @@ export default function CleanroomManagementPage() {
           Gestione Dati Reparto Clean Room
         </Typography>
         <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-          Mockup - Configurazione parametri laminazione e materiali compositi
+          Preview - Configurazione parametri laminazione e materiali compositi
         </Typography>
       </Box>
 
-      {/* Status Alert */}
-      <Alert severity="info" icon={<InfoIcon />}>
-        <Typography variant="body2">
-          <strong>Stato: Mockup</strong> - Questa è una preview della futura gestione dati Clean Room.
-          La tabella <code>PartCleanroom</code> è stata creata nel database ma l&apos;interfaccia completa 
-          sarà implementata in una fase successiva.
-        </Typography>
-      </Alert>
+      {/* Development Alert */}
+      <Card sx={{ 
+        backgroundColor: '#fff3e0', 
+        border: '2px solid #ff9800',
+        mb: 4
+      }}>
+        <CardContent sx={{ textAlign: 'center', py: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <Box sx={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              backgroundColor: '#ff9800', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center'
+            }}>
+              <InfoIcon sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            
+            <Box>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#e65100' }}>
+                🚧 Pagina in Sviluppo
+              </Typography>
+              <Typography variant="h6" gutterBottom sx={{ color: '#ef6c00' }}>
+                Configurazione Reparto Clean Room
+              </Typography>
+              <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', lineHeight: 1.6 }}>
+                Questa sezione è attualmente in fase di sviluppo. L'interfaccia completa per la gestione 
+                dei parametri di laminazione, materiali compositi e sequenze layup sarà disponibile 
+                nelle prossime release.
+              </Typography>
+            </Box>
+            
+            <Alert severity="warning" sx={{ maxWidth: 500 }}>
+              <Typography variant="body2">
+                <strong>Schema Database:</strong> La tabella <code>PartCleanroom</code> è già stata 
+                implementata e pronta per l'integrazione con l'interfaccia utente.
+              </Typography>
+            </Alert>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Planned Features */}
       <Box>

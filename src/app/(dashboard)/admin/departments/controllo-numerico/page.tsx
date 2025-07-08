@@ -101,18 +101,53 @@ export default function ControlloNumericoManagementPage() {
           Gestione Dati Reparto Controllo Numerico
         </Typography>
         <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-          Mockup - Configurazione parametri lavorazione CNC esistenti
+          Preview - Configurazione parametri lavorazione CNC esistenti
         </Typography>
       </Box>
 
-      {/* Status Alert */}
-      <Alert severity="info" icon={<InfoIcon />}>
-        <Typography variant="body2">
-          <strong>Stato: Mockup</strong> - Estensione della gestione dati Controllo Numerico.
-          La tabella <code>PartControlloNumerico</code> esiste già nel database con campi completi 
-          ma l&apos;interfaccia di gestione sarà implementata in una fase successiva.
-        </Typography>
-      </Alert>
+      {/* Development Alert */}
+      <Card sx={{ 
+        backgroundColor: '#ffe8e8', 
+        border: '2px solid #ff5722',
+        mb: 4
+      }}>
+        <CardContent sx={{ textAlign: 'center', py: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <Box sx={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%', 
+              backgroundColor: '#ff5722', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center'
+            }}>
+              <InfoIcon sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            
+            <Box>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#d84315' }}>
+                🚧 Pagina in Sviluppo
+              </Typography>
+              <Typography variant="h6" gutterBottom sx={{ color: '#e64a19' }}>
+                Configurazione Reparto Controllo Numerico CNC
+              </Typography>
+              <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', lineHeight: 1.6 }}>
+                Questa sezione è attualmente in fase di sviluppo. L'interfaccia completa per la gestione 
+                dei parametri di lavorazione CNC, tooling e controlli qualità sarà disponibile 
+                nelle prossime release.
+              </Typography>
+            </Box>
+            
+            <Alert severity="success" sx={{ maxWidth: 500 }}>
+              <Typography variant="body2">
+                <strong>Schema Database:</strong> La tabella <code>PartControlloNumerico</code> è già 
+                stata implementata con tutti i campi necessari e pronta per l'integrazione.
+              </Typography>
+            </Alert>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Planned Features */}
       <Box>
