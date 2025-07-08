@@ -19,6 +19,8 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-complete": "tsx prisma/seed-complete.ts",
+    "db:seed-production": "tsx prisma/seed-production.ts",
+    "db:copy-departments": "tsx scripts/copy-departments.ts",
     "db:netlify-info": "./scripts/netlify-db-access.sh",
     "db:reset-netlify": "echo 'Usa: DATABASE_URL=\"url-from-netlify\" npx prisma db push --force-reset'"
   },

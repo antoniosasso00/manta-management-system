@@ -1,12 +1,24 @@
-import { PrismaClient, UserRole, DepartmentType } from '@prisma/client'
+import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth-utils'
+import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
+export const runtime = 'nodejs'
 
-async function main() {
-  console.log('🌱 Inizializzazione seed produzione...')
-
+export async function POST() {
   try {
+    const session = await requireAuth()
+    
+    // Solo gli admin possono eseguire il seed
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Accesso negato. Solo gli amministratori possono eseguire il seed.' },
+        { status: 403 }
+      )
+    }
+
+    console.log('🌱 Inizializzazione seed produzione da API...')
+
     // 1. DEPARTMENTS - Solo i reparti essenziali
     console.log('🏭 Creazione reparti...')
     const departments = await Promise.all([
@@ -93,10 +105,7 @@ async function main() {
       }),
     ])
 
-    console.log(`✅ Creati ${departments.length} reparti`)
-
     // 2. CURING CYCLES - Solo i cicli base
-    console.log('🔥 Creazione cicli di cura...')
     const curingCycles = await Promise.all([
       prisma.curingCycle.upsert({
         where: { code: 'CC001' },
@@ -142,10 +151,7 @@ async function main() {
       }),
     ])
 
-    console.log(`✅ Creati ${curingCycles.length} cicli di cura`)
-
-    // 3. ADMIN USER - Solo utente amministratore
-    console.log('👤 Creazione utente amministratore...')
+    // 3. ADMIN USER - Solo se non esiste già
     const hashedPassword = await bcrypt.hash('password123', 12)
     
     const adminUser = await prisma.user.upsert({
@@ -155,15 +161,12 @@ async function main() {
         email: 'admin@mantaaero.com',
         password: hashedPassword,
         name: 'Admin System',
-        role: 'ADMIN' as UserRole,
+        role: 'ADMIN',
         isActive: true,
       },
     })
 
-    console.log(`✅ Creato utente admin: ${adminUser.email}`)
-
     // 4. AUTOCLAVES - Solo autoclavi base
-    console.log('🏭 Creazione autoclavi...')
     const autoclaves = await Promise.all([
       prisma.autoclave.upsert({
         where: { code: 'AC001' },
@@ -193,21 +196,21 @@ async function main() {
       }),
     ])
 
-    console.log(`✅ Creati ${autoclaves.length} autoclavi`)
-
-    console.log('🎉 Seed produzione completato con successo!')
+    return NextResponse.json({
+      message: 'Seed produzione completato con successo',
+      data: {
+        departments: departments.length,
+        curingCycles: curingCycles.length,
+        adminUser: adminUser.email,
+        autoclaves: autoclaves.length,
+      }
+    })
 
   } catch (error) {
-    console.error('❌ Errore durante il seed:', error)
-    throw error
+    console.error('Errore durante il seed produzione:', error)
+    return NextResponse.json(
+      { error: 'Errore durante il seed produzione' },
+      { status: 500 }
+    )
   }
 }
-
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
