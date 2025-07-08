@@ -68,13 +68,11 @@ export class ToolService {
     height: number;
     weight?: number;
     material?: string;
-    valveCount?: number;
     isActive?: boolean;
   }) {
     return prisma.tool.create({
       data: {
         ...data,
-        valveCount: data.valveCount || 0,
         isActive: data.isActive ?? true
       }
     });
@@ -147,7 +145,6 @@ export class ToolService {
     height: number;
     weight?: number;
     material?: string;
-    valveCount?: number;
   }>) {
     const results = {
       success: 0,

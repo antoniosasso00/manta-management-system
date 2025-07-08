@@ -41,7 +41,6 @@ interface Tool {
   height: number
   weight?: number
   material?: string
-  valveCount: number
   isActive: boolean
   _count?: {
     partTools: number
@@ -75,7 +74,6 @@ export default function ToolsManagementPage() {
     height: '',
     weight: '',
     material: '',
-    valveCount: '',
     isActive: true
   })
 
@@ -118,7 +116,6 @@ export default function ToolsManagementPage() {
         height: tool.height.toString(),
         weight: tool.weight?.toString() || '',
         material: tool.material || '',
-        valveCount: tool.valveCount.toString(),
         isActive: tool.isActive
       })
     } else {
@@ -130,7 +127,6 @@ export default function ToolsManagementPage() {
         height: '',
         weight: '',
         material: '',
-        valveCount: '',
         isActive: true
       })
     }
@@ -146,7 +142,6 @@ export default function ToolsManagementPage() {
         height: parseFloat(formData.height),
         weight: formData.weight ? parseFloat(formData.weight) : null,
         material: formData.material || null,
-        valveCount: parseInt(formData.valveCount) || 0,
         isActive: formData.isActive
       }
 
@@ -235,7 +230,7 @@ export default function ToolsManagementPage() {
       const tools = lines
         .filter(line => line.trim())
         .map((line, index) => {
-          const [toolPartNumber, description, base, height, weight, material, valveCount, isActive] = 
+          const [toolPartNumber, description, base, height, weight, material, isActive] = 
             line.split(',').map(field => field.replace(/"/g, '').trim())
           
           try {
@@ -246,7 +241,6 @@ export default function ToolsManagementPage() {
               height: parseFloat(height),
               weight: weight ? parseFloat(weight) : undefined,
               material: material || undefined,
-              valveCount: parseInt(valveCount) || 0,
               isActive: isActive !== 'Disattivato'
             }
           } catch (error) {
@@ -316,20 +310,6 @@ export default function ToolsManagementPage() {
       headerName: 'Materiale', 
       width: 120,
       renderCell: (params) => params.value || '-'
-    },
-    { 
-      field: 'valveCount', 
-      headerName: 'Valvole', 
-      width: 100,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => (
-        <Chip 
-          label={params.value} 
-          size="small" 
-          color={params.value > 0 ? 'primary' : 'default'}
-        />
-      )
     },
     { 
       field: '_count', 
@@ -476,10 +456,10 @@ export default function ToolsManagementPage() {
         <Grid size={3}>
           <Paper sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4" color="info.main">
-              {tools.filter(t => t.valveCount > 0).length}
+              {tools.filter(t => t.material).length}
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              Con Valvole
+              Con Materiale
             </Typography>
           </Paper>
         </Grid>
@@ -573,16 +553,6 @@ export default function ToolsManagementPage() {
                   onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                   fullWidth
                   inputProps={{ step: 0.1, min: 0 }}
-                />
-              </Grid>
-              <Grid size={6}>
-                <TextField
-                  label="Numero Valvole"
-                  type="number"
-                  value={formData.valveCount}
-                  onChange={(e) => setFormData({ ...formData, valveCount: e.target.value })}
-                  fullWidth
-                  inputProps={{ min: 0 }}
                 />
               </Grid>
             </Grid>

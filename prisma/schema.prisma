@@ -268,7 +268,6 @@ model Tool {
   height         Float
   weight         Float?
   material       String?
-  valveCount     Int        @default(0)
   isActive       Boolean    @default(true)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt

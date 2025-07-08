@@ -13,7 +13,6 @@ const importToolSchema = z.object({
   height: z.number().positive("Altezza deve essere positiva"),
   weight: z.number().positive().optional(),
   material: z.string().optional(),
-  valveCount: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true)
 })
 
@@ -64,7 +63,6 @@ export async function POST(request: NextRequest) {
           height: toolData.height,
           weight: toolData.weight || undefined,
           material: toolData.material || undefined,
-          valveCount: toolData.valveCount,
           isActive: toolData.isActive,
         })
 

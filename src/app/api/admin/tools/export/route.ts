@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
       'Altezza (mm)',
       'Peso (kg)',
       'Materiale',
-      'Numero Valvole',
       'Stato',
       'Data Creazione',
       'Ultimo Aggiornamento'
@@ -32,7 +31,6 @@ export async function GET(request: NextRequest) {
       tool.height,
       tool.weight || '',
       tool.material || '',
-      tool.valveCount,
       tool.isActive ? 'Attivo' : 'Disattivato',
       new Date(tool.createdAt).toLocaleDateString('it-IT'),
       new Date(tool.updatedAt).toLocaleDateString('it-IT')

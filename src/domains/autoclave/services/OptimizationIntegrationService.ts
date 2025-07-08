@@ -71,8 +71,7 @@ export class OptimizationIntegrationService {
         tooling_dimensions: tools.map(t => ({
           id: t.tool.toolPartNumber,
           base: t.tool.base,
-          height: t.tool.height,
-          valves: t.tool.valveCount
+          height: t.tool.height
         })),
         
         // Priorità

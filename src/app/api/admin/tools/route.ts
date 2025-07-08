@@ -10,7 +10,6 @@ const ToolSchema = z.object({
   height: z.number().positive("Altezza deve essere positiva"),
   weight: z.number().positive().nullable().optional(),
   material: z.string().nullable().optional(),
-  valveCount: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true)
 });
 

@@ -10,7 +10,6 @@ const UpdateSchema = z.object({
   height: z.number().positive().optional(),
   weight: z.number().positive().nullable().optional(),
   material: z.string().nullable().optional(),
-  valveCount: z.number().int().min(0).optional(),
   isActive: z.boolean().optional()
 });
 

@@ -37,7 +37,6 @@ interface Tool {
   height: number
   weight?: number
   material?: string
-  valveCount?: number
   isActive: boolean
   associatedParts?: Part[]
 }
@@ -57,7 +56,6 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
     height: '',
     weight: '',
     material: '',
-    valveCount: '0',
     isActive: true,
     associatedPartIds: [] as string[]
   })
@@ -86,7 +84,6 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
         height: tool.height.toString(),
         weight: tool.weight?.toString() || '',
         material: tool.material || '',
-        valveCount: tool.valveCount?.toString() || '0',
         isActive: tool.isActive,
         associatedPartIds: tool.associatedParts?.map(p => p.id) || []
       })
@@ -119,8 +116,7 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       height: '',
       weight: '',
       material: '',
-      valveCount: '0',
-      isActive: true,
+        isActive: true,
       associatedPartIds: []
     })
     setSelectedParts([])
@@ -162,7 +158,6 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
         height: parseFloat(formData.height),
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         material: formData.material.trim() || undefined,
-        valveCount: parseInt(formData.valveCount) || 0,
         isActive: formData.isActive,
         associatedPartIds: selectedParts.map(p => p.id)
       }
@@ -295,20 +290,7 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
             />
           </Grid>
           
-          <Grid size={{ xs: 12, sm: 2 }}>
-            <TextField
-              fullWidth
-              type="number"
-              label="N° Valvole"
-              value={formData.valveCount}
-              onChange={(e) => setFormData({ ...formData, valveCount: e.target.value })}
-              error={!!formErrors.valveCount}
-              helperText={formErrors.valveCount}
-              inputProps={{ min: 0, step: 1 }}
-            />
-          </Grid>
-          
-          <Grid size={{ xs: 12, sm: 4 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <FormControlLabel
               control={
                 <Switch

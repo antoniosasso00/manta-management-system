@@ -20,9 +20,6 @@ export const createToolSchema = z.object({
   material: z.string()
     .max(100, 'Material description too long')
     .optional(),
-  valveCount: z.number()
-    .int('Valve count must be an integer')
-    .min(0, 'Valve count cannot be negative'),
   isActive: z.boolean().default(true),
 })
 
