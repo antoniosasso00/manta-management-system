@@ -30,7 +30,7 @@ const ODLQRSchema = BaseQRSchema.extend({
   id: z.string()
     .min(1, 'ID ODL richiesto')
     .max(50, 'ID ODL troppo lungo')
-    .regex(/^ODL\d{8}\d{4}$|^[A-Z0-9]{6,20}$/, 'Formato ID ODL non valido'),
+    .regex(/^ODL\d{8}\d{4}$|^[A-Z0-9-_]{3,20}$/, 'Formato ID ODL non valido'),
   partNumber: z.string()
     .min(3, 'Part number troppo corto')
     .max(30, 'Part number troppo lungo')

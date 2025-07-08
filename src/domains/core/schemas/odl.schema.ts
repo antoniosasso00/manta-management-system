@@ -11,14 +11,35 @@ export const createODLSchema = z.object({
   dueDate: z.date().optional(),
   expectedCompletionDate: z.date().optional(),
   
-  // Override dimensions (if different from part standard)
-  length: z.number().positive().optional(),
-  width: z.number().positive().optional(),
-  height: z.number().positive().optional(),
+  // Department-specific configurations (optional overrides)
+  partAutoclave: z.object({
+    curingCycleId: z.string().cuid().optional(),
+    vacuumLines: z.number().int().min(1).max(10).optional(),
+    setupTime: z.number().int().positive().optional(),
+    loadPosition: z.string().optional(),
+    notes: z.string().optional(),
+  }).optional(),
   
-  // Override production data (if different from part standard)
-  curingCycleId: z.string().cuid('Invalid curing cycle ID').optional(),
-  vacuumLines: z.number().int().min(1).max(10).optional(),
+  partCleanroom: z.object({
+    layupSequence: z.any().optional(), // JSON field
+    fiberOrientation: z.array(z.string()).optional(),
+    resinType: z.string().optional(),
+    prepregCode: z.string().optional(),
+    roomTemperature: z.number().positive().optional(),
+    humidity: z.number().min(0).max(100).optional(),
+    shelfLife: z.number().int().positive().optional(),
+    setupTime: z.number().int().positive().optional(),
+    cycleTime: z.number().int().positive().optional(),
+  }).optional(),
+  
+  partNDI: z.object({
+    inspectionMethod: z.array(z.string()).optional(),
+    acceptanceCriteria: z.any().optional(), // JSON field
+    criticalAreas: z.any().optional(), // JSON field
+    inspectionTime: z.number().int().positive().optional(),
+    requiredCerts: z.array(z.string()).optional(),
+    calibrationReq: z.string().optional(),
+  }).optional(),
 })
 
 export const updateODLSchema = createODLSchema.partial().extend({

@@ -48,16 +48,92 @@ export class ODLService {
         quantity: input.quantity,
         priority: input.priority,
         qrCode: qrCode,
-        length: input.length,
-        width: input.width,
-        height: input.height,
-        // curingCycleId: input.curingCycleId, // TODO: Fix Prisma schema types
-        vacuumLines: input.vacuumLines,
+        curingCycleId: input.partAutoclave?.curingCycleId,
+        vacuumLines: input.partAutoclave?.vacuumLines,
       },
       include: {
         part: true
       }
     })
+
+    // Create department-specific configurations if provided
+    if (input.partAutoclave && Object.keys(input.partAutoclave).some(key => input.partAutoclave![key as keyof typeof input.partAutoclave] !== undefined)) {
+      // Check if we have a valid curing cycle ID
+      const curingCycleId = input.partAutoclave.curingCycleId || part.defaultCuringCycleId
+      
+      if (curingCycleId) {
+        await prisma.partAutoclave.upsert({
+          where: { partId: input.partId },
+          update: {
+            curingCycleId,
+            vacuumLines: input.partAutoclave.vacuumLines || part.defaultVacuumLines || 1,
+            setupTime: input.partAutoclave.setupTime,
+            loadPosition: input.partAutoclave.loadPosition,
+            notes: input.partAutoclave.notes,
+          },
+          create: {
+            partId: input.partId,
+            curingCycleId,
+            vacuumLines: input.partAutoclave.vacuumLines || part.defaultVacuumLines || 1,
+            setupTime: input.partAutoclave.setupTime,
+            loadPosition: input.partAutoclave.loadPosition,
+            notes: input.partAutoclave.notes,
+          }
+        })
+      }
+    }
+
+    if (input.partCleanroom && Object.keys(input.partCleanroom).some(key => input.partCleanroom![key as keyof typeof input.partCleanroom] !== undefined)) {
+      await prisma.partCleanroom.upsert({
+        where: { partId: input.partId },
+        update: {
+          layupSequence: input.partCleanroom.layupSequence,
+          fiberOrientation: input.partCleanroom.fiberOrientation,
+          resinType: input.partCleanroom.resinType,
+          prepregCode: input.partCleanroom.prepregCode,
+          roomTemperature: input.partCleanroom.roomTemperature,
+          humidity: input.partCleanroom.humidity,
+          shelfLife: input.partCleanroom.shelfLife,
+          setupTime: input.partCleanroom.setupTime,
+          cycleTime: input.partCleanroom.cycleTime,
+        },
+        create: {
+          partId: input.partId,
+          layupSequence: input.partCleanroom.layupSequence,
+          fiberOrientation: input.partCleanroom.fiberOrientation,
+          resinType: input.partCleanroom.resinType,
+          prepregCode: input.partCleanroom.prepregCode,
+          roomTemperature: input.partCleanroom.roomTemperature,
+          humidity: input.partCleanroom.humidity,
+          shelfLife: input.partCleanroom.shelfLife,
+          setupTime: input.partCleanroom.setupTime,
+          cycleTime: input.partCleanroom.cycleTime,
+        }
+      })
+    }
+
+    if (input.partNDI && Object.keys(input.partNDI).some(key => input.partNDI![key as keyof typeof input.partNDI] !== undefined)) {
+      await prisma.partNDI.upsert({
+        where: { partId: input.partId },
+        update: {
+          inspectionMethod: input.partNDI.inspectionMethod,
+          acceptanceCriteria: input.partNDI.acceptanceCriteria,
+          criticalAreas: input.partNDI.criticalAreas,
+          inspectionTime: input.partNDI.inspectionTime,
+          requiredCerts: input.partNDI.requiredCerts,
+          calibrationReq: input.partNDI.calibrationReq,
+        },
+        create: {
+          partId: input.partId,
+          inspectionMethod: input.partNDI.inspectionMethod,
+          acceptanceCriteria: input.partNDI.acceptanceCriteria,
+          criticalAreas: input.partNDI.criticalAreas,
+          inspectionTime: input.partNDI.inspectionTime,
+          requiredCerts: input.partNDI.requiredCerts,
+          calibrationReq: input.partNDI.calibrationReq,
+        }
+      })
+    }
 
     return ODL.fromPrisma(data)
   }
@@ -194,11 +270,8 @@ export class ODLService {
         partId: input.partId,
         quantity: input.quantity,
         priority: input.priority,
-        length: input.length,
-        width: input.width,
-        height: input.height,
-        // curingCycleId: input.curingCycleId, // TODO: Fix Prisma schema types
-        vacuumLines: input.vacuumLines,
+        curingCycleId: input.partAutoclave?.curingCycleId,
+        vacuumLines: input.partAutoclave?.vacuumLines,
       },
       include: {
         part: true
