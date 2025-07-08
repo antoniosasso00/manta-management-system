@@ -205,12 +205,18 @@ export class OptimizationService {
 
 // Helper per convertire dati dal database
 export function convertODLToOptimizationData(odl: any): ODLData {
+  // Ottieni dati SOLO da configurazione reparto-specifica
+  const autoclaveConfig = odl.part.autoclaveConfig;
+  if (!autoclaveConfig) {
+    throw new Error(`Part ${odl.part.partNumber} manca configurazione autoclave`);
+  }
+
   return {
     id: odl.id,
     odl_number: odl.odlNumber,
     part_number: odl.part.partNumber,
-    curing_cycle: odl.part.defaultCuringCycle?.code || 'UNKNOWN',
-    vacuum_lines: odl.part.defaultVacuumLines || 1,
+    curing_cycle: autoclaveConfig.curingCycle.code,
+    vacuum_lines: autoclaveConfig.vacuumLines,
     tools: odl.part.partTools.map((pt: any) => ({
       id: pt.tool.id,
       width: pt.tool.base,
