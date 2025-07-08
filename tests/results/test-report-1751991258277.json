@@ -1,0 +1,45 @@
+{
+  "startTime": "2025-07-08T16:14:05.603Z",
+  "tests": [
+    {
+      "name": "Server Health",
+      "status": "passed"
+    },
+    {
+      "name": "Parts API",
+      "status": "failed",
+      "error": "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    },
+    {
+      "name": "ODL API",
+      "status": "failed",
+      "error": "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    },
+    {
+      "name": "Departments",
+      "status": "failed",
+      "error": "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    },
+    {
+      "name": "Production Events",
+      "status": "failed",
+      "error": "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    },
+    {
+      "name": "Workflow",
+      "status": "failed",
+      "error": "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    },
+    {
+      "name": "Time Metrics",
+      "status": "failed",
+      "error": "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "passed": 1,
+    "failed": 6,
+    "skipped": 0
+  }
+}

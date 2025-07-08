@@ -17,7 +17,7 @@ export default function AutoclaviManagementPage() {
       title: 'Gestione Autoclavi',
       description: 'Configura gli autoclavi fisici disponibili nel reparto',
       icon: AutoclaveIcon,
-      href: '/dashboard/admin/departments/autoclavi/autoclaves',
+      href: '/admin/departments/autoclavi/autoclaves',
       color: '#ff5722',
       stats: 'Dimensioni, linee vuoto, stato'
     },
@@ -25,7 +25,7 @@ export default function AutoclaviManagementPage() {
       title: 'Cicli di Cura',
       description: 'Gestisci i programmi di cura con temperature e pressioni',
       icon: CycleIcon,
-      href: '/dashboard/admin/departments/autoclavi/cure-programs',
+      href: '/admin/departments/autoclavi/cure-programs',
       color: '#2196f3',
       stats: 'Fasi, durate, parametri'
     },
@@ -33,7 +33,7 @@ export default function AutoclaviManagementPage() {
       title: 'Configurazione Part',
       description: 'Associa part number a cicli di cura e valvole richieste',
       icon: ConfigIcon,
-      href: '/dashboard/admin/departments/autoclavi/part-config',
+      href: '/admin/departments/autoclavi/part-config',
       color: '#4caf50',
       stats: 'Cicli, valvole, setup time'
     },
@@ -41,7 +41,7 @@ export default function AutoclaviManagementPage() {
       title: 'Report e Statistiche',
       description: 'Visualizza utilizzo autoclavi e efficienza cicli',
       icon: ReportIcon,
-      href: '/dashboard/admin/departments/autoclavi/reports',
+      href: '/admin/departments/autoclavi/reports',
       color: '#9c27b0',
       stats: 'Coming soon'
     }
@@ -118,7 +118,7 @@ export default function AutoclaviManagementPage() {
       <Box sx={{ mt: 4 }}>
         <Button 
           variant="outlined" 
-          onClick={() => router.push('/dashboard/admin/departments')}
+          onClick={() => router.push('/admin/departments')}
         >
           ← Torna a Gestione Reparti
         </Button>
