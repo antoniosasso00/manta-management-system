@@ -8,7 +8,7 @@
     "dev:clean": "./start-dev.sh",
     "dev:port": "next dev --turbopack --port",
     "build": "prisma generate && next build",
-    "build:netlify": "prisma generate && prisma migrate deploy && NETLIFY=true next build",
+    "build:netlify": "prisma generate && prisma migrate resolve --applied 20250701123642_add_performance_indexes && prisma migrate resolve --applied 20250708_add_missing_schema_updates && prisma migrate deploy && NETLIFY=true next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit --skipLibCheck",
