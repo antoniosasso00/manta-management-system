@@ -16,6 +16,7 @@ import { CRUDToolbar } from '@/components/molecules/CRUDToolbar'
 import { FilterPanel, FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
 import { DataTable, Column } from '@/components/atoms/DataTable'
 import { ConfirmActionDialog } from '@/components/atoms/ConfirmActionDialog'
+import { TableActions, TableAction } from '@/components/molecules/TableActions'
 
 interface BreadcrumbItem {
   label: string
@@ -53,6 +54,7 @@ interface DataManagementTemplateProps<T extends Record<string, unknown>> {
   
   // Table Config
   searchPlaceholder?: string
+  searchValue?: string
   addLabel?: string
   exportLabel?: string
   showAdd?: boolean
@@ -66,7 +68,8 @@ interface DataManagementTemplateProps<T extends Record<string, unknown>> {
   deleteConfirmMessage?: (item: T) => string
   
   // Custom Actions
-  customActions?: (item: T) => React.ReactNode
+  customActions?: TableAction<T>[]
+  actionsVariant?: 'inline' | 'menu' | 'auto'
   
   // Empty State
   emptyMessage?: string
@@ -104,6 +107,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
   
   // Table Config
   searchPlaceholder,
+  searchValue,
   addLabel,
   exportLabel,
   showAdd = true,
@@ -118,6 +122,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
   
   // Custom Actions
   customActions,
+  actionsVariant = 'auto',
   
   // Empty State
   emptyMessage = 'Nessun dato disponibile',
@@ -164,33 +169,20 @@ export function DataManagementTemplate<T extends { id: string | number }>({
         sortable: false,
         format: (_value: unknown, row: T) => {
           return (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {onView && (
-                <Button size="small" onClick={() => onView(row)}>
-                  Visualizza
-                </Button>
-              )}
-              {onEdit && (
-                <Button size="small" onClick={() => onEdit(row)}>
-                  Modifica
-                </Button>
-              )}
-              {onDelete && (
-                <Button 
-                  size="small" 
-                  color="error" 
-                  onClick={() => handleDeleteClick(row)}
-                >
-                  Elimina
-                </Button>
-              )}
-              {customActions && customActions(row)}
-            </Box>
+            <TableActions
+              item={row}
+              onView={onView}
+              onEdit={onEdit}
+              onDelete={onDelete ? () => handleDeleteClick(row) : undefined}
+              actions={customActions}
+              variant={actionsVariant}
+              size="small"
+            />
           )
         }
       }
     ]
-  }, [columns, onEdit, onDelete, onView, customActions, handleDeleteClick])
+  }, [columns, onEdit, onDelete, onView, customActions, handleDeleteClick, actionsVariant])
   
   return (
     <Box>
@@ -236,6 +228,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
           onFilter={showFilter && filters.length > 0 ? handleFilterOpen : undefined}
           onRefresh={showRefresh ? onRefresh : undefined}
           searchPlaceholder={searchPlaceholder}
+          searchValue={searchValue}
           addLabel={addLabel}
           exportLabel={exportLabel}
           disabled={loading}

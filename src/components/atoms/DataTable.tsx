@@ -24,7 +24,7 @@ import {
 } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 export interface Column<T> {
   id: keyof T
@@ -331,11 +331,11 @@ export function DataTable<T extends Record<string, any>>({
               <TableBody>
                 {data.map((row, index) => {
                   const isExpanded = expandedRows.has(index)
+                  const rowKey = String(row.id) || String(index)
                   return (
-                    <>
+                    <React.Fragment key={rowKey}>
                       <TableRow
                         hover={!!onRowClick}
-                        key={String(row.id) || index}
                         onClick={() => onRowClick?.(row)}
                         sx={{ 
                           cursor: onRowClick ? 'pointer' : 'default',
@@ -373,7 +373,7 @@ export function DataTable<T extends Record<string, any>>({
                         })}
                       </TableRow>
                       {isMobile && expandedColumns.length > 0 && (
-                        <TableRow key={`${String(row.id) || index}-expanded`}>
+                        <TableRow>
                           <TableCell colSpan={visibleColumns.length + 1} sx={{ py: 0 }}>
                             <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                               <Box sx={{ p: 2, bgcolor: 'background.default' }}>
@@ -397,7 +397,7 @@ export function DataTable<T extends Record<string, any>>({
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </React.Fragment>
                   )
                 })}
               </TableBody>

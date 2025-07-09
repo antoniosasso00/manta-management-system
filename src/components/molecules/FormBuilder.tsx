@@ -294,6 +294,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             render={({ field: controllerField }) => (
               <TextField
                 {...controllerField}
+                value={controllerField.value || ''}
                 type={showPassword[field.name] ? 'text' : 'password'}
                 label={!field.hideLabel ? field.label : undefined}
                 placeholder={field.placeholder}
@@ -328,6 +329,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             render={({ field: controllerField }) => (
               <TextField
                 {...controllerField}
+                value={controllerField.value || ''}
                 label={!field.hideLabel ? field.label : undefined}
                 placeholder={field.placeholder}
                 fullWidth
@@ -354,6 +356,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             render={({ field: controllerField }) => (
               <TextField
                 {...controllerField}
+                value={controllerField.value || ''}
                 type={field.type || 'text'}
                 label={!field.hideLabel ? field.label : undefined}
                 placeholder={field.placeholder}

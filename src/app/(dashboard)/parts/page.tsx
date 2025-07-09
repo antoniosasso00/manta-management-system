@@ -7,12 +7,14 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Chip
+  Chip,
+  Box
 } from '@mui/material'
 import { DataManagementTemplate } from '@/components/templates/DataManagementTemplate'
 import { PermissionGuard } from '@/components/auth/PermissionGuard'
 import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
 import { FormBuilder, FieldConfig } from '@/components/molecules/FormBuilder'
+import { DetailDialog, DetailField } from '@/components/molecules/DetailDialog'
 import { partRepository } from '@/services/api/repositories/part.repository'
 import { createPartSchema, updatePartInputSchema } from '@/domains/core/schemas/part.schema'
 import { useForm } from 'react-hook-form'
@@ -30,14 +32,24 @@ export default function PartsPage() {
   const [selectedPart, setSelectedPart] = useState<Part | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewPart, setViewPart] = useState<Part | null>(null)
 
   // Form setup - separate create and update forms
   const createForm = useForm<CreatePartInput>({
-    resolver: zodResolver(createPartSchema)
+    resolver: zodResolver(createPartSchema),
+    defaultValues: {
+      partNumber: '',
+      description: ''
+    }
   })
 
   const updateForm = useForm<UpdatePartInput>({
-    resolver: zodResolver(updatePartInputSchema)
+    resolver: zodResolver(updatePartInputSchema),
+    defaultValues: {
+      partNumber: '',
+      description: ''
+    }
   })
 
   // Use the appropriate form based on editing state
@@ -88,6 +100,11 @@ export default function PartsPage() {
       description: part.description
     })
     setFormOpen(true)
+  }
+
+  const handleView = (part: Part) => {
+    setViewPart(part)
+    setViewDialogOpen(true)
   }
 
   const handleDelete = async (part: Part) => {
@@ -217,6 +234,7 @@ export default function PartsPage() {
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onView={handleView}
         
         // Toolbar Actions
         onSearch={setSearchQuery}
@@ -235,6 +253,7 @@ export default function PartsPage() {
         
         // Table Config
         searchPlaceholder="Cerca per numero parte o descrizione..."
+        searchValue={searchQuery}
         addLabel="Nuova Parte"
         exportLabel="Esporta CSV"
         
@@ -278,6 +297,77 @@ export default function PartsPage() {
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* Detail Dialog */}
+      <DetailDialog
+        open={viewDialogOpen}
+        onClose={() => {
+          setViewDialogOpen(false)
+          setViewPart(null)
+        }}
+        title={viewPart?.partNumber || ''}
+        subtitle="Dettagli Parte"
+        sections={viewPart ? [
+          {
+            title: 'Informazioni Generali',
+            fields: [
+              {
+                label: 'Numero Parte',
+                value: viewPart.partNumber,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Descrizione',
+                value: viewPart.description || '-',
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Ordini di Lavoro',
+                value: viewPart._count?.odls || 0,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Ciclo di Cura Predefinito',
+                value: viewPart.defaultCuringCycle ? (
+                  <Chip label={viewPart.defaultCuringCycle} size="small" color="primary" />
+                ) : '-',
+                type: 'custom' as const,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Linee Vacuum',
+                value: viewPart.defaultVacuumLines || '-',
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          },
+          {
+            title: 'Date',
+            fields: [
+              {
+                label: 'Data Creazione',
+                value: viewPart.createdAt,
+                type: 'date' as const,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Ultima Modifica',
+                value: viewPart.updatedAt,
+                type: 'date' as const,
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          }
+        ] : []}
+        actions={
+          <Button onClick={() => {
+            setViewDialogOpen(false)
+            setViewPart(null)
+          }} variant="contained">
+            Chiudi
+          </Button>
+        }
+      />
     </PermissionGuard>
   )
 }

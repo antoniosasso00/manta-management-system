@@ -1,34 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  IconButton,
-  Chip,
-  TextField,
-  InputAdornment,
-  Skeleton,
-  Tooltip
-} from '@mui/material'
-import {
-  Build,
-  Add,
-  Search,
-  Edit,
-  Delete,
-  Visibility
-} from '@mui/icons-material'
+import { Chip } from '@mui/material'
+import { DataManagementTemplate } from '@/components/templates/DataManagementTemplate'
+import { DetailDialog, DetailSection } from '@/components/molecules/DetailDialog'
+import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
+import { Column } from '@/components/atoms/DataTable'
 import ToolForm from '@/components/organisms/ToolForm'
 import { CreateToolWithPartsInput, UpdateToolWithPartsInput } from '@/domains/core/schemas/tool.schema'
 
@@ -56,116 +33,58 @@ interface Tool {
 
 export default function ToolsPage() {
   const [tools, setTools] = useState<Tool[]>([])
-  const [filteredTools, setFilteredTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterValues, setFilterValues] = useState<FilterValues>({})
   const [toolFormOpen, setToolFormOpen] = useState(false)
   const [selectedTool, setSelectedTool] = useState<any>(null)
-
-  const applyFilters = useCallback(() => {
-    let filtered = [...tools]
-
-    if (searchTerm) {
-      filtered = filtered.filter(tool =>
-        tool.toolPartNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (tool.description && tool.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        tool.material?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    setFilteredTools(filtered)
-  }, [tools, searchTerm])
+  const [isEditing, setIsEditing] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewTool, setViewTool] = useState<Tool | null>(null)
 
   useEffect(() => {
     loadTools()
   }, [])
 
-  useEffect(() => {
-    applyFilters()
-  }, [searchTerm, tools, applyFilters])
-
-  const loadTools = async () => {
-    setLoading(true)
+  const loadTools = useCallback(async () => {
     try {
-      const response = await fetch('/api/tools')
+      setLoading(true)
+      setError(null)
+      
+      const params: Record<string, string> = {}
+      if (searchQuery) params.search = searchQuery
+      if (filterValues.material && typeof filterValues.material === 'string') {
+        params.material = filterValues.material
+      }
+      if (filterValues.isActive !== undefined) {
+        params.isActive = String(filterValues.isActive)
+      }
+      
+      const queryString = new URLSearchParams(params).toString()
+      const response = await fetch(`/api/tools${queryString ? `?${queryString}` : ''}`)
+      
       if (response.ok) {
         const data = await response.json()
         setTools(data)
       } else {
-        // Dati mock per sviluppo
-        setTools([
-          {
-            id: '1',
-            toolPartNumber: 'STR-001',
-            description: 'Stampo pannello laterale',
-            base: 1200,
-            height: 800,
-            weight: 25.5,
-            material: 'Acciaio inox 316L',
-            isActive: true,
-            associatedParts: 3,
-            parts: [],
-            createdAt: '2024-06-15T10:00:00Z',
-            updatedAt: '2024-06-15T10:00:00Z'
-          },
-          {
-            id: '2',
-            toolPartNumber: 'UTL-002',
-            description: 'Utensile taglio carbonio',
-            base: 300,
-            height: 200,
-            weight: 12.8,
-            material: 'Fibra di carbonio',
-            isActive: true,
-            associatedParts: 8,
-            parts: [],
-            createdAt: '2024-06-20T14:30:00Z',
-            updatedAt: '2024-06-20T14:30:00Z'
-          },
-          {
-            id: '3',
-            toolPartNumber: 'STR-003',
-            description: 'Forma longherone principale',
-            base: 2000,
-            height: 400,
-            material: 'Alluminio 7075',
-            isActive: false,
-            associatedParts: 1,
-            parts: [],
-            createdAt: '2024-05-10T09:15:00Z',
-            updatedAt: '2024-05-10T09:15:00Z'
-          }
-        ])
+        throw new Error('Errore nel caricamento degli strumenti')
       }
     } catch (error) {
       console.error('Error loading tools:', error)
+      setError(error instanceof Error ? error.message : 'Errore caricamento strumenti')
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchQuery, filterValues])
 
-  const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'error'
-  }
-
-  const getStatusLabel = (isActive: boolean) => {
-    return isActive ? 'Attivo' : 'Non Attivo'
-  }
-
-  const formatDimensions = (base: number, height: number) => {
-    return `${base} × ${height} mm`
-  }
-
-  const formatWeight = (weight?: number) => {
-    return weight ? `${weight} kg` : '-'
-  }
-
-  const handleCreateTool = () => {
+  const handleAdd = () => {
     setSelectedTool(null)
+    setIsEditing(false)
     setToolFormOpen(true)
   }
 
-  const handleEditTool = (tool: Tool) => {
+  const handleEdit = (tool: Tool) => {
     const toolForForm = {
       id: tool.id,
       toolPartNumber: tool.toolPartNumber,
@@ -178,32 +97,16 @@ export default function ToolsPage() {
       associatedParts: tool.parts || []
     }
     setSelectedTool(toolForForm)
+    setIsEditing(true)
     setToolFormOpen(true)
   }
 
-  const handleToolSubmit = async (data: CreateToolWithPartsInput | UpdateToolWithPartsInput) => {
-    const url = selectedTool ? `/api/tools/${selectedTool.id}` : '/api/tools'
-    const method = selectedTool ? 'PUT' : 'POST'
-
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Errore nel salvataggio')
-    }
-
-    await loadTools()
+  const handleView = (tool: Tool) => {
+    setViewTool(tool)
+    setViewDialogOpen(true)
   }
 
-  const handleDeleteTool = async (tool: Tool) => {
-    if (!confirm(`Sei sicuro di voler eliminare lo strumento ${tool.toolPartNumber}?`)) {
-      return
-    }
-
+  const handleDelete = async (tool: Tool) => {
     try {
       const response = await fetch(`/api/tools/${tool.id}`, {
         method: 'DELETE'
@@ -213,164 +116,269 @@ export default function ToolsPage() {
         await loadTools()
       } else {
         const error = await response.json()
-        alert(error.error || 'Errore nell\'eliminazione')
+        setError(error.error || 'Errore nell\'eliminazione')
       }
     } catch (error) {
-      alert('Errore di connessione')
+      console.error('Error deleting tool:', error)
+      setError('Errore di connessione')
     }
   }
 
-  if (loading) {
-    return (
-      <Box className="p-4 space-y-4">
-        <Skeleton variant="rectangular" height={60} />
-        <Skeleton variant="rectangular" height={400} />
-      </Box>
-    )
+  const handleToolSubmit = async (data: CreateToolWithPartsInput | UpdateToolWithPartsInput) => {
+    try {
+      const url = selectedTool ? `/api/tools/${selectedTool.id}` : '/api/tools'
+      const method = selectedTool ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Errore nel salvataggio')
+      }
+
+      setToolFormOpen(false)
+      setSelectedTool(null)
+      await loadTools()
+    } catch (error) {
+      console.error('Error saving tool:', error)
+      setError(error instanceof Error ? error.message : 'Errore nel salvataggio')
+    }
   }
 
+  // Table columns
+  const columns: Column<Tool>[] = [
+    {
+      id: 'toolPartNumber',
+      label: 'Part Number',
+      minWidth: 150,
+      format: (value) => <strong>{String(value)}</strong>
+    },
+    {
+      id: 'description',
+      label: 'Descrizione',
+      minWidth: 200,
+      format: (value) => String(value || '-')
+    },
+    {
+      id: 'dimensions' as keyof Tool,
+      label: 'Dimensioni (mm)',
+      minWidth: 120,
+      format: (_, row) => `${row.base} × ${row.height} mm`
+    },
+    {
+      id: 'weight',
+      label: 'Peso',
+      minWidth: 100,
+      format: (value) => value ? `${value} kg` : '-'
+    },
+    {
+      id: 'material',
+      label: 'Materiale',
+      minWidth: 120,
+      format: (value) => String(value || '-')
+    },
+    {
+      id: 'isActive',
+      label: 'Stato',
+      minWidth: 100,
+      format: (value) => (
+        <Chip
+          label={value ? 'Attivo' : 'Non Attivo'}
+          color={value ? 'success' : 'error'}
+          size="small"
+        />
+      )
+    },
+    {
+      id: 'associatedParts',
+      label: 'Parti Associate',
+      minWidth: 120,
+      format: (value) => String(value || 0)
+    }
+  ]
+
+  // Filter configuration
+  const filters: FilterConfig[] = [
+    {
+      id: 'material',
+      label: 'Materiale',
+      type: 'select',
+      options: [
+        { value: 'Alluminio 7075', label: 'Alluminio 7075' },
+        { value: 'Acciaio Inox', label: 'Acciaio Inox' },
+        { value: 'Fibra di Carbonio', label: 'Fibra di Carbonio' },
+        { value: 'Acciaio Temprato', label: 'Acciaio Temprato' }
+      ]
+    },
+    {
+      id: 'isActive',
+      label: 'Stato',
+      type: 'select',
+      options: [
+        { value: true, label: 'Attivo' },
+        { value: false, label: 'Non Attivo' }
+      ]
+    }
+  ]
+
   return (
-    <Box className="p-4 space-y-6">
-      {/* Header */}
-      <Box className="flex items-center justify-between">
-        <Typography variant="h4" className="flex items-center gap-2">
-          <Build />
-          Gestione Strumenti
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={handleCreateTool}
-        >
-          Nuovo Strumento
-        </Button>
-      </Box>
+    <>
+      <DataManagementTemplate
+        // Data
+        data={tools}
+        columns={columns}
+        loading={loading}
+        error={error}
+        
+        // Page Config
+        title="Gestione Strumenti"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Dati Master' },
+          { label: 'Strumenti' }
+        ]}
+        
+        // CRUD Actions
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onView={handleView}
+        
+        // Toolbar Actions
+        onSearch={setSearchQuery}
+        onRefresh={loadTools}
+        
+        // Filter Config
+        filters={filters}
+        filterValues={filterValues}
+        onFilterChange={setFilterValues}
+        onFilterApply={loadTools}
+        onFilterReset={() => {
+          setFilterValues({})
+          loadTools()
+        }}
+        
+        // Table Config
+        searchPlaceholder="Cerca per codice, nome o materiale..."
+        searchValue={searchQuery}
+        addLabel="Nuovo Strumento"
+        
+        // Delete Confirmation
+        deleteConfirmTitle={(tool) => `Elimina strumento ${tool.toolPartNumber}`}
+        deleteConfirmMessage={(tool) => 
+          `Sei sicuro di voler eliminare lo strumento "${tool.toolPartNumber}"? Questa azione non può essere annullata.`
+        }
+        
+        // Empty State
+        emptyMessage="Nessuno strumento trovato"
+      />
 
-      {/* Search */}
-      <Card>
-        <CardContent>
-          <TextField
-            fullWidth
-            placeholder="Cerca per codice, nome o tipo..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Tools Table */}
-      <Card>
-        <CardContent>
-          <Box className="flex items-center justify-between mb-4">
-            <Typography variant="h6">
-              Strumenti ({filteredTools.length})
-            </Typography>
-          </Box>
-          
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Part Number</TableCell>
-                  <TableCell>Descrizione</TableCell>
-                  <TableCell>Dimensioni (mm)</TableCell>
-                  <TableCell>Peso</TableCell>
-                  <TableCell>Materiale</TableCell>
-                  <TableCell>Stato</TableCell>
-                  <TableCell>Parti Associate</TableCell>
-                  <TableCell>Azioni</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredTools.map((tool) => (
-                  <TableRow key={tool.id} hover>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="bold">
-                        {tool.toolPartNumber}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {tool.description || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {formatDimensions(tool.base, tool.height)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {formatWeight(tool.weight)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {tool.material || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={getStatusLabel(tool.isActive)}
-                        color={getStatusColor(tool.isActive)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="primary">
-                        {tool.associatedParts}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box className="flex gap-1">
-                        <Tooltip title="Visualizza dettagli">
-                          <IconButton size="small">
-                            <Visibility />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Modifica">
-                          <IconButton size="small" onClick={() => handleEditTool(tool)}>
-                            <Edit />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Elimina">
-                          <IconButton size="small" color="error" onClick={() => handleDeleteTool(tool)}>
-                            <Delete />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredTools.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} align="center">
-                      <Typography color="textSecondary">
-                        Nessuno strumento trovato
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Tool Form */}
+      {/* Tool Form */}
       <ToolForm
         open={toolFormOpen}
-        onClose={() => setToolFormOpen(false)}
+        onClose={() => {
+          setToolFormOpen(false)
+          setSelectedTool(null)
+        }}
         tool={selectedTool}
         onSubmit={handleToolSubmit}
       />
-    </Box>
+
+      {/* Detail Dialog */}
+      <DetailDialog
+        open={viewDialogOpen}
+        onClose={() => {
+          setViewDialogOpen(false)
+          setViewTool(null)
+        }}
+        title={viewTool?.toolPartNumber || ''}
+        subtitle="Dettagli Strumento"
+        sections={viewTool ? [
+          {
+            title: 'Informazioni Generali',
+            fields: [
+              {
+                label: 'Part Number',
+                value: viewTool.toolPartNumber,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Descrizione',
+                value: viewTool.description || '-',
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Materiale',
+                value: viewTool.material || '-',
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Stato',
+                value: (
+                  <Chip
+                    label={viewTool.isActive ? 'Attivo' : 'Non Attivo'}
+                    color={viewTool.isActive ? 'success' : 'error'}
+                    size="small"
+                  />
+                ),
+                type: 'custom' as const,
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          },
+          {
+            title: 'Dimensioni e Peso',
+            fields: [
+              {
+                label: 'Base',
+                value: `${viewTool.base} mm`,
+                size: { xs: 12, sm: 4 }
+              },
+              {
+                label: 'Altezza',
+                value: `${viewTool.height} mm`,
+                size: { xs: 12, sm: 4 }
+              },
+              {
+                label: 'Peso',
+                value: viewTool.weight ? `${viewTool.weight} kg` : '-',
+                size: { xs: 12, sm: 4 }
+              }
+            ]
+          },
+          {
+            title: 'Parti Associate',
+            fields: [
+              {
+                label: 'Numero Parti',
+                value: viewTool.associatedParts,
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          },
+          {
+            title: 'Date',
+            fields: [
+              {
+                label: 'Data Creazione',
+                value: viewTool.createdAt,
+                type: 'date' as const,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Ultima Modifica',
+                value: viewTool.updatedAt,
+                type: 'date' as const,
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          }
+        ] : []}
+      />
+    </>
   )
 }

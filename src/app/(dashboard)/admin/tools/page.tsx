@@ -1,36 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Switch,
-  FormControlLabel,
-  Chip,
-  IconButton,
-  Alert,
-  Grid,
-  Paper
-} from '@mui/material'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { 
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Build as ToolIcon,
-  ArrowBack,
-  Upload as UploadIcon,
-  Download as DownloadIcon,
-  Link as LinkIcon
-} from '@mui/icons-material'
+import { useState, useEffect, useCallback } from 'react'
+import { Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Switch, FormControlLabel, Alert, Box, Typography } from '@mui/material'
+import { DataManagementTemplate } from '@/components/templates/DataManagementTemplate'
+import { DetailDialog } from '@/components/molecules/DetailDialog'
+import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
+import { Column } from '@/components/atoms/DataTable'
+import { TableAction } from '@/components/molecules/TableActions'
+import { Link as LinkIcon } from '@mui/icons-material'
 import { useRouter } from 'next/navigation'
 
 interface Tool {
@@ -58,13 +35,18 @@ export default function ToolsManagementPage() {
   const [tools, setTools] = useState<Tool[]>([])
   const [parts, setParts] = useState<Part[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterValues, setFilterValues] = useState<FilterValues>({})
+  
+  // Dialog states
   const [openDialog, setOpenDialog] = useState(false)
   const [openAssociationDialog, setOpenAssociationDialog] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [searchFilter, setSearchFilter] = useState('')
-  const [activeTab, setActiveTab] = useState(0)
+  const [viewTool, setViewTool] = useState<Tool | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
   
   // Form state
   const [formData, setFormData] = useState({
@@ -81,10 +63,23 @@ export default function ToolsManagementPage() {
     loadData()
   }, [])
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
+      setLoading(true)
+      setError(null)
+      
+      const params: Record<string, string> = {}
+      if (searchQuery) params.search = searchQuery
+      if (filterValues.material && typeof filterValues.material === 'string') {
+        params.material = filterValues.material
+      }
+      if (filterValues.isActive !== undefined) {
+        params.isActive = String(filterValues.isActive)
+      }
+      
+      const queryString = new URLSearchParams(params).toString()
       const [toolsRes, partsRes] = await Promise.all([
-        fetch('/api/admin/tools'),
+        fetch(`/api/admin/tools${queryString ? `?${queryString}` : ''}`),
         fetch('/api/admin/parts')
       ])
 
@@ -97,40 +92,72 @@ export default function ToolsManagementPage() {
         setTools(toolsData)
         setParts(partsData)
       } else {
-        setError('Errore nel caricamento dei dati')
+        throw new Error('Errore nel caricamento dei dati')
       }
     } catch (error) {
-      setError('Errore di connessione')
+      console.error('Error loading data:', error)
+      setError(error instanceof Error ? error.message : 'Errore di connessione')
     } finally {
       setLoading(false)
     }
+  }, [searchQuery, filterValues])
+
+  const handleAdd = () => {
+    setEditingTool(null)
+    setIsEditing(false)
+    setFormData({
+      toolPartNumber: '',
+      description: '',
+      base: '',
+      height: '',
+      weight: '',
+      material: '',
+      isActive: true
+    })
+    setOpenDialog(true)
   }
 
-  const handleOpenDialog = (tool?: Tool) => {
-    if (tool) {
-      setEditingTool(tool)
-      setFormData({
-        toolPartNumber: tool.toolPartNumber,
-        description: tool.description || '',
-        base: tool.base.toString(),
-        height: tool.height.toString(),
-        weight: tool.weight?.toString() || '',
-        material: tool.material || '',
-        isActive: tool.isActive
-      })
-    } else {
-      setEditingTool(null)
-      setFormData({
-        toolPartNumber: '',
-        description: '',
-        base: '',
-        height: '',
-        weight: '',
-        material: '',
-        isActive: true
-      })
-    }
+  const handleEdit = (tool: Tool) => {
+    setEditingTool(tool)
+    setIsEditing(true)
+    setFormData({
+      toolPartNumber: tool.toolPartNumber,
+      description: tool.description || '',
+      base: tool.base.toString(),
+      height: tool.height.toString(),
+      weight: tool.weight?.toString() || '',
+      material: tool.material || '',
+      isActive: tool.isActive
+    })
     setOpenDialog(true)
+  }
+
+  const handleView = (tool: Tool) => {
+    setViewTool(tool)
+    setViewDialogOpen(true)
+  }
+
+  const handleDelete = async (tool: Tool) => {
+    try {
+      const response = await fetch(`/api/admin/tools/${tool.id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        await loadData()
+      } else {
+        const data = await response.json()
+        setError(data.error || 'Errore nell\'eliminazione')
+      }
+    } catch (error) {
+      console.error('Error deleting tool:', error)
+      setError('Errore di connessione')
+    }
+  }
+
+  const handleOpenAssociations = (tool: Tool) => {
+    setSelectedTool(tool)
+    setOpenAssociationDialog(true)
   }
 
   const handleSubmit = async () => {
@@ -159,39 +186,17 @@ export default function ToolsManagementPage() {
 
       if (response.ok) {
         setOpenDialog(false)
-        loadData()
+        setEditingTool(null)
+        await loadData()
         setError(null)
       } else {
         const data = await response.json()
         setError(data.error || 'Errore nel salvataggio')
       }
     } catch (error) {
+      console.error('Error saving tool:', error)
       setError('Errore di connessione')
     }
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Sei sicuro di voler eliminare questo tooling?')) return
-
-    try {
-      const response = await fetch(`/api/admin/tools/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        loadData()
-      } else {
-        const data = await response.json()
-        setError(data.error || 'Errore nell\'eliminazione')
-      }
-    } catch (error) {
-      setError('Errore di connessione')
-    }
-  }
-
-  const handleOpenAssociations = (tool: Tool) => {
-    setSelectedTool(tool)
-    setOpenAssociationDialog(true)
   }
 
   const handleExport = async () => {
@@ -203,299 +208,158 @@ export default function ToolsManagementPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `tools_${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
+      a.download = 'tools-export.csv'
       a.click()
       window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
     } catch (error) {
-      console.error('Export error:', error)
-      alert('Errore durante l\'export dei tools')
+      console.error('Error exporting tools:', error)
+      setError('Errore durante l\'esportazione')
     }
   }
 
-  const handleImport = () => {
-    // Crea input file nascosto per upload CSV
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.csv'
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) return
-      
-      // Parsing CSV semplificato - in produzione usare una libreria come Papa Parse
-      const text = await file.text()
-      const lines = text.split('\n').slice(1) // Skip header
-      
-      const tools = lines
-        .filter(line => line.trim())
-        .map((line, index) => {
-          const [toolPartNumber, description, base, height, weight, material, isActive] = 
-            line.split(',').map(field => field.replace(/"/g, '').trim())
-          
-          try {
-            return {
-              toolPartNumber,
-              description: description || undefined,
-              base: parseFloat(base),
-              height: parseFloat(height),
-              weight: weight ? parseFloat(weight) : undefined,
-              material: material || undefined,
-              isActive: isActive !== 'Disattivato'
-            }
-          } catch (error) {
-            console.error(`Error parsing line ${index + 2}:`, line)
-            return null
-          }
-        })
-        .filter(Boolean)
-      
-      try {
-        const response = await fetch('/api/admin/tools/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tools, skipDuplicates: true })
-        })
-        
-        const result = await response.json()
-        alert(result.message)
-        loadData() // Refresh data
-      } catch (error) {
-        console.error('Import error:', error)
-        alert('Errore durante l\'import dei tools')
-      }
-    }
-    input.click()
-  }
-
-  // Filtra tools in base alla ricerca
-  const filteredTools = tools.filter(tool => 
-    tool.toolPartNumber.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    tool.description?.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    tool.material?.toLowerCase().includes(searchFilter.toLowerCase())
-  )
-
-  const columns: GridColDef<Tool>[] = [
-    { 
-      field: 'toolPartNumber', 
-      headerName: 'Part Number Tool', 
-      width: 150,
-      renderCell: (params) => (
-        <Chip label={params.value} size="small" variant="outlined" />
-      )
+  // Table columns
+  const columns: Column<Tool>[] = [
+    {
+      id: 'toolPartNumber',
+      label: 'Part Number',
+      minWidth: 150,
+      format: (value) => <strong>{String(value)}</strong>
     },
-    { 
-      field: 'description', 
-      headerName: 'Descrizione', 
-      width: 250,
-      renderCell: (params) => params.value || '-'
+    {
+      id: 'description',
+      label: 'Descrizione',
+      minWidth: 200,
+      format: (value) => String(value || '-')
     },
-    { 
-      field: 'dimensions', 
-      headerName: 'Dimensioni (B×H)', 
-      width: 150,
-      valueGetter: (value, row) => 
-        `${row.base}×${row.height} m`
+    {
+      id: 'dimensions' as keyof Tool,
+      label: 'Dimensioni (m)',
+      minWidth: 120,
+      format: (_, row) => `${row.base} × ${row.height} m`
     },
-    { 
-      field: 'weight', 
-      headerName: 'Peso (kg)', 
-      width: 100,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => params.value || '-'
+    {
+      id: 'weight',
+      label: 'Peso (kg)',
+      minWidth: 100,
+      format: (value) => value ? `${value} kg` : '-'
     },
-    { 
-      field: 'material', 
-      headerName: 'Materiale', 
-      width: 120,
-      renderCell: (params) => params.value || '-'
+    {
+      id: 'material',
+      label: 'Materiale',
+      minWidth: 120,
+      format: (value) => String(value || '-')
     },
-    { 
-      field: '_count', 
-      headerName: 'Parts Associati', 
-      width: 120,
-      align: 'center',
-      headerAlign: 'center',
-      valueGetter: (value, row) => row._count?.partTools || 0,
-      renderCell: (params) => {
-        const count = params.row._count?.partTools || 0
-        return (
-          <Box>
-            <Chip 
-              label={count} 
-              size="small" 
-              color={count > 0 ? 'secondary' : 'default'}
-            />
-            <IconButton
-              size="small"
-              onClick={() => handleOpenAssociations(params.row)}
-              color="primary"
-            >
-              <LinkIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        )
-      }
-    },
-    { 
-      field: 'isActive', 
-      headerName: 'Stato', 
-      width: 100,
-      renderCell: (params) => (
-        <Chip 
-          label={params.value ? 'Attivo' : 'Inattivo'} 
-          color={params.value ? 'success' : 'default'}
+    {
+      id: 'isActive',
+      label: 'Stato',
+      minWidth: 100,
+      format: (value) => (
+        <Chip
+          label={value ? 'Attivo' : 'Non Attivo'}
+          color={value ? 'success' : 'error'}
           size="small"
         />
       )
     },
     {
-      field: 'actions',
-      headerName: 'Azioni',
-      width: 120,
-      sortable: false,
-      renderCell: (params) => (
-        <Box>
-          <IconButton
-            size="small"
-            onClick={() => handleOpenDialog(params.row)}
-            color="primary"
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleDelete(params.row.id)}
-            color="error"
-            disabled={(params.row._count?.partTools || 0) > 0}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      )
+      id: 'associatedParts' as keyof Tool,
+      label: 'Parti Associate',
+      minWidth: 120,
+      format: (_, row) => String(row._count?.partTools || 0)
+    }
+  ]
+
+  // Filter configuration
+  const filters: FilterConfig[] = [
+    {
+      id: 'material',
+      label: 'Materiale',
+      type: 'select',
+      options: [
+        { value: 'Acciaio', label: 'Acciaio' },
+        { value: 'Alluminio', label: 'Alluminio' },
+        { value: 'Composito', label: 'Composito' },
+        { value: 'Fibra di Carbonio', label: 'Fibra di Carbonio' }
+      ]
+    },
+    {
+      id: 'isActive',
+      label: 'Stato',
+      type: 'select',
+      options: [
+        { value: true, label: 'Attivo' },
+        { value: false, label: 'Non Attivo' }
+      ]
+    }
+  ]
+
+  // Custom actions
+  const customActions: TableAction<Tool>[] = [
+    {
+      id: 'associations',
+      label: 'Associazioni',
+      icon: <LinkIcon />,
+      onClick: handleOpenAssociations,
+      color: 'secondary'
     }
   ]
 
   return (
-    <Box className="p-4 space-y-6">
-      {/* Header */}
-      <Box className="flex items-center justify-between">
-        <Box>
-          <Typography variant="h4" className="flex items-center gap-2">
-            <ToolIcon />
-            Gestione Tool/Tooling
-          </Typography>
-          <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-            Gestione centralizzata degli stampi utilizzati in produzione
-          </Typography>
-        </Box>
-        <Box className="flex gap-2">
-          <Button
-            variant="outlined"
-            startIcon={<UploadIcon />}
-            onClick={handleImport}
-          >
-            Importa CSV
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={handleExport}
-          >
-            Esporta CSV
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-          >
-            Nuovo Tool
-          </Button>
-        </Box>
-      </Box>
-
-      {error && (
-        <Alert severity="error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Stats Cards */}
-      <Grid container spacing={3}>
-        <Grid size={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h4" color="primary">
-              {tools.length}
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Tool Totali
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid size={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h4" color="success.main">
-              {tools.filter(t => t.isActive).length}
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Tool Attivi
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid size={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h4" color="secondary">
-              {tools.reduce((acc, t) => acc + (t._count?.partTools || 0), 0)}
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Associazioni Part
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid size={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h4" color="info.main">
-              {tools.filter(t => t.material).length}
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Con Materiale
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* Search */}
-      <TextField
-        placeholder="Cerca per part number, descrizione o materiale..."
-        value={searchFilter}
-        onChange={(e) => setSearchFilter(e.target.value)}
-        fullWidth
-        variant="outlined"
-        sx={{ mb: 2 }}
+    <>
+      <DataManagementTemplate
+        // Data
+        data={tools}
+        columns={columns}
+        loading={loading}
+        error={error}
+        
+        // Page Config
+        title="Gestione Strumenti - Admin"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Amministrazione', href: '/dashboard/admin' },
+          { label: 'Strumenti' }
+        ]}
+        
+        // CRUD Actions
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onView={handleView}
+        
+        // Toolbar Actions
+        onSearch={setSearchQuery}
+        onExport={handleExport}
+        onRefresh={loadData}
+        
+        // Filter Config
+        filters={filters}
+        filterValues={filterValues}
+        onFilterChange={setFilterValues}
+        onFilterApply={loadData}
+        onFilterReset={() => {
+          setFilterValues({})
+          loadData()
+        }}
+        
+        // Custom Actions
+        customActions={customActions}
+        
+        // Table Config
+        searchPlaceholder="Cerca per part number, descrizione o materiale..."
+        searchValue={searchQuery}
+        addLabel="Nuovo Tool"
+        exportLabel="Esporta CSV"
+        
+        // Delete Confirmation
+        deleteConfirmTitle={(tool) => `Elimina tool ${tool.toolPartNumber}`}
+        deleteConfirmMessage={(tool) => 
+          `Sei sicuro di voler eliminare il tool "${tool.toolPartNumber}"? Questa azione non può essere annullata.`
+        }
+        
+        // Empty State
+        emptyMessage="Nessun tool trovato"
       />
-
-      {/* Data Grid */}
-      <Card>
-        <CardContent>
-          <DataGrid
-            rows={filteredTools}
-            columns={columns}
-            loading={loading}
-            autoHeight
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10 } }
-            }}
-            pageSizeOptions={[10, 25, 50]}
-            disableRowSelectionOnClick
-            sx={{
-              '& .MuiDataGrid-cell:focus': {
-                outline: 'none',
-              },
-            }}
-          />
-        </CardContent>
-      </Card>
 
       {/* Form Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
@@ -520,42 +384,34 @@ export default function ToolsManagementPage() {
               multiline
               rows={2}
             />
-            <Grid container spacing={2}>
-              <Grid size={6}>
-                <TextField
-                  label="Base (m)"
-                  type="number"
-                  value={formData.base}
-                  onChange={(e) => setFormData({ ...formData, base: e.target.value })}
-                  fullWidth
-                  required
-                  inputProps={{ step: 0.01, min: 0 }}
-                />
-              </Grid>
-              <Grid size={6}>
-                <TextField
-                  label="Altezza (m)"
-                  type="number"
-                  value={formData.height}
-                  onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                  fullWidth
-                  required
-                  inputProps={{ step: 0.01, min: 0 }}
-                />
-              </Grid>
-            </Grid>
-            <Grid container spacing={2}>
-              <Grid size={6}>
-                <TextField
-                  label="Peso (kg)"
-                  type="number"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                  fullWidth
-                  inputProps={{ step: 0.1, min: 0 }}
-                />
-              </Grid>
-            </Grid>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Base (m)"
+                type="number"
+                value={formData.base}
+                onChange={(e) => setFormData({ ...formData, base: e.target.value })}
+                fullWidth
+                required
+                inputProps={{ step: 0.01, min: 0 }}
+              />
+              <TextField
+                label="Altezza (m)"
+                type="number"
+                value={formData.height}
+                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                fullWidth
+                required
+                inputProps={{ step: 0.01, min: 0 }}
+              />
+            </Box>
+            <TextField
+              label="Peso (kg)"
+              type="number"
+              value={formData.weight}
+              onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+              fullWidth
+              inputProps={{ step: 0.1, min: 0 }}
+            />
             <TextField
               label="Materiale"
               value={formData.material}
@@ -607,16 +463,80 @@ export default function ToolsManagementPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Navigation */}
-      <Box sx={{ mt: 4 }}>
-        <Button 
-          variant="outlined" 
-          startIcon={<ArrowBack />}
-          onClick={() => router.push('/dashboard/admin')}
-        >
-          Torna a Pannello Admin
-        </Button>
-      </Box>
-    </Box>
+      {/* Detail Dialog */}
+      <DetailDialog
+        open={viewDialogOpen}
+        onClose={() => {
+          setViewDialogOpen(false)
+          setViewTool(null)
+        }}
+        title={viewTool?.toolPartNumber || ''}
+        subtitle="Dettagli Tool"
+        sections={viewTool ? [
+          {
+            title: 'Informazioni Generali',
+            fields: [
+              {
+                label: 'Part Number',
+                value: viewTool.toolPartNumber,
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Descrizione',
+                value: viewTool.description || '-',
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Materiale',
+                value: viewTool.material || '-',
+                size: { xs: 12, sm: 6 }
+              },
+              {
+                label: 'Stato',
+                value: (
+                  <Chip
+                    label={viewTool.isActive ? 'Attivo' : 'Non Attivo'}
+                    color={viewTool.isActive ? 'success' : 'error'}
+                    size="small"
+                  />
+                ),
+                type: 'custom' as const,
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          },
+          {
+            title: 'Dimensioni e Peso',
+            fields: [
+              {
+                label: 'Base',
+                value: `${viewTool.base} m`,
+                size: { xs: 12, sm: 4 }
+              },
+              {
+                label: 'Altezza',
+                value: `${viewTool.height} m`,
+                size: { xs: 12, sm: 4 }
+              },
+              {
+                label: 'Peso',
+                value: viewTool.weight ? `${viewTool.weight} kg` : '-',
+                size: { xs: 12, sm: 4 }
+              }
+            ]
+          },
+          {
+            title: 'Associazioni',
+            fields: [
+              {
+                label: 'Parti Associate',
+                value: viewTool._count?.partTools || 0,
+                size: { xs: 12, sm: 6 }
+              }
+            ]
+          }
+        ] : []}
+      />
+    </>
   )
 }

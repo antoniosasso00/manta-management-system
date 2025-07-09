@@ -47,6 +47,40 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
   const [sidebarOpen, setSidebarOpen] = useState(defaultOpen)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   
+  // Callbacks - DEVONO essere definiti prima di qualsiasi return condizionale
+  const handleDrawerToggle = useCallback(() => {
+    setSidebarOpen(prev => !prev)
+  }, [])
+
+  const handleDrawerClose = useCallback(() => {
+    setSidebarOpen(false)
+  }, [])
+
+  const handleDrawerOpen = useCallback(() => {
+    setSidebarOpen(true)
+  }, [])
+
+  const handleToggleCollapsed = useCallback(() => {
+    setSidebarCollapsed(!sidebarCollapsed)
+  }, [sidebarCollapsed])
+
+  // Edge swipe per aprire sidebar su mobile
+  const edgeSwipeHandlers = useSwipeable({
+    onSwipedRight: (eventData) => {
+      if (isMobile && !sidebarOpen && eventData.initial[0] < 30) {
+        // Apri sidebar solo se swipe inizia dal bordo sinistro (30px)
+        if ('vibrate' in navigator) {
+          navigator.vibrate(15) // Feedback per apertura
+        }
+        handleDrawerOpen()
+      }
+    },
+    trackMouse: false,
+    trackTouch: true,
+    delta: 50,
+    preventScrollOnSwipe: false, // Consenti scroll normale
+  })
+  
   // ScrollToTop handler
   const handleScrollTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -94,39 +128,6 @@ export function DashboardLayout({ children, title, breadcrumbs }: DashboardLayou
         <Typography>Not authenticated. Please log in.</Typography>
       </Box>
     )
-  }
-
-  const handleDrawerToggle = useCallback(() => {
-    setSidebarOpen(prev => !prev)
-  }, [])
-
-  const handleDrawerClose = useCallback(() => {
-    setSidebarOpen(false)
-  }, [])
-
-  const handleDrawerOpen = useCallback(() => {
-    setSidebarOpen(true)
-  }, [])
-
-  // Edge swipe per aprire sidebar su mobile
-  const edgeSwipeHandlers = useSwipeable({
-    onSwipedRight: (eventData) => {
-      if (isMobile && !sidebarOpen && eventData.initial[0] < 30) {
-        // Apri sidebar solo se swipe inizia dal bordo sinistro (30px)
-        if ('vibrate' in navigator) {
-          navigator.vibrate(15) // Feedback per apertura
-        }
-        handleDrawerOpen()
-      }
-    },
-    trackMouse: false,
-    trackTouch: true,
-    delta: 50,
-    preventScrollOnSwipe: false, // Consenti scroll normale
-  })
-
-  const handleToggleCollapsed = () => {
-    setSidebarCollapsed(!sidebarCollapsed)
   }
 
   // Calcola il margine left per il contenuto principale
