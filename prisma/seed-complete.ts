@@ -2039,18 +2039,14 @@ async function main() {
       data: {
         partId: parts[0].id, // A320 ala superiore
         inspectionMethod: ['ULTRASUONI'],
-        acceptanceCriteria: 'AS9100 Rev D',
-        samplingPercentage: 100,
-        notes: 'Controllo completo per componenti critici',
+        acceptanceCriteria: { standard: 'AS9100 Rev D', maxDefects: 0 },
       },
     }),
     prisma.partNDI.create({
       data: {
         partId: parts[1].id, // A320 ala inferiore
         inspectionMethod: ['ULTRASUONI'],
-        acceptanceCriteria: 'AS9100 Rev D',
-        samplingPercentage: 100,
-        notes: 'Controllo completo per componenti critici',
+        acceptanceCriteria: { standard: 'AS9100 Rev D', maxDefects: 0 },
       },
     }),
     
@@ -2059,18 +2055,14 @@ async function main() {
       data: {
         partId: parts[4].id, // B777 longherone
         inspectionMethod: ['ULTRASUONI'],
-        acceptanceCriteria: 'Boeing BSS7260',
-        samplingPercentage: 100,
-        notes: 'Controllo Boeing standard',
+        acceptanceCriteria: { standard: 'Boeing BSS7260', maxDefects: 0 },
       },
     }),
     prisma.partNDI.create({
       data: {
         partId: parts[5].id, // B777 fusoliera
         inspectionMethod: ['RAGGI_X'],
-        acceptanceCriteria: 'Boeing BSS7260',
-        samplingPercentage: 100,
-        notes: 'Controllo radiografico fusoliera',
+        acceptanceCriteria: { standard: 'Boeing BSS7260', maxDefects: 0 },
       },
     }),
     
@@ -2079,17 +2071,14 @@ async function main() {
       data: {
         partId: parts[21].id, // Eurofighter canard
         inspectionMethod: ['ULTRASUONI'],
-        acceptanceCriteria: 'MIL-HDBK-17',
-        samplingPercentage: 100,
+        acceptanceCriteria: { standard: 'MIL-HDBK-17', maxDefects: 0 },
       },
     }),
     prisma.partNDI.create({
       data: {
         partId: parts[22].id, // F-35 intake
-        inspectionMethod: 'TERMOGRAFIA',
-        acceptanceCriteria: 'MIL-STD-1530',
-        samplingPercentage: 100,
-        notes: 'Controllo termografico per stealth',
+        inspectionMethod: ['TERMOGRAFIA'],
+        acceptanceCriteria: { standard: 'MIL-STD-1530', maxDefects: 0 },
       },
     }),
     
@@ -2098,18 +2087,14 @@ async function main() {
       data: {
         partId: parts[27].id, // Vega fairing
         inspectionMethod: ['ULTRASUONI'],
-        acceptanceCriteria: 'ESA-PSS-01-702',
-        samplingPercentage: 100,
-        notes: 'Standard spaziale ESA',
+        acceptanceCriteria: { standard: 'ESA-PSS-01-702', maxDefects: 0 },
       },
     }),
     prisma.partNDI.create({
       data: {
         partId: parts[28].id, // Ariane tank
         inspectionMethod: ['RAGGI_X'],
-        acceptanceCriteria: 'ESA-PSS-01-702',
-        samplingPercentage: 100,
-        notes: 'Controllo criogenico - saldature',
+        acceptanceCriteria: { standard: 'ESA-PSS-01-702', maxDefects: 0 },
       },
     }),
     
@@ -2117,19 +2102,15 @@ async function main() {
     prisma.partNDI.create({
       data: {
         partId: parts[29].id, // F1 front wing
-        inspectionMethod: 'CORRENTI_PARASSITE',
-        acceptanceCriteria: 'FIA Technical Regulations',
-        samplingPercentage: 100,
-        notes: 'Controllo FIA - sicurezza pilota',
+        inspectionMethod: ['CORRENTI_PARASSITE'],
+        acceptanceCriteria: { standard: 'FIA Technical Regulations', maxDefects: 0 },
       },
     }),
     prisma.partNDI.create({
       data: {
         partId: parts[30].id, // F1 floor
         inspectionMethod: ['ULTRASUONI'],
-        acceptanceCriteria: 'FIA Technical Regulations',
-        samplingPercentage: 100,
-        notes: 'Controllo FIA - struttura monoscocca',
+        acceptanceCriteria: { standard: 'FIA Technical Regulations', maxDefects: 0 },
       },
     }),
   ])
@@ -2426,7 +2407,6 @@ async function main() {
           eventType: 'ENTRY',
           timestamp: ndiStart,
           userId: users[15 + (i % 2)].id,
-          notes: 'Controllo qualità avviato',
         },
       })
     )
@@ -2504,7 +2484,6 @@ async function main() {
         eventType: 'ENTRY',
         timestamp: completedMidpoint2,
         userId: users[15].id,
-        notes: 'Controllo NDI avviato',
       },
     }),
     prisma.productionEvent.create({
