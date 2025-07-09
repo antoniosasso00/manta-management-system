@@ -21,9 +21,6 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers/TimePicker'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import { it } from 'date-fns/locale'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { Controller, Control, FieldErrors } from 'react-hook-form'
 import { z } from 'zod'
@@ -217,21 +214,19 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             name={field.name}
             control={control}
             render={({ field: controllerField }) => (
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-                <DatePicker
-                  {...controllerField}
-                  label={!field.hideLabel ? field.label : undefined}
-                  disabled={field.disabled}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!error,
-                      helperText: errorMessage || field.helperText,
-                      placeholder: field.placeholder
-                    }
-                  }}
-                />
-              </LocalizationProvider>
+              <DatePicker
+                {...controllerField}
+                label={!field.hideLabel ? field.label : undefined}
+                disabled={field.disabled}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!error,
+                    helperText: errorMessage || field.helperText,
+                    placeholder: field.placeholder
+                  }
+                }}
+              />
             )}
           />
         )
@@ -242,21 +237,19 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             name={field.name}
             control={control}
             render={({ field: controllerField }) => (
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-                <TimePicker
-                  {...controllerField}
-                  label={!field.hideLabel ? field.label : undefined}
-                  disabled={field.disabled}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!error,
-                      helperText: errorMessage || field.helperText,
-                      placeholder: field.placeholder
-                    }
-                  }}
-                />
-              </LocalizationProvider>
+              <TimePicker
+                {...controllerField}
+                label={!field.hideLabel ? field.label : undefined}
+                disabled={field.disabled}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!error,
+                    helperText: errorMessage || field.helperText,
+                    placeholder: field.placeholder
+                  }
+                }}
+              />
             )}
           />
         )
@@ -267,21 +260,19 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             name={field.name}
             control={control}
             render={({ field: controllerField }) => (
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-                <DateTimePicker
-                  {...controllerField}
-                  label={!field.hideLabel ? field.label : undefined}
-                  disabled={field.disabled}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!error,
-                      helperText: errorMessage || field.helperText,
-                      placeholder: field.placeholder
-                    }
-                  }}
-                />
-              </LocalizationProvider>
+              <DateTimePicker
+                {...controllerField}
+                label={!field.hideLabel ? field.label : undefined}
+                disabled={field.disabled}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!error,
+                    helperText: errorMessage || field.helperText,
+                    placeholder: field.placeholder
+                  }
+                }}
+              />
             )}
           />
         )

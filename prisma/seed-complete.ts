@@ -946,7 +946,6 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 4000,
         maxWidth: 2000,
-        maxHeight: 1000,
         vacuumLines: 6,
       },
     }),
@@ -957,7 +956,6 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 3500,
         maxWidth: 1800,
-        maxHeight: 800,
         vacuumLines: 4,
       },
     }),
@@ -968,7 +966,6 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 5000,
         maxWidth: 2500,
-        maxHeight: 1200,
         vacuumLines: 8,
       },
     }),
@@ -979,7 +976,6 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 3000,
         maxWidth: 1500,
-        maxHeight: 600,
         vacuumLines: 4,
       },
     }),
@@ -990,7 +986,6 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         maxLength: 2500,
         maxWidth: 2500,
-        maxHeight: 800,
         vacuumLines: 6,
       },
     }),

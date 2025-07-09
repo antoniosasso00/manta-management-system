@@ -99,10 +99,14 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       const response = await fetch('/api/parts?limit=100&isActive=true')
       if (response.ok) {
         const data = await response.json()
-        setParts(data)
+        setParts(Array.isArray(data.parts) ? data.parts : [])
+      } else {
+        console.error('Failed to load parts:', response.status)
+        setParts([])
       }
     } catch (error) {
       console.error('Error loading parts:', error)
+      setParts([])
     } finally {
       setPartsLoading(false)
     }
@@ -187,11 +191,11 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
     setSelectedParts(selectedParts.filter(p => p.id !== partId))
   }
 
-  const filteredParts = parts.filter(part => 
+  const filteredParts = Array.isArray(parts) ? parts.filter(part => 
     !selectedParts.find(selected => selected.id === part.id) &&
     (part.partNumber.toLowerCase().includes(partSearchTerm.toLowerCase()) ||
      part.description?.toLowerCase().includes(partSearchTerm.toLowerCase()))
-  )
+  ) : []
 
   return (
     <Dialog 

@@ -134,7 +134,7 @@ export function ODLSelectionStep({
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <QrCode2 fontSize="small" />
-                          <Typography variant="body2">
+                          <Typography variant="body2" component="span">
                             {odl.odlNumber}
                           </Typography>
                           <Chip
@@ -146,7 +146,7 @@ export function ODLSelectionStep({
                       }
                       secondary={
                         <Box>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary" component="span">
                             {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
                           </Typography>
                         </Box>
@@ -202,7 +202,7 @@ export function ODLSelectionStep({
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LocalFireDepartment fontSize="small" color="primary" />
-                      <Typography variant="body1">
+                      <Typography variant="body1" component="span">
                         {autoclave.name} ({autoclave.code})
                       </Typography>
                     </Box>

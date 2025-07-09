@@ -81,6 +81,7 @@ export const odlTrackingStatusSchema = z.object({
 // Schema per dashboard reparto
 export const departmentODLListSchema = z.object({
   departmentId: z.string(),
+  odlIncoming: z.array(odlTrackingStatusSchema), // ODL dal reparto precedente
   odlInPreparation: z.array(odlTrackingStatusSchema),
   odlInProduction: z.array(odlTrackingStatusSchema),
   odlCompleted: z.array(odlTrackingStatusSchema),

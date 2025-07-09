@@ -26,6 +26,8 @@ import {
   DirectionsCar,
   VerifiedUser,
   AutoMode,
+  GridOn,
+  Palette,
 } from '@mui/icons-material'
 
 export interface NavigationItem {
@@ -99,6 +101,20 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Clean Room',
           icon: CleaningServices,
           href: '/production/cleanroom',
+          children: [
+            {
+              id: 'cleanroom-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/cleanroom',
+            },
+            {
+              id: 'cleanroom-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/cleanroom/part-extension',
+            },
+          ],
         },
         {
           id: 'production-autoclave',
@@ -125,6 +141,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
               href: '/autoclavi/optimization',
             },
             {
+              id: 'autoclavi-odl-status',
+              label: 'Stato ODL',
+              icon: GridOn,
+              href: '/autoclavi/odl-status',
+            },
+            {
               id: 'autoclavi-management',
               label: 'Gestione Autoclavi',
               icon: Settings,
@@ -142,6 +164,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
               icon: Tune,
               href: '/admin/departments/autoclavi/part-config',
             },
+            {
+              id: 'autoclavi-part-extensions',
+              label: 'Estensioni Parti',
+              icon: Tune,
+              href: '/production/autoclave/part-extension',
+            },
           ],
         },
         {
@@ -149,24 +177,80 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Controllo Numerico',
           icon: Tune,
           href: '/production/controllo-numerico',
+          children: [
+            {
+              id: 'cnc-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/controllo-numerico',
+            },
+            {
+              id: 'cnc-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/controllo-numerico/part-extension',
+            },
+          ],
         },
         {
           id: 'production-ndi',
           label: 'NDI',
           icon: Science,
           href: '/production/ndi',
+          children: [
+            {
+              id: 'ndi-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/ndi',
+            },
+            {
+              id: 'ndi-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/ndi/part-extension',
+            },
+          ],
         },
         {
           id: 'production-montaggio',
           label: 'Montaggio',
           icon: HomeRepairService,
           href: '/production/montaggio',
+          children: [
+            {
+              id: 'montaggio-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/montaggio',
+            },
+            {
+              id: 'montaggio-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/montaggio/part-extension',
+            },
+          ],
         },
         {
           id: 'production-verniciatura',
           label: 'Verniciatura',
           icon: Brush,
           href: '/production/verniciatura',
+          children: [
+            {
+              id: 'verniciatura-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/verniciatura',
+            },
+            {
+              id: 'verniciatura-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/verniciatura/part-extension',
+            },
+          ],
         },
         {
           id: 'production-controllo-qualita',
@@ -187,12 +271,40 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Honeycomb (Separato)',
           icon: Hexagon,
           href: '/production/honeycomb',
+          children: [
+            {
+              id: 'honeycomb-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/honeycomb',
+            },
+            {
+              id: 'honeycomb-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/honeycomb/part-extension',
+            },
+          ],
         },
         {
           id: 'production-motori',
           label: 'Motori (Separato)',
           icon: DirectionsCar,
           href: '/production/motori',
+          children: [
+            {
+              id: 'motori-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/motori',
+            },
+            {
+              id: 'motori-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/motori/part-extension',
+            },
+          ],
         },
       ],
     },
@@ -366,6 +478,20 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Clean Room',
           icon: CleaningServices,
           href: '/production/cleanroom',
+          children: [
+            {
+              id: 'cleanroom-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/cleanroom',
+            },
+            {
+              id: 'cleanroom-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/cleanroom/part-extension',
+            },
+          ],
         },
         {
           id: 'production-autoclave',
@@ -392,6 +518,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
               href: '/autoclavi/optimization',
             },
             {
+              id: 'autoclavi-odl-status',
+              label: 'Stato ODL',
+              icon: GridOn,
+              href: '/autoclavi/odl-status',
+            },
+            {
               id: 'autoclavi-management',
               label: 'Gestione Autoclavi',
               icon: Settings,
@@ -409,6 +541,12 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
               icon: Tune,
               href: '/admin/departments/autoclavi/part-config',
             },
+            {
+              id: 'autoclavi-part-extensions',
+              label: 'Estensioni Parti',
+              icon: Tune,
+              href: '/production/autoclave/part-extension',
+            },
           ],
         },
         {
@@ -416,24 +554,80 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
           label: 'Controllo Numerico',
           icon: Tune,
           href: '/production/controllo-numerico',
+          children: [
+            {
+              id: 'cnc-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/controllo-numerico',
+            },
+            {
+              id: 'cnc-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/controllo-numerico/part-extension',
+            },
+          ],
         },
         {
           id: 'production-ndi',
           label: 'NDI',
           icon: Science,
           href: '/production/ndi',
+          children: [
+            {
+              id: 'ndi-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/ndi',
+            },
+            {
+              id: 'ndi-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/ndi/part-extension',
+            },
+          ],
         },
         {
           id: 'production-montaggio',
           label: 'Montaggio',
           icon: HomeRepairService,
           href: '/production/montaggio',
+          children: [
+            {
+              id: 'montaggio-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/montaggio',
+            },
+            {
+              id: 'montaggio-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/montaggio/part-extension',
+            },
+          ],
         },
         {
           id: 'production-verniciatura',
           label: 'Verniciatura',
           icon: Brush,
           href: '/production/verniciatura',
+          children: [
+            {
+              id: 'verniciatura-dashboard',
+              label: 'Dashboard',
+              icon: Analytics,
+              href: '/production/verniciatura',
+            },
+            {
+              id: 'verniciatura-part-extensions',
+              label: 'Configurazione Parti',
+              icon: Tune,
+              href: '/production/verniciatura/part-extension',
+            },
+          ],
         },
         {
           id: 'production-controllo-qualita',

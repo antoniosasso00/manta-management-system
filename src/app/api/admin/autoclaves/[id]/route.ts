@@ -8,7 +8,6 @@ const UpdateSchema = z.object({
   name: z.string().min(1).optional(),
   maxLength: z.number().positive().optional(),
   maxWidth: z.number().positive().optional(),
-  maxHeight: z.number().positive().optional(),
   vacuumLines: z.number().int().min(0).optional(),
   isActive: z.boolean().optional()
 });

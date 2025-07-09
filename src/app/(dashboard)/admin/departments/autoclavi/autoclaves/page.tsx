@@ -34,7 +34,6 @@ interface Autoclave {
   name: string
   maxLength: number
   maxWidth: number
-  maxHeight: number
   vacuumLines: number
   isActive: boolean
   department?: {
@@ -57,7 +56,6 @@ export default function AutoclavesManagementPage() {
     name: '',
     maxLength: '',
     maxWidth: '',
-    maxHeight: '',
     vacuumLines: '',
     isActive: true
   })
@@ -90,7 +88,6 @@ export default function AutoclavesManagementPage() {
         name: autoclave.name,
         maxLength: autoclave.maxLength.toString(),
         maxWidth: autoclave.maxWidth.toString(),
-        maxHeight: autoclave.maxHeight.toString(),
         vacuumLines: autoclave.vacuumLines.toString(),
         isActive: autoclave.isActive
       })
@@ -101,7 +98,6 @@ export default function AutoclavesManagementPage() {
         name: '',
         maxLength: '',
         maxWidth: '',
-        maxHeight: '',
         vacuumLines: '',
         isActive: true
       })
@@ -116,7 +112,6 @@ export default function AutoclavesManagementPage() {
         name: formData.name,
         maxLength: parseFloat(formData.maxLength),
         maxWidth: parseFloat(formData.maxWidth),
-        maxHeight: parseFloat(formData.maxHeight),
         vacuumLines: parseInt(formData.vacuumLines),
         isActive: formData.isActive
       }
@@ -176,10 +171,10 @@ export default function AutoclavesManagementPage() {
     { field: 'name', headerName: 'Nome', width: 200 },
     { 
       field: 'dimensions', 
-      headerName: 'Dimensioni (L×W×H)', 
+      headerName: 'Dimensioni (L×W)', 
       width: 200,
       valueGetter: (value, row) => 
-        `${row.maxLength}×${row.maxWidth}×${row.maxHeight} m`
+        `${row.maxLength}×${row.maxWidth} m`
     },
     { 
       field: 'vacuumLines', 
@@ -299,7 +294,7 @@ export default function AutoclavesManagementPage() {
               required
               helperText="Es: Autoclave 1 - Grande"
             />
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
               <TextField
                 label="Lunghezza (m)"
                 type="number"
@@ -313,14 +308,6 @@ export default function AutoclavesManagementPage() {
                 type="number"
                 value={formData.maxWidth}
                 onChange={(e) => setFormData({ ...formData, maxWidth: e.target.value })}
-                required
-                inputProps={{ step: 0.1, min: 0 }}
-              />
-              <TextField
-                label="Altezza (m)"
-                type="number"
-                value={formData.maxHeight}
-                onChange={(e) => setFormData({ ...formData, maxHeight: e.target.value })}
                 required
                 inputProps={{ step: 0.1, min: 0 }}
               />

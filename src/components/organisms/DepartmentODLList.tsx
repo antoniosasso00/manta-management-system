@@ -97,10 +97,12 @@ export function DepartmentODLList({
   const getTabContent = () => {
     switch (tabValue) {
       case 0:
-        return data.odlInPreparation
+        return data.odlIncoming || []
       case 1:
-        return data.odlInProduction
+        return data.odlInPreparation
       case 2:
+        return data.odlInProduction
+      case 3:
         return data.odlCompleted
       default:
         return []
@@ -143,7 +145,11 @@ export function DepartmentODLList({
 
       {/* Tabs per stato ODL */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
+        <Tabs value={tabValue} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
+          <Tab 
+            label={`ODL in Arrivo (${data.odlIncoming?.length || 0})`} 
+            sx={{ color: 'info.main' }}
+          />
           <Tab label={`${nomenclature.states.preparation.label} (${data.odlInPreparation.length})`} />
           <Tab label={`${nomenclature.states.inProcess.label} (${data.odlInProduction.length})`} />
           <Tab label={`${nomenclature.states.completed.label} (${data.odlCompleted.length})`} />

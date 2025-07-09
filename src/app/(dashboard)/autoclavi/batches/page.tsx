@@ -13,7 +13,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { Add, Refresh } from '@mui/icons-material';
+import { Add, Refresh, ViewList } from '@mui/icons-material';
 import { BatchCard } from '@/components/autoclavi/BatchCard';
 import { useSnackbar } from 'notistack';
 
@@ -161,6 +161,13 @@ export default function BatchesPage() {
             Gestione Batch Autoclavi
           </Typography>
           <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              startIcon={<ViewList />}
+              onClick={() => router.push('/autoclavi/odl-status')}
+            >
+              Vista ODL
+            </Button>
             <Button
               variant="outlined"
               startIcon={<Refresh />}

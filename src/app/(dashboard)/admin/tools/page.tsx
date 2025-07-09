@@ -287,8 +287,8 @@ export default function ToolsManagementPage() {
       label: 'Stato',
       type: 'select',
       options: [
-        { value: true, label: 'Attivo' },
-        { value: false, label: 'Non Attivo' }
+        { value: 'true', label: 'Attivo' },
+        { value: 'false', label: 'Non Attivo' }
       ]
     }
   ]

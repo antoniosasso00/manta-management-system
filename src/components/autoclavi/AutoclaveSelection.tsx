@@ -27,7 +27,6 @@ interface AutoclaveData {
   name: string;
   maxLength: number;
   maxWidth: number;
-  maxHeight: number;
   vacuumLines: number;
   isActive: boolean;
   curingCycles: Array<{
@@ -116,9 +115,9 @@ export function AutoclaveSelection({
     onCuringCycleSelect(''); // Reset selezione ciclo
   };
 
-  const formatVolume = (length: number, width: number, height: number) => {
-    const volume = (length * width * height) / 1000000; // cm³ to m³
-    return `${volume.toFixed(2)} m³`;
+  const formatArea = (length: number, width: number) => {
+    const area = (length * width) / 10000; // cm² to m²
+    return `${area.toFixed(2)} m²`;
   };
 
   const formatDuration = (hours: number) => {
@@ -187,13 +186,13 @@ export function AutoclaveSelection({
                   <ListItem disablePadding>
                     <ListItemText
                       primary="Dimensioni"
-                      secondary={`${autoclave.maxLength} × ${autoclave.maxWidth} × ${autoclave.maxHeight} cm`}
+                      secondary={`${autoclave.maxLength} × ${autoclave.maxWidth} cm`}
                     />
                   </ListItem>
                   <ListItem disablePadding>
                     <ListItemText
-                      primary="Volume"
-                      secondary={formatVolume(autoclave.maxLength, autoclave.maxWidth, autoclave.maxHeight)}
+                      primary="Area"
+                      secondary={formatArea(autoclave.maxLength, autoclave.maxWidth)}
                     />
                   </ListItem>
                   <ListItem disablePadding>
@@ -227,10 +226,10 @@ export function AutoclaveSelection({
               {curingCycles.map((cycle) => (
                 <MenuItem key={cycle.id} value={cycle.id}>
                   <Box>
-                    <Typography variant="body1">
+                    <Typography variant="body1" component="div">
                       {cycle.name}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" component="div">
                       {formatDuration(cycle.totalDuration)} • 
                       {cycle.maxTemperature}°C • 
                       {cycle.maxPressure} bar

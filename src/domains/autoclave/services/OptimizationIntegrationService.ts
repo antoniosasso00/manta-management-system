@@ -97,7 +97,6 @@ export class OptimizationIntegrationService {
         name: a.name,
         max_length: a.maxLength,
         max_width: a.maxWidth,
-        max_height: a.maxHeight,
         vacuum_lines: a.vacuumLines
       })),
       optimization_params: {

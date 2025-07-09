@@ -9,6 +9,9 @@ import { SessionProvider } from 'next-auth/react'
 // import { SessionTimeout } from '@/components/auth/SessionTimeout'
 import { ThemeContextProvider } from '@/contexts/ThemeContext'
 import { DynamicThemeProvider } from '@/components/providers/DynamicThemeProvider'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import 'dayjs/locale/it'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,9 +37,11 @@ export function Providers({ children }: ProvidersProps) {
         <QueryClientProvider client={queryClient}>
           <ThemeContextProvider>
             <DynamicThemeProvider>
-              <CssBaseline />
-              {/* <SessionTimeout timeoutMinutes={120} warningMinutes={10} /> */}
-              {children}
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
+                <CssBaseline />
+                {/* <SessionTimeout timeoutMinutes={120} warningMinutes={10} /> */}
+                {children}
+              </LocalizationProvider>
             </DynamicThemeProvider>
           </ThemeContextProvider>
         </QueryClientProvider>

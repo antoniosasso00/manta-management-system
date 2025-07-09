@@ -10,7 +10,6 @@ const AutoclaveSchema = z.object({
   name: z.string().min(1, "Nome obbligatorio"),
   maxLength: z.number().positive("Lunghezza deve essere positiva"),
   maxWidth: z.number().positive("Larghezza deve essere positiva"),
-  maxHeight: z.number().positive("Altezza deve essere positiva"),
   vacuumLines: z.number().int().min(0, "Linee vuoto deve essere >= 0"),
   isActive: z.boolean()
 });

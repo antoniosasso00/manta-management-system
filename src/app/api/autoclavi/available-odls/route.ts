@@ -36,6 +36,11 @@ export async function GET(request: NextRequest) {
         part: {
           include: {
             defaultCuringCycle: true,
+            partTools: {
+              include: {
+                tool: true
+              }
+            }
           },
         }
       },
@@ -68,6 +73,10 @@ export async function GET(request: NextRequest) {
           groupedByCycle[cycleId] = [];
           cycleNames[cycleId] = cycle.name;
         }
+        const tool = odl.part.partTools[0]?.tool;
+        const dimensions = tool ? { length: tool.base, width: tool.base, height: tool.height } : null;
+        const estimatedVolume = tool ? tool.base * tool.base * tool.height * odl.quantity : null;
+        
         groupedByCycle[cycleId].push({
           id: odl.id,
           odlNumber: odl.odlNumber,
@@ -76,23 +85,33 @@ export async function GET(request: NextRequest) {
           quantity: odl.quantity,
           priority: odl.priority,
           createdAt: odl.createdAt,
+          dimensions,
+          estimatedVolume,
         });
       }
     }
 
     return NextResponse.json({
       success: true,
-      odls: filteredOdls.map(odl => ({
-        id: odl.id,
-        odlNumber: odl.odlNumber,
-        partNumber: odl.part.partNumber,
-        partDescription: odl.part.description,
-        quantity: odl.quantity,
-        priority: odl.priority,
-        createdAt: odl.createdAt,
-        curingCycleId: odl.part.defaultCuringCycleId,
-        curingCycleName: odl.part.defaultCuringCycle?.name,
-      })),
+      odls: filteredOdls.map(odl => {
+        const tool = odl.part.partTools[0]?.tool;
+        const dimensions = tool ? { length: tool.base, width: tool.base, height: tool.height } : null;
+        const estimatedVolume = tool ? tool.base * tool.base * tool.height * odl.quantity : null;
+        
+        return {
+          id: odl.id,
+          odlNumber: odl.odlNumber,
+          partNumber: odl.part.partNumber,
+          partDescription: odl.part.description,
+          quantity: odl.quantity,
+          priority: odl.priority,
+          createdAt: odl.createdAt,
+          curingCycleId: odl.part.defaultCuringCycleId,
+          curingCycleName: odl.part.defaultCuringCycle?.name,
+          dimensions,
+          estimatedVolume,
+        };
+      }),
       groupedByCycle,
       cycleNames,
       totalCount: filteredOdls.length,

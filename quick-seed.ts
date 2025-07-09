@@ -57,7 +57,6 @@ async function quickSeed() {
         departmentId: department.id,
         maxLength: 3000,  // cm
         maxWidth: 1500,   // cm
-        maxHeight: 800,   // cm
         vacuumLines: 4,
         isActive: true,
       }
@@ -70,7 +69,6 @@ async function quickSeed() {
         departmentId: department.id,
         maxLength: 2500,  // cm
         maxWidth: 1200,   // cm
-        maxHeight: 600,   // cm
         vacuumLines: 2,
         isActive: true,
       }

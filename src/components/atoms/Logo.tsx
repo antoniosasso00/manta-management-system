@@ -121,7 +121,7 @@ export function Logo({
               fontSize: size === 'small' ? '0.75rem' : '0.875rem'
             }}
           >
-            Gestione Produzione
+            MES Aerospazio
           </Typography>
         </Box>
       )}

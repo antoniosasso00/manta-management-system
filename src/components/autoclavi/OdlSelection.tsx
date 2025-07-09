@@ -27,10 +27,6 @@ import {
   Search,
   Add,
   Remove,
-  Engineering,
-  Inventory,
-  Speed,
-  AspectRatio,
 } from '@mui/icons-material';
 
 interface OdlData {
@@ -148,6 +144,7 @@ export function OdlSelection({
   };
 
   const formatDimensions = (dimensions: any) => {
+    if (!dimensions) return 'N/D';
     const { length, width, height } = dimensions;
     if (!length || !width || !height) return 'N/D';
     return `${length}×${width}×${height} cm`;
@@ -300,7 +297,7 @@ export function OdlSelection({
                       <ListItemText
                         primary={
                           <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="subtitle1" fontWeight="bold">
+                            <Typography variant="subtitle1" fontWeight="bold" component="span">
                               {odl.odlNumber}
                             </Typography>
                             <Chip
@@ -310,27 +307,7 @@ export function OdlSelection({
                             />
                           </Box>
                         }
-                        secondary={
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              <Engineering sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                              {odl.partNumber} - {odl.partDescription}
-                            </Typography>
-                            <Box display="flex" alignItems="center" gap={2} mt={0.5}>
-                              <Typography variant="caption" color="text.secondary">
-                                <Inventory sx={{ fontSize: 14, mr: 0.5, verticalAlign: 'middle' }} />
-                                Qta: {odl.quantity}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                <AspectRatio sx={{ fontSize: 14, mr: 0.5, verticalAlign: 'middle' }} />
-                                {formatDimensions(odl.dimensions)}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Vol: {formatVolume(odl.estimatedVolume)}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        }
+                        secondary={`${odl.partNumber} - ${odl.partDescription} • Qta: ${odl.quantity} • ${formatDimensions(odl.dimensions)} • Vol: ${formatVolume(odl.estimatedVolume)}`}
                       />
                       
                       <ListItemSecondaryAction>

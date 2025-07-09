@@ -22,6 +22,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { it } from 'date-fns/locale'
+import type { DateValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers/models'
 
 export interface FilterConfig {
   id: string
@@ -71,7 +72,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     handleChange(filterId, event.target.value)
   }
 
-  const handleDateChange = (filterId: string) => (value: Date | null) => {
+  const handleDateChange = (filterId: string) => (value: any, context: PickerChangeHandlerContext<DateValidationError>) => {
     handleChange(filterId, value)
   }
 

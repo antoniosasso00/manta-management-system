@@ -28,6 +28,10 @@ import {
   Schedule,
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/it';
 
 interface BatchSummaryProps {
   autoclave: any;
@@ -67,6 +71,7 @@ export function BatchSummary({
   };
 
   const formatDimensions = (dimensions: any) => {
+    if (!dimensions) return 'N/D';
     const { length, width, height } = dimensions;
     if (!length || !width || !height) return 'N/D';
     return `${length}×${width}×${height} cm`;
@@ -150,20 +155,12 @@ export function BatchSummary({
                 <ListItem disablePadding>
                   <ListItemText
                     primary="Utilizzo Previsto"
-                    secondary={
-                      <Box display="flex" alignItems="center">
-                        <Typography 
-                          variant="body2" 
-                          color={isOverCapacity ? 'error.main' : 'success.main'}
-                          sx={{ mr: 1 }}
-                        >
-                          {utilizationPercentage.toFixed(1)}%
-                        </Typography>
-                        {isOverCapacity && (
-                          <Chip label="Sovraccarico" color="error" size="small" />
-                        )}
-                      </Box>
-                    }
+                    secondary={`${utilizationPercentage.toFixed(1)}%${isOverCapacity ? ' - SOVRACCARICO' : ''}`}
+                    secondaryTypographyProps={{
+                      sx: {
+                        color: isOverCapacity ? 'error.main' : 'success.main'
+                      }
+                    }}
                   />
                 </ListItem>
               </List>
@@ -247,28 +244,32 @@ export function BatchSummary({
           
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <DateTimePicker
-                label="Inizio Pianificato"
-                value={plannedStart}
-                onChange={(date) => date && onPlannedStartChange(date)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
-              />
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
+                <DateTimePicker
+                  label="Inizio Pianificato"
+                  value={plannedStart ? dayjs(plannedStart) : null}
+                  onChange={(date) => date && onPlannedStartChange(dayjs.isDayjs(date) ? date.toDate() : date)}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                    },
+                  }}
+                />
+              </LocalizationProvider>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <DateTimePicker
-                label="Fine Pianificata"
-                value={plannedEnd}
-                onChange={(date) => date && onPlannedEndChange(date)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                  },
-                }}
-              />
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
+                <DateTimePicker
+                  label="Fine Pianificata"
+                  value={plannedEnd ? dayjs(plannedEnd) : null}
+                  onChange={(date) => date && onPlannedEndChange(dayjs.isDayjs(date) ? date.toDate() : date)}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                    },
+                  }}
+                />
+              </LocalizationProvider>
             </Grid>
           </Grid>
 

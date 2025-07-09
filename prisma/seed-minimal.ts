@@ -216,7 +216,6 @@ async function main() {
       departmentId: autoclave.id,
       maxLength: 4000,
       maxWidth: 2000,
-      maxHeight: 1000,
       vacuumLines: 6,
     },
   })

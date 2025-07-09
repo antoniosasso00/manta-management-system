@@ -196,7 +196,6 @@ model Autoclave {
   departmentId String
   maxLength    Float
   maxWidth     Float
-  maxHeight    Float
   vacuumLines  Int
   isActive     Boolean         @default(true)
   loads        AutoclaveLoad[]

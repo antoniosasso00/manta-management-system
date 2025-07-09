@@ -17,6 +17,7 @@ interface CRUDToolbarProps {
   onFilter?: () => void
   onRefresh?: () => void
   searchPlaceholder?: string
+  searchValue?: string
   showAdd?: boolean
   showSearch?: boolean
   showExport?: boolean
@@ -34,6 +35,7 @@ export const CRUDToolbar: React.FC<CRUDToolbarProps> = ({
   onFilter,
   onRefresh,
   searchPlaceholder = 'Cerca...',
+  searchValue = '',
   showAdd = true,
   showSearch = true,
   showExport = true,
@@ -43,11 +45,8 @@ export const CRUDToolbar: React.FC<CRUDToolbarProps> = ({
   exportLabel = 'Esporta',
   disabled = false
 }) => {
-  const [searchQuery, setSearchQuery] = React.useState('')
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
-    setSearchQuery(value)
     onSearch?.(value)
   }
 
@@ -66,7 +65,7 @@ export const CRUDToolbar: React.FC<CRUDToolbarProps> = ({
       {showSearch && (
         <TextField
           placeholder={searchPlaceholder}
-          value={searchQuery}
+          value={searchValue}
           onChange={handleSearchChange}
           size="small"
           disabled={disabled}
