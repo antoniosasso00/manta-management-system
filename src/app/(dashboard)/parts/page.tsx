@@ -87,12 +87,19 @@ export default function PartsPage() {
         params.search = searchTerms.join(' ')
       }
       
+      console.log('API Call Parameters:', params)
       const response = await partRepository.getPaginated(params)
       setParts(response.parts)
       setTotalCount(response.total)
     } catch (error) {
       console.error('Error fetching parts:', error)
-      setError(error instanceof Error ? error.message : 'Errore caricamento parti')
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+        setError('Sessione scaduta. Effettua nuovamente il login.')
+      } else if (error instanceof Error && error.message.includes('400')) {
+        setError('Parametri non validi. Controlla i filtri di ricerca.')
+      } else {
+        setError(error instanceof Error ? error.message : 'Errore caricamento parti')
+      }
     } finally {
       setLoading(false)
     }

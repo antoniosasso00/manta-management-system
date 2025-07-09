@@ -246,16 +246,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Strumento non trovato' }, { status: 404 })
     }
 
-    // Verifica se il strumento è associato a delle parti
-    if (existingTool.partTools.length > 0) {
-      return NextResponse.json(
-        { error: 'Impossibile eliminare: strumento associato a delle parti' },
-        { status: 400 }
-      )
-    }
-
-    await prisma.tool.delete({
-      where: { id }
+    // Elimina prima le associazioni, poi il tool
+    await prisma.$transaction(async (tx) => {
+      // Rimuovi tutte le associazioni con le parti
+      await tx.partTool.deleteMany({
+        where: { toolId: id }
+      })
+      
+      // Elimina il tool
+      await tx.tool.delete({
+        where: { id }
+      })
     })
 
     // Log audit
@@ -267,7 +268,8 @@ export async function DELETE(
         resource: 'Tool',
         resourceId: id,
         details: {
-          toolPartNumber: existingTool.toolPartNumber
+          toolPartNumber: existingTool.toolPartNumber,
+          removedAssociations: existingTool.partTools.length
         },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'

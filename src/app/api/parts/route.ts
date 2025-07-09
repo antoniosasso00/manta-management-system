@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
       sortOrder: searchParams.get('sortOrder') || 'asc',
     }
 
+    console.log('Raw searchParams:', Object.fromEntries(searchParams.entries()))
+    console.log('Parsed queryParams:', queryParams)
+
     const validatedQuery = partQuerySchema.parse(queryParams)
     const result = await PartService.findMany(validatedQuery)
 
