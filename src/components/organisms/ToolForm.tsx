@@ -99,7 +99,13 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       const response = await fetch('/api/parts?limit=100&isActive=true')
       if (response.ok) {
         const data = await response.json()
-        setParts(Array.isArray(data.parts) ? data.parts : [])
+        // PartService.findMany returns {parts: Part[], total, page, totalPages}
+        if (data && Array.isArray(data.parts)) {
+          setParts(data.parts)
+        } else {
+          console.error('Unexpected API response structure:', data)
+          setParts([])
+        }
       } else {
         console.error('Failed to load parts:', response.status)
         setParts([])
@@ -191,7 +197,7 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
     setSelectedParts(selectedParts.filter(p => p.id !== partId))
   }
 
-  const filteredParts = Array.isArray(parts) ? parts.filter(part => 
+  const filteredParts = Array.isArray(parts) && parts.length > 0 ? parts.filter(part => 
     !selectedParts.find(selected => selected.id === part.id) &&
     (part.partNumber.toLowerCase().includes(partSearchTerm.toLowerCase()) ||
      part.description?.toLowerCase().includes(partSearchTerm.toLowerCase()))
