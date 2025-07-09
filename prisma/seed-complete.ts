@@ -2268,6 +2268,94 @@ async function main() {
     }),
   ])
 
+  // ADDITIONAL ODLs for better testing scenarios
+  console.log('📋 Aggiunta ODL aggiuntivi per testing...')
+  const additionalTestingOdls = await Promise.all([
+    // More ODLs with CLEANROOM_COMPLETED status (ready for Autoclave)
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-050',
+        partId: parts[8].id, // A330 deriva
+        quantity: 2,
+        priority: 'HIGH' as const,
+        status: ODLStatus.CLEANROOM_COMPLETED,
+        qrCode: 'QR-ODL-24-050',
+        gammaId: 'GM-ODL-050',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-051',
+        partId: parts[9].id, // B787 fusoliera
+        quantity: 1,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.CLEANROOM_COMPLETED,
+        qrCode: 'QR-ODL-24-051',
+        gammaId: 'GM-ODL-051',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-052',
+        partId: parts[6].id, // B777 stabilizzatore
+        quantity: 2,
+        priority: 'URGENT' as const,
+        status: ODLStatus.CLEANROOM_COMPLETED,
+        qrCode: 'QR-ODL-24-052',
+        gammaId: 'GM-ODL-052',
+      },
+    }),
+    // ODLs with IN_CONTROLLO_NUMERICO status
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-053',
+        partId: parts[10].id, // B787 ala centrale
+        quantity: 1,
+        priority: 'HIGH' as const,
+        status: ODLStatus.IN_CONTROLLO_NUMERICO,
+        qrCode: 'QR-ODL-24-053',
+        gammaId: 'GM-ODL-053',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-054',
+        partId: parts[7].id, // A320 slat
+        quantity: 4,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.IN_CONTROLLO_NUMERICO,
+        qrCode: 'QR-ODL-24-054',
+        gammaId: 'GM-ODL-054',
+      },
+    }),
+    // More ODLs with IN_CLEANROOM status for active work
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-055',
+        partId: parts[12].id, // A330 fusoliera
+        quantity: 1,
+        priority: 'HIGH' as const,
+        status: ODLStatus.IN_CLEANROOM,
+        qrCode: 'QR-ODL-24-055',
+        gammaId: 'GM-ODL-055',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-056',
+        partId: parts[13].id, // A350 verticale
+        quantity: 2,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.IN_CLEANROOM,
+        qrCode: 'QR-ODL-24-056',
+        gammaId: 'GM-ODL-056',
+      },
+    }),
+  ])
+
+  // Add additional ODLs to main array
+  odls.push(...additionalTestingOdls)
+
   // 12. PRODUCTION EVENTS - Esteso con timeline realistica
   console.log('📊 Creazione eventi produzione...')
   const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -2519,6 +2607,78 @@ async function main() {
       },
     })
   )
+
+  // Production events for additional ODLs
+  console.log('📊 Aggiunta eventi per ODL aggiuntivi...')
+  
+  // Events for ODLs with CLEANROOM_COMPLETED status (already completed Clean Room)
+  const cleanroomCompletedIndexes = [odls.length - 7, odls.length - 6, odls.length - 5] // ODL-24-050, 051, 052
+  for (let idx of cleanroomCompletedIndexes) {
+    const startTime = new Date(now.getTime() - 12 * 60 * 60 * 1000 - idx * 2 * 60 * 60 * 1000)
+    const endTime = new Date(startTime.getTime() + 6 * 60 * 60 * 1000)
+    
+    events.push(
+      prisma.productionEvent.create({
+        data: {
+          odlId: odls[idx].id,
+          departmentId: departments[1].id, // Clean Room
+          eventType: 'ENTRY',
+          timestamp: startTime,
+          userId: users[4 + (idx % 3)].id,
+          notes: `Laminazione ${odls[idx].odlNumber}`,
+        },
+      }),
+      prisma.productionEvent.create({
+        data: {
+          odlId: odls[idx].id,
+          departmentId: departments[1].id, // Clean Room
+          eventType: 'EXIT',
+          timestamp: endTime,
+          userId: users[4 + (idx % 3)].id,
+          notes: 'Laminazione completata - pronto per Autoclave',
+          duration: 6 * 60 * 60 * 1000,
+        },
+      })
+    )
+  }
+  
+  // Events for ODLs with IN_CONTROLLO_NUMERICO status (currently in CNC)
+  const cncActiveIndexes = [odls.length - 4, odls.length - 3] // ODL-24-053, 054
+  for (let idx of cncActiveIndexes) {
+    const entryTime = new Date(now.getTime() - 4 * 60 * 60 * 1000 - idx * 60 * 60 * 1000)
+    
+    events.push(
+      prisma.productionEvent.create({
+        data: {
+          odlId: odls[idx].id,
+          departmentId: departments[2].id, // Controllo Numerico
+          eventType: 'ENTRY',
+          timestamp: entryTime,
+          userId: users[14 + (idx % 2)].id,
+          notes: `Lavorazione CNC ${odls[idx].odlNumber}`,
+        },
+      })
+    )
+  }
+  
+  // Events for additional ODLs with IN_CLEANROOM status (currently in Clean Room)
+  const cleanroomActiveIndexes = [odls.length - 2, odls.length - 1] // ODL-24-055, 056
+  for (let idx of cleanroomActiveIndexes) {
+    const entryTime = new Date(now.getTime() - 3 * 60 * 60 * 1000 - idx * 60 * 60 * 1000)
+    
+    events.push(
+      prisma.productionEvent.create({
+        data: {
+          odlId: odls[idx].id,
+          departmentId: departments[1].id, // Clean Room
+          eventType: 'ENTRY',
+          timestamp: entryTime,
+          userId: users[4 + (idx % 3)].id,
+          notes: `Laminazione in corso ${odls[idx].odlNumber}`,
+        },
+      })
+    )
+  }
 
   await Promise.all(events)
 
@@ -2783,8 +2943,9 @@ async function main() {
   console.log('          op2.rifil@mantaaero.com / password123')
   
   console.log('\n🎯 SCENARI DI TEST DISPONIBILI:')
-  console.log('• 3 ODL attivi in Clean Room per test workflow')
-  console.log('• 4 ODL pronti per autoclave per test ottimizzazione')
+  console.log('• 5+ ODL attivi in Clean Room per test workflow laminazione')
+  console.log('• 6+ ODL completati Clean Room pronti per autoclave (test IN PREPARAZIONE)')
+  console.log('• 2+ ODL attivi in Controllo Numerico (test IN LAVORAZIONE)')
   console.log('• 2 ODL in cura autoclave per test monitoraggio')
   console.log('• 2 ODL in NDI per test controlli qualità')
   console.log('• 1 ODL in rifilatura per test fase finale')
