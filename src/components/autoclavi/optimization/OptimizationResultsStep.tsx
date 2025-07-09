@@ -24,6 +24,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  useTheme,
+  useMediaQuery,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -53,9 +61,13 @@ export function OptimizationResultsStep({
   confirmedBatches,
   setConfirmedBatches,
 }: OptimizationResultsStepProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { enqueueSnackbar } = useSnackbar();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState<BatchLayout | null>(null);
+  const [filterEfficiency, setFilterEfficiency] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const [sortBy, setSortBy] = useState<'efficiency' | 'odl_count' | 'autoclave'>('efficiency');
 
   const handleBatchToggle = (batchId: string) => {
     setConfirmedBatches(
@@ -64,12 +76,66 @@ export function OptimizationResultsStep({
         : [...confirmedBatches, batchId]
     );
   };
+  
+  const handleSelectAll = () => {
+    const visibleBatchIds = getFilteredBatches().map(b => b.batch_id);
+    setConfirmedBatches(visibleBatchIds);
+  };
+  
+  const handleDeselectAll = () => {
+    setConfirmedBatches([]);
+  };
+  
+  const handleSelectRecommended = () => {
+    const recommendedBatches = result.batches.filter(b => 
+      b.metrics.area_efficiency >= 0.7
+    ).map(b => b.batch_id);
+    setConfirmedBatches(recommendedBatches);
+  };
 
   const handleViewLayout = (batch: BatchLayout) => {
     setSelectedBatch(batch);
     setViewerOpen(true);
   };
 
+  const getFilteredBatches = () => {
+    let filtered = [...result.batches];
+    
+    // Filtra per efficienza
+    switch (filterEfficiency) {
+      case 'high':
+        filtered = filtered.filter(b => b.metrics.area_efficiency >= 0.8);
+        break;
+      case 'medium':
+        filtered = filtered.filter(b => b.metrics.area_efficiency >= 0.6 && b.metrics.area_efficiency < 0.8);
+        break;
+      case 'low':
+        filtered = filtered.filter(b => b.metrics.area_efficiency < 0.6);
+        break;
+    }
+    
+    // Ordina
+    switch (sortBy) {
+      case 'efficiency':
+        filtered.sort((a, b) => b.metrics.area_efficiency - a.metrics.area_efficiency);
+        break;
+      case 'odl_count':
+        filtered.sort((a, b) => b.metrics.odl_count - a.metrics.odl_count);
+        break;
+      case 'autoclave':
+        filtered.sort((a, b) => a.autoclave_code.localeCompare(b.autoclave_code));
+        break;
+    }
+    
+    return filtered;
+  };
+  
+  const getEfficiencyColor = (efficiency: number) => {
+    if (efficiency >= 0.8) return 'success';
+    if (efficiency >= 0.6) return 'warning';
+    return 'error';
+  };
+  
   const handleExportPDF = async (batchId: string) => {
     try {
       const response = await fetch(`/api/autoclavi/optimization/batch/${batchId}/export/pdf`);
@@ -159,27 +225,99 @@ export function OptimizationResultsStep({
         </Grid>
       </Grid>
 
+      {/* Controlli filtri e azioni batch */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Filtra per efficienza</InputLabel>
+              <Select
+                value={filterEfficiency}
+                onChange={(e) => setFilterEfficiency(e.target.value as any)}
+                label="Filtra per efficienza"
+              >
+                <MenuItem value="all">Tutti i batch</MenuItem>
+                <MenuItem value="high">Alta efficienza (≥ 80%)</MenuItem>
+                <MenuItem value="medium">Media efficienza (60-79%)</MenuItem>
+                <MenuItem value="low">Bassa efficienza (&lt; 60%)</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid size={{ xs: 12, md: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Ordina per</InputLabel>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                label="Ordina per"
+              >
+                <MenuItem value="efficiency">Efficienza</MenuItem>
+                <MenuItem value="odl_count">Numero ODL</MenuItem>
+                <MenuItem value="autoclave">Autoclave</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Stack direction={isMobile ? "column" : "row"} spacing={1}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={handleSelectAll}
+                fullWidth={isMobile}
+              >
+                Seleziona tutti
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={handleDeselectAll}
+                fullWidth={isMobile}
+              >
+                Deseleziona tutti
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                onClick={handleSelectRecommended}
+                startIcon={<CheckCircle />}
+                fullWidth={isMobile}
+              >
+                Solo consigliati
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Paper>
+      
       {/* Lista Batch */}
       <Typography variant="h6" gutterBottom>
-        Batch Ottimizzati
+        Batch Ottimizzati ({getFilteredBatches().length} di {result.batches.length})
       </Typography>
       
       <Grid container spacing={2}>
-        {result.batches.map((batch) => {
+        {getFilteredBatches().map((batch) => {
           const isConfirmed = confirmedBatches.includes(batch.batch_id);
+          const efficiency = batch.metrics.area_efficiency;
+          const efficiencyColor = getEfficiencyColor(efficiency);
           
           return (
-            <Grid size={12} key={batch.batch_id}>
+            <Grid size={{ xs: 12, lg: 6 }} key={batch.batch_id}>
               <Card
                 variant={isConfirmed ? 'elevation' : 'outlined'}
                 sx={{
                   border: isConfirmed ? 2 : 1,
                   borderColor: isConfirmed ? 'primary.main' : 'divider',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CardContent sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                       <Checkbox
                         checked={isConfirmed}
                         onChange={() => handleBatchToggle(batch.batch_id)}
@@ -187,29 +325,36 @@ export function OptimizationResultsStep({
                       />
                       <LocalFireDepartment color="primary" />
                       <Typography variant="h6" component="span">
-                        Autoclave {batch.autoclave_code}
+                        {batch.autoclave_code}
                       </Typography>
                       <Chip
                         label={batch.curing_cycle}
                         color="primary"
                         size="small"
                       />
+                      <Chip
+                        label={`${(efficiency * 100).toFixed(0)}%`}
+                        color={efficiencyColor}
+                        size="small"
+                        variant="outlined"
+                        icon={<Speed />}
+                      />
                     </Box>
                     
-                    <Stack direction="row" spacing={1}>
+                    <Stack direction="row" spacing={0.5}>
                       <Tooltip title="Visualizza layout">
-                        <IconButton onClick={() => handleViewLayout(batch)}>
-                          <Visibility />
+                        <IconButton size="small" onClick={() => handleViewLayout(batch)}>
+                          <Visibility fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Esporta PDF">
-                        <IconButton onClick={() => handleExportPDF(batch.batch_id)}>
-                          <PictureAsPdf />
+                        <IconButton size="small" onClick={() => handleExportPDF(batch.batch_id)}>
+                          <PictureAsPdf fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Esporta DXF">
-                        <IconButton onClick={() => handleExportDXF(batch.batch_id)}>
-                          <Architecture />
+                        <IconButton size="small" onClick={() => handleExportDXF(batch.batch_id)}>
+                          <Architecture fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Stack>
@@ -218,71 +363,70 @@ export function OptimizationResultsStep({
                   {/* Metriche batch */}
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 6, sm: 3 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Speed fontSize="small" color="action" />
-                        <Box>
-                          <Typography variant="h6">
-                            {(batch.metrics.area_efficiency * 100).toFixed(1)}%
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Efficienza
-                          </Typography>
-                        </Box>
-                      </Stack>
+                      <Paper variant="outlined" sx={{ p: 1, textAlign: 'center', height: '100%' }}>
+                        <Typography variant="h5" color={`${efficiencyColor}.main`}>
+                          {(efficiency * 100).toFixed(0)}%
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Efficienza
+                        </Typography>
+                      </Paper>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Scale fontSize="small" color="action" />
-                        <Box>
-                          <Typography variant="h6">
-                            {batch.metrics.total_weight.toFixed(0)} kg
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Peso Totale
-                          </Typography>
-                        </Box>
-                      </Stack>
+                      <Paper variant="outlined" sx={{ p: 1, textAlign: 'center', height: '100%' }}>
+                        <Typography variant="h5">
+                          {batch.metrics.total_weight.toFixed(0)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          kg totali
+                        </Typography>
+                      </Paper>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <AirlineSeatFlat fontSize="small" color="action" />
-                        <Box>
-                          <Typography variant="h6">
-                            {batch.metrics.vacuum_lines_used}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Linee Vuoto
-                          </Typography>
-                        </Box>
-                      </Stack>
+                      <Paper variant="outlined" sx={{ p: 1, textAlign: 'center', height: '100%' }}>
+                        <Typography variant="h5">
+                          {batch.metrics.vacuum_lines_used}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Linee vuoto
+                        </Typography>
+                      </Paper>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
-                      <Box>
-                        <Typography variant="h6">
+                      <Paper variant="outlined" sx={{ p: 1, textAlign: 'center', height: '100%' }}>
+                        <Typography variant="h5">
                           {batch.metrics.odl_count}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           ODL ({batch.metrics.tool_count} tool)
                         </Typography>
-                      </Box>
+                      </Paper>
                     </Grid>
                   </Grid>
 
                   <Divider sx={{ my: 2 }} />
 
                   {/* Lista ODL nel batch */}
-                  <Typography variant="subtitle2" gutterBottom>
-                    ODL inclusi nel batch:
-                  </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {[...new Set(batch.placements.map(p => p.odl_number))].map((odlNumber) => (
+                    {[...new Set(batch.placements.map(p => p.odl_number))]
+                      .slice(0, isMobile ? 3 : 6)
+                      .map((odlNumber) => (
+                        <Chip
+                          key={odlNumber}
+                          label={odlNumber}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))
+                    }
+                    {[...new Set(batch.placements.map(p => p.odl_number))].length > (isMobile ? 3 : 6) && (
                       <Chip
-                        key={odlNumber}
-                        label={odlNumber}
+                        label={`+${[...new Set(batch.placements.map(p => p.odl_number))].length - (isMobile ? 3 : 6)} altri`}
                         size="small"
-                        variant="outlined"
+                        variant="filled"
+                        color="default"
                       />
-                    ))}
+                    )}
                   </Box>
                 </CardContent>
 
@@ -325,6 +469,7 @@ export function OptimizationResultsStep({
         onClose={() => setViewerOpen(false)}
         maxWidth="lg"
         fullWidth
+        fullScreen={isMobile}
       >
         <DialogTitle>
           Layout Batch - {selectedBatch?.autoclave_code}

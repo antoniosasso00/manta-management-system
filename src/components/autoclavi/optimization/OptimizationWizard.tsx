@@ -43,7 +43,8 @@ import type {
   CycleGroup, 
   ElevatedTool, 
   OptimizationResult,
-  OptimizationConstraints 
+  OptimizationConstraints,
+  AutoclaveSuggestion 
 } from '@/services/optimization-service';
 
 interface OptimizationWizardProps {
@@ -72,6 +73,8 @@ export function OptimizationWizard({
   // Step 2: Analisi cicli
   const [cycleGroups, setCycleGroups] = useState<CycleGroup[]>([]);
   const [selectedCycles, setSelectedCycles] = useState<string[]>([]);
+  const [autoclaveSuggestions, setAutoclaveSuggestions] = useState<Record<string, AutoclaveSuggestion>>({});
+  const [autoclaveAssignments, setAutoclaveAssignments] = useState<Record<string, string>>({});
   
   // Step 3: Tool rialzati
   const [elevatedTools, setElevatedTools] = useState<ElevatedTool[]>([]);
@@ -155,6 +158,19 @@ export function OptimizationWizard({
       setCycleGroups(data.cycle_groups || []);
       setSelectedCycles(data.recommendations || []);
       
+      // Imposta suggerimenti autoclave
+      if (data.autoclave_suggestions) {
+        setAutoclaveSuggestions(data.autoclave_suggestions);
+        
+        // Inizializza assegnazioni con i suggerimenti
+        const initialAssignments: Record<string, string> = {};
+        Object.entries(data.autoclave_suggestions).forEach(([cycleCode, suggestion]) => {
+          const typedSuggestion = suggestion as AutoclaveSuggestion;
+          initialAssignments[cycleCode] = typedSuggestion.suggested_autoclave_id;
+        });
+        setAutoclaveAssignments(initialAssignments);
+      }
+      
       // Gestisci warning per configurazioni mancanti
       if (data.warnings) {
         setConfigurationWarnings(data.warnings);
@@ -217,6 +233,7 @@ export function OptimizationWizard({
           selectedCycles,
           elevatedTools: selectedElevatedTools,
           constraints,
+          autoclaveAssignments,
         }),
       });
 
@@ -315,6 +332,10 @@ export function OptimizationWizard({
                     cycleGroups={cycleGroups}
                     selectedCycles={selectedCycles}
                     setSelectedCycles={setSelectedCycles}
+                    autoclaveSuggestions={autoclaveSuggestions}
+                    availableAutoclaves={availableAutoclaves.filter(a => selectedAutoclaves.includes(a.id))}
+                    autoclaveAssignments={autoclaveAssignments}
+                    setAutoclaveAssignments={setAutoclaveAssignments}
                   />
                 )}
                 

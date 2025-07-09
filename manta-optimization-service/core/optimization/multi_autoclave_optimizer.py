@@ -3,10 +3,34 @@ import uuid
 from typing import List, Dict, Tuple, Optional
 from collections import defaultdict
 import random
+from dataclasses import dataclass
 
 from domain.entities import ODL, Autoclave, BatchLayout
 from core.optimization.nesting_engine import NestingEngine
 from core.optimization.constraints import NestingConstraints
+
+@dataclass
+class CycleStats:
+    """Statistiche per ciclo di cura"""
+    cycle_code: str
+    odl_count: int
+    total_area: float
+    odls: List[ODL]
+    
+    @property
+    def normalized_score(self) -> float:
+        """Score normalizzato per priorità assegnazione"""
+        # Peso maggiore all'area totale rispetto al numero
+        return self.total_area * 0.6 + self.odl_count * 1000 * 0.4
+
+@dataclass
+class AutoclaveAssignment:
+    """Assegnazione autoclave a ciclo"""
+    cycle_code: str
+    autoclave_id: str
+    reason: str
+    odl_count: int
+    total_area: float
 
 class MultiAutoclaveOptimizer:
     """Ottimizzatore per distribuzione ODL su multiple autoclavi"""
@@ -19,66 +43,83 @@ class MultiAutoclaveOptimizer:
         self,
         odls: List[ODL],
         autoclaves: List[Autoclave],
-        elevated_tools: Dict[str, List[str]] = None
+        elevated_tools: Dict[str, List[str]] = None,
+        autoclave_assignments: Dict[str, str] = None
     ) -> Tuple[List[BatchLayout], Dict]:
         """
         Ottimizza la distribuzione di ODL su multiple autoclavi.
         
+        Args:
+            odls: Lista ODL da ottimizzare
+            autoclaves: Lista autoclavi disponibili
+            elevated_tools: Mapping ODL -> tool rialzati
+            autoclave_assignments: Assegnazioni manuali ciclo -> autoclave_id (opzionale)
+        
         Returns:
-            - Lista di BatchLayout ottimizzati
-            - Metriche di performance
+            - Lista di BatchLayout ottimizzati ordinati per efficienza
+            - Metriche di performance con suggerimenti
         """
         start_time = time.time()
         elevated_tools = elevated_tools or {}
+        autoclave_assignments = autoclave_assignments or {}
         
-        # Raggruppa ODL per ciclo di cura (prerequisito)
-        cycle_groups = self._group_by_cycle(odls)
+        # Analizza cicli e calcola statistiche
+        cycle_stats = self._analyze_cycle_areas(odls)
+        
+        # Genera assegnazioni autoclavi (automatiche o manuali)
+        if not autoclave_assignments:
+            autoclave_assignments, suggestions = self._assign_autoclaves_by_area_and_count(
+                cycle_stats, autoclaves
+            )
+        else:
+            suggestions = []
         
         all_batches = []
         metrics = {
             'total_odls_input': len(odls),
             'total_odls_placed': 0,
-            'cycles_processed': len(cycle_groups),
-            'batches_created': 0
+            'cycles_processed': len(cycle_stats),
+            'batches_created': 0,
+            'autoclave_suggestions': suggestions,
+            'batches_by_efficiency': []
         }
         
-        # Processa ogni gruppo di ciclo
-        for cycle_code, cycle_odls in cycle_groups.items():
-            # Fase 1: Distribuzione iniziale con FFD (First Fit Decreasing)
-            initial_distribution = self._first_fit_decreasing(
-                cycle_odls, autoclaves
+        # Processa ogni ciclo con la sua autoclave assegnata
+        for cycle_code, stats in cycle_stats.items():
+            autoclave_id = autoclave_assignments.get(cycle_code)
+            if not autoclave_id:
+                continue
+                
+            autoclave = next((a for a in autoclaves if a.id == autoclave_id), None)
+            if not autoclave:
+                continue
+            
+            # Crea batch multipli per questa combinazione ciclo-autoclave
+            cycle_batches = self._create_multiple_batches_per_autoclave(
+                stats.odls, autoclave, elevated_tools
             )
             
-            # Fase 2: Ottimizza layout per ogni autoclave
-            for autoclave_id, (autoclave, assigned_odls) in initial_distribution.items():
-                if not assigned_odls:
-                    continue
-                
-                # Filtra elevated tools per ODL assegnati
-                elevated_for_batch = {
-                    odl_id: tools
-                    for odl_id, tools in elevated_tools.items()
-                    if odl_id in [odl.id for odl in assigned_odls]
-                }
-                
-                # Ottimizza con nesting engine
-                batch_layout = self.nesting_engine.optimize_single_autoclave(
-                    assigned_odls,
-                    autoclave,
-                    elevated_for_batch
-                )
-                
-                if batch_layout and batch_layout.is_valid:
-                    all_batches.append(batch_layout)
+            # Aggiungi solo batch validi
+            for batch in cycle_batches:
+                if batch and batch.is_valid:
+                    all_batches.append(batch)
                     metrics['total_odls_placed'] += len(set(
-                        p.odl_id for p in batch_layout.placements
+                        p.odl_id for p in batch.placements
                     ))
-            
-            # Fase 3: Ottimizzazione inter-autoclave (swap migliorativi)
-            if len(all_batches) > 1:
-                all_batches = self._optimize_inter_autoclave(
-                    all_batches, cycle_odls, autoclaves, elevated_tools
-                )
+        
+        # Ordina batch per efficienza decrescente
+        all_batches = self._rank_batches_by_efficiency(all_batches)
+        
+        # Popola metriche di efficienza
+        metrics['batches_by_efficiency'] = [
+            {
+                'batch_id': str(uuid.uuid4()),
+                'efficiency': batch.efficiency,
+                'odl_count': len(set(p.odl_id for p in batch.placements)),
+                'is_recommended': batch.efficiency >= 0.7  # Soglia 70%
+            }
+            for batch in all_batches
+        ]
         
         metrics['batches_created'] = len(all_batches)
         metrics['execution_time'] = round(time.time() - start_time, 2)
@@ -94,6 +135,96 @@ class MultiAutoclaveOptimizer:
         for odl in odls:
             groups[odl.curing_cycle].append(odl)
         return dict(groups)
+    
+    def _analyze_cycle_areas(self, odls: List[ODL]) -> Dict[str, CycleStats]:
+        """Analizza superficie totale e conteggio ODL per ogni ciclo"""
+        cycle_groups = self._group_by_cycle(odls)
+        cycle_stats = {}
+        
+        for cycle_code, cycle_odls in cycle_groups.items():
+            total_area = sum(odl.total_area for odl in cycle_odls)
+            cycle_stats[cycle_code] = CycleStats(
+                cycle_code=cycle_code,
+                odl_count=len(cycle_odls),
+                total_area=total_area,
+                odls=cycle_odls
+            )
+        
+        return cycle_stats
+    
+    def _assign_autoclaves_by_area_and_count(
+        self, 
+        cycle_stats: Dict[str, CycleStats],
+        autoclaves: List[Autoclave]
+    ) -> Tuple[Dict[str, str], List[AutoclaveAssignment]]:
+        """
+        Assegna autoclavi ai cicli basandosi su area totale e numero ODL.
+        
+        Returns:
+            - Mapping ciclo -> autoclave_id
+            - Lista suggerimenti con motivazioni
+        """
+        # Ordina cicli per score decrescente (area + count normalizzati)
+        sorted_cycles = sorted(
+            cycle_stats.values(), 
+            key=lambda x: x.normalized_score,
+            reverse=True
+        )
+        
+        # Ordina autoclavi per area decrescente
+        sorted_autoclaves = sorted(
+            autoclaves,
+            key=lambda x: x.area,
+            reverse=True
+        )
+        
+        assignments = {}
+        suggestions = []
+        used_autoclaves = set()
+        
+        # Assegna cicli più "pesanti" ad autoclavi più grandi
+        for i, cycle in enumerate(sorted_cycles):
+            if i < len(sorted_autoclaves):
+                autoclave = sorted_autoclaves[i]
+                assignments[cycle.cycle_code] = autoclave.id
+                used_autoclaves.add(autoclave.id)
+                
+                # Genera motivazione
+                reason = (
+                    f"{cycle.odl_count} ODL, {cycle.total_area:.0f}mm² totali - "
+                    f"autoclave {autoclave.code} ({autoclave.width}x{autoclave.height}mm) consigliata"
+                )
+                
+                suggestions.append(AutoclaveAssignment(
+                    cycle_code=cycle.cycle_code,
+                    autoclave_id=autoclave.id,
+                    reason=reason,
+                    odl_count=cycle.odl_count,
+                    total_area=cycle.total_area
+                ))
+        
+        # Se ci sono più cicli che autoclavi, riusa autoclavi per cicli rimanenti
+        if len(sorted_cycles) > len(sorted_autoclaves):
+            for i in range(len(sorted_autoclaves), len(sorted_cycles)):
+                cycle = sorted_cycles[i]
+                # Trova autoclave con più capacità residua (semplificato)
+                best_autoclave = sorted_autoclaves[0]  # Default alla più grande
+                assignments[cycle.cycle_code] = best_autoclave.id
+                
+                reason = (
+                    f"{cycle.odl_count} ODL, {cycle.total_area:.0f}mm² totali - "
+                    f"autoclave {best_autoclave.code} (condivisa) consigliata"
+                )
+                
+                suggestions.append(AutoclaveAssignment(
+                    cycle_code=cycle.cycle_code,
+                    autoclave_id=best_autoclave.id,
+                    reason=reason,
+                    odl_count=cycle.odl_count,
+                    total_area=cycle.total_area
+                ))
+        
+        return assignments, suggestions
     
     def _first_fit_decreasing(
         self,
@@ -134,6 +265,83 @@ class MultiAutoclaveOptimizer:
                 bin_loads[best_autoclave] += odl.total_area
         
         return distribution
+    
+    def _create_multiple_batches_per_autoclave(
+        self,
+        odls: List[ODL],
+        autoclave: Autoclave,
+        elevated_tools: Dict[str, List[str]]
+    ) -> List[BatchLayout]:
+        """
+        Crea batch multipli per una combinazione ciclo-autoclave.
+        Continua a creare batch finché ci sono ODL da processare.
+        """
+        # Ordina ODL per area decrescente per ottimizzare il packing
+        sorted_odls = sorted(odls, key=lambda x: x.total_area, reverse=True)
+        remaining_odls = sorted_odls.copy()
+        batches = []
+        
+        # Target di efficienza minima per creare un nuovo batch
+        target_efficiency = 0.75
+        min_acceptable_efficiency = 0.5
+        
+        while remaining_odls:
+            # Prova a creare un batch con gli ODL rimanenti
+            current_batch_odls = []
+            batch_elevated_tools = {}
+            
+            # Usa algoritmo greedy per riempire il batch
+            for odl in remaining_odls[:]:
+                # Simula aggiunta ODL al batch
+                test_odls = current_batch_odls + [odl]
+                
+                # Prepara elevated tools per test
+                test_elevated = batch_elevated_tools.copy()
+                if odl.id in elevated_tools:
+                    test_elevated[odl.id] = elevated_tools[odl.id]
+                
+                # Ottimizza con nesting engine
+                test_batch = self.nesting_engine.optimize_single_autoclave(
+                    test_odls, autoclave, test_elevated
+                )
+                
+                # Se l'aggiunta mantiene efficienza accettabile, aggiungi
+                if test_batch and test_batch.is_valid:
+                    if (test_batch.efficiency >= target_efficiency or 
+                        (test_batch.efficiency >= min_acceptable_efficiency and 
+                         len(test_odls) >= 3)):  # Almeno 3 ODL per batch
+                        current_batch_odls.append(odl)
+                        remaining_odls.remove(odl)
+                        if odl.id in elevated_tools:
+                            batch_elevated_tools[odl.id] = elevated_tools[odl.id]
+            
+            # Se abbiamo ODL nel batch corrente, crealo
+            if current_batch_odls:
+                final_batch = self.nesting_engine.optimize_single_autoclave(
+                    current_batch_odls, autoclave, batch_elevated_tools
+                )
+                if final_batch and final_batch.is_valid:
+                    batches.append(final_batch)
+            else:
+                # Se non riusciamo a creare batch efficiente, prova con meno ODL
+                if remaining_odls:
+                    # Prendi solo il primo ODL (il più grande)
+                    single_odl = [remaining_odls.pop(0)]
+                    single_elevated = {}
+                    if single_odl[0].id in elevated_tools:
+                        single_elevated[single_odl[0].id] = elevated_tools[single_odl[0].id]
+                    
+                    single_batch = self.nesting_engine.optimize_single_autoclave(
+                        single_odl, autoclave, single_elevated
+                    )
+                    if single_batch and single_batch.is_valid:
+                        batches.append(single_batch)
+        
+        return batches
+    
+    def _rank_batches_by_efficiency(self, batches: List[BatchLayout]) -> List[BatchLayout]:
+        """Ordina batch per efficienza decrescente"""
+        return sorted(batches, key=lambda x: x.efficiency, reverse=True)
     
     def _optimize_inter_autoclave(
         self,

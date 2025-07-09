@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -13,6 +13,8 @@ import {
   ToggleButtonGroup,
   Slider,
   Divider,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   ZoomIn,
@@ -21,6 +23,9 @@ import {
   GridOn,
   Straighten,
   Layers,
+  Fullscreen,
+  FullscreenExit,
+  TouchApp,
 } from '@mui/icons-material';
 import type { BatchLayout, Placement } from '@/services/optimization-service';
 
@@ -29,13 +34,22 @@ interface BatchLayoutViewerProps {
 }
 
 export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
-  const [showGrid, setShowGrid] = useState(true);
-  const [showDimensions, setShowDimensions] = useState(true);
+  const [showGrid, setShowGrid] = useState(!isMobile);
+  const [showDimensions, setShowDimensions] = useState(!isMobile);
   const [showLevels, setShowLevels] = useState<'all' | '0' | '1'>('all');
   const [hoveredPlacement, setHoveredPlacement] = useState<Placement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
 
   // Colori per ODL diversi
   const ODL_COLORS = [
@@ -44,9 +58,49 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
     '#E74C3C', '#9B59B6', '#3498DB', '#2ECC71', '#F1C40F'
   ];
 
+  // Auto-fit al caricamento e resize
+  const calculateAutoFit = useCallback(() => {
+    if (!containerRef.current) return 1;
+    
+    const container = containerRef.current;
+    const containerWidth = container.clientWidth - (isMobile ? 16 : 32);
+    const containerHeight = window.innerHeight * (isFullscreen ? 0.85 : 0.6);
+    
+    // Calcola dimensioni autoclave dai placement
+    const maxX = Math.max(...batch.placements.map(p => p.x + p.width)) + 100;
+    const maxY = Math.max(...batch.placements.map(p => p.y + p.height)) + 100;
+    
+    const scaleX = containerWidth / maxX;
+    const scaleY = containerHeight / maxY;
+    const fitScale = Math.min(scaleX, scaleY, 2); // max 2x zoom
+    
+    return Math.max(fitScale, 0.3); // min 0.3x zoom
+  }, [batch, isMobile, isFullscreen]);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const newScale = calculateAutoFit();
+      setZoom(newScale);
+      
+      // Aggiorna dimensioni canvas
+      if (containerRef.current) {
+        const maxX = Math.max(...batch.placements.map(p => p.x + p.width)) + 100;
+        const maxY = Math.max(...batch.placements.map(p => p.y + p.height)) + 100;
+        setCanvasSize({
+          width: Math.min(containerRef.current.clientWidth - 32, maxX * newScale),
+          height: Math.min(window.innerHeight * 0.6, maxY * newScale)
+        });
+      }
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [batch, calculateAutoFit]);
+  
   useEffect(() => {
     drawLayout();
-  }, [batch, zoom, showGrid, showDimensions, showLevels]);
+  }, [batch, zoom, showGrid, showDimensions, showLevels, canvasSize]);
 
   const drawLayout = () => {
     const canvas = canvasRef.current;
@@ -57,16 +111,22 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
     const maxX = Math.max(...batch.placements.map(p => p.x + p.width)) + 100;
     const maxY = Math.max(...batch.placements.map(p => p.y + p.height)) + 100;
 
-    // Imposta dimensioni canvas
+    // Imposta dimensioni canvas con device pixel ratio per display retina
+    const dpr = window.devicePixelRatio || 1;
     const scale = zoom;
-    canvas.width = maxX * scale;
-    canvas.height = maxY * scale;
+    canvas.width = canvasSize.width * dpr;
+    canvas.height = canvasSize.height * dpr;
+    canvas.style.width = `${canvasSize.width}px`;
+    canvas.style.height = `${canvasSize.height}px`;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Scala il contesto
-    ctx.scale(scale, scale);
+    // Scala il contesto con DPR
+    ctx.scale(scale * dpr, scale * dpr);
+    
+    // Applica offset scroll
+    ctx.translate(-scrollOffset.x, -scrollOffset.y);
 
     // Sfondo
     ctx.fillStyle = '#f5f5f5';
@@ -148,16 +208,22 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
 
       ctx.globalAlpha = 1;
 
-      // Testo
-      ctx.fillStyle = placement.level === 0 ? '#fff' : '#000';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(
-        placement.tool_id,
-        placement.x + placement.width / 2,
-        placement.y + placement.height / 2
-      );
+      // Testo (solo se non troppo piccolo su mobile)
+      if (!isMobile || zoom > 0.5) {
+        ctx.fillStyle = placement.level === 0 ? '#fff' : '#000';
+        const fontSize = Math.max(12, 10 / zoom);
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // ODL number invece di tool_id
+        const text = placement.odl_number.substring(0, 8);
+        ctx.fillText(
+          text,
+          placement.x + placement.width / 2,
+          placement.y + placement.height / 2
+        );
+      }
 
       // Dimensioni
       if (showDimensions) {
@@ -224,8 +290,49 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
   };
 
   const handleZoomIn = () => setZoom(Math.min(zoom * 1.2, 3));
-  const handleZoomOut = () => setZoom(Math.max(zoom / 1.2, 0.5));
-  const handleZoomReset = () => setZoom(1);
+  const handleZoomOut = () => setZoom(Math.max(zoom / 1.2, 0.3));
+  const handleZoomReset = () => {
+    const fitScale = calculateAutoFit();
+    setZoom(fitScale);
+    setScrollOffset({ x: 0, y: 0 });
+  };
+  
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+  
+  // Gestione touch/mouse per pan
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX + scrollOffset.x, y: e.clientY + scrollOffset.y });
+  };
+  
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging) {
+      const newOffset = {
+        x: dragStart.x - e.clientX,
+        y: dragStart.y - e.clientY
+      };
+      setScrollOffset(newOffset);
+    }
+  };
+  
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
+  
+  // Gestione wheel per zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(prevZoom => Math.max(0.3, Math.min(3, prevZoom * delta)));
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -246,13 +353,43 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
   return (
     <Box>
       {/* Controlli */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+      <Paper 
+        variant="outlined" 
+        sx={{ 
+          p: isMobile ? 1 : 2, 
+          mb: 2,
+          position: isFullscreen ? 'fixed' : 'relative',
+          top: isFullscreen ? 10 : 'auto',
+          left: isFullscreen ? 10 : 'auto',
+          right: isFullscreen ? 10 : 'auto',
+          zIndex: isFullscreen ? 1000 : 'auto',
+          bgcolor: 'background.paper',
+          boxShadow: isFullscreen ? 3 : 0
+        }}
+      >
+        <Stack 
+          direction={isMobile ? "column" : "row"} 
+          spacing={isMobile ? 1 : 2} 
+          alignItems={isMobile ? "stretch" : "center"}
+        >
           {/* Zoom */}
           <Stack direction="row" spacing={1} alignItems="center">
             <IconButton size="small" onClick={handleZoomOut}>
               <ZoomOut />
             </IconButton>
+            {!isMobile && (
+              <Box sx={{ width: 120, mx: 1 }}>
+                <Slider
+                  value={zoom}
+                  onChange={(_, value) => setZoom(value as number)}
+                  min={0.3}
+                  max={3}
+                  step={0.1}
+                  valueLabelDisplay="auto"
+                  valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
+                />
+              </Box>
+            )}
             <Typography variant="body2" sx={{ minWidth: 50, textAlign: 'center' }}>
               {Math.round(zoom * 100)}%
             </Typography>
@@ -302,7 +439,25 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
             <ToggleButton value="0">Base</ToggleButton>
             <ToggleButton value="1">Rialzati</ToggleButton>
           </ToggleButtonGroup>
+          
+          {!isMobile && (
+            <>
+              <Divider orientation="vertical" flexItem />
+              <Tooltip title={isFullscreen ? "Esci da schermo intero" : "Schermo intero"}>
+                <IconButton size="small" onClick={handleFullscreen}>
+                  {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </Stack>
+        
+        {isMobile && (
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            <TouchApp fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+            Pizzica per zoom • Trascina per navigare
+          </Typography>
+        )}
       </Paper>
 
       {/* Canvas container */}
@@ -310,22 +465,38 @@ export function BatchLayoutViewer({ batch }: BatchLayoutViewerProps) {
         ref={containerRef}
         variant="outlined" 
         sx={{ 
-          p: 2, 
-          overflow: 'auto',
-          maxHeight: '60vh',
-          backgroundColor: '#fafafa'
+          p: isMobile ? 1 : 2, 
+          overflow: 'hidden',
+          maxHeight: isFullscreen ? '90vh' : '60vh',
+          backgroundColor: '#fafafa',
+          position: 'relative',
+          touchAction: 'none',
+          userSelect: 'none'
         }}
+        onWheel={handleWheel}
       >
-        <canvas
-          ref={canvasRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredPlacement(null)}
-          style={{ 
-            display: 'block',
-            cursor: 'crosshair',
-            imageRendering: 'crisp-edges'
+        <Box
+          sx={{
+            overflow: 'auto',
+            maxHeight: '100%',
+            cursor: isDragging ? 'grabbing' : 'grab'
           }}
-        />
+        >
+          <canvas
+            ref={canvasRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setHoveredPlacement(null)}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            style={{ 
+              display: 'block',
+              touchAction: 'none',
+              imageRendering: zoom > 1.5 ? 'pixelated' : 'auto'
+            }}
+          />
+        </Box>
       </Paper>
 
       {/* Info placement hovering */}

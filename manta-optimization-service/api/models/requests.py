@@ -44,6 +44,10 @@ class ExecuteOptimizationRequest(BaseModel):
     selected_cycles: List[str]
     elevated_tools: List[str] = Field(default_factory=list)
     constraints: OptimizationConstraints = OptimizationConstraints()
+    autoclave_assignments: Optional[Dict[str, str]] = Field(
+        None, 
+        description="Assegnazioni manuali ciclo -> autoclave_id (opzionale)"
+    )
 
 class ConfirmBatchRequest(BaseModel):
     batch_ids: List[str]

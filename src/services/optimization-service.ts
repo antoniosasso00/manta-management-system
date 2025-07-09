@@ -43,6 +43,15 @@ export interface CycleGroup {
   odl_ids: string[];
 }
 
+export interface AutoclaveSuggestion {
+  cycle_code: string;
+  suggested_autoclave_id: string;
+  suggested_autoclave_code: string;
+  reason: string;
+  odl_count: number;
+  total_area: number;
+}
+
 export interface ElevatedTool {
   odl_id: string;
   tool_id: string;
@@ -86,6 +95,13 @@ export interface BatchLayout {
   layout_image_base64?: string;
 }
 
+export interface BatchEfficiencyInfo {
+  batch_id: string;
+  efficiency: number;
+  odl_count: number;
+  is_recommended: boolean;
+}
+
 export interface OptimizationResult {
   optimization_id: string;
   batches: BatchLayout[];
@@ -93,6 +109,7 @@ export interface OptimizationResult {
   total_odls_input: number;
   success_rate: number;
   execution_time_seconds: number;
+  batches_by_efficiency?: BatchEfficiencyInfo[];
 }
 
 // API Service
@@ -127,6 +144,7 @@ export class OptimizationService {
   }): Promise<{
     cycle_groups: CycleGroup[];
     recommendations: string[];
+    autoclave_suggestions?: Record<string, AutoclaveSuggestion>;
   }> {
     return this.fetchApi('/optimization/analyze', {
       method: 'POST',
@@ -161,6 +179,7 @@ export class OptimizationService {
     selected_cycles: string[];
     elevated_tools: string[];
     constraints?: OptimizationConstraints;
+    autoclave_assignments?: Record<string, string>;
   }): Promise<OptimizationResult> {
     return this.fetchApi('/optimization/execute', {
       method: 'POST',

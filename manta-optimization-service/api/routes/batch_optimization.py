@@ -11,12 +11,14 @@ from api.models.requests import (
 from api.models.responses import (
     CycleAnalysisResponse,
     CycleGroupResponse,
+    AutoclaveSuggestion,
     ElevatedToolsAnalysisResponse,
     ElevatedToolResponse,
     OptimizationResultResponse,
     BatchLayoutResponse,
     PlacementResponse,
     BatchMetrics,
+    BatchEfficiencyInfo,
     ErrorResponse
 )
 from domain.entities import ODL, Tool, Autoclave, LoadStatus
@@ -35,7 +37,7 @@ optimization_cache = {}
 @router.post("/analyze", response_model=CycleAnalysisResponse)
 async def analyze_odls(request: AnalysisRequest):
     """
-    Step 1: Analizza ODL e suggerisce cicli di cura ottimali.
+    Step 1: Analizza ODL e suggerisce cicli di cura ottimali con assegnazioni autoclave.
     """
     try:
         # Converti request in entities
@@ -60,8 +62,51 @@ async def analyze_odls(request: AnalysisRequest):
                 tools=tools
             ))
         
+        autoclaves = [
+            Autoclave(
+                id=a.id,
+                code=a.code,
+                width=a.width,
+                height=a.height,
+                vacuum_lines=a.vacuum_lines,
+                max_weight=a.max_weight
+            )
+            for a in request.autoclaves
+        ]
+        
         # Analizza cicli
         cycle_groups, recommendations = CuringCycleFilter.analyze_cycles(odls)
+        
+        # Genera suggerimenti autoclave se ci sono autoclavi
+        autoclave_suggestions = None
+        if autoclaves:
+            from core.optimization.multi_autoclave_optimizer import MultiAutoclaveOptimizer
+            optimizer = MultiAutoclaveOptimizer(NestingConstraints())
+            
+            # Analizza aree cicli
+            cycle_stats = optimizer._analyze_cycle_areas(odls)
+            
+            # Genera suggerimenti
+            assignments, suggestions = optimizer._assign_autoclaves_by_area_and_count(
+                cycle_stats, autoclaves
+            )
+            
+            # Mappa autoclavi per ID
+            autoclave_map = {a.id: a for a in autoclaves}
+            
+            # Prepara suggerimenti response
+            autoclave_suggestions = {}
+            for suggestion in suggestions:
+                autoclave = autoclave_map.get(suggestion.autoclave_id)
+                if autoclave:
+                    autoclave_suggestions[suggestion.cycle_code] = AutoclaveSuggestion(
+                        cycle_code=suggestion.cycle_code,
+                        suggested_autoclave_id=suggestion.autoclave_id,
+                        suggested_autoclave_code=autoclave.code,
+                        reason=suggestion.reason,
+                        odl_count=suggestion.odl_count,
+                        total_area=suggestion.total_area
+                    )
         
         # Prepara response
         cycle_groups_response = [
@@ -77,7 +122,8 @@ async def analyze_odls(request: AnalysisRequest):
         
         return CycleAnalysisResponse(
             cycle_groups=cycle_groups_response,
-            recommendations=recommendations
+            recommendations=recommendations,
+            autoclave_suggestions=autoclave_suggestions
         )
         
     except Exception as e:
@@ -204,9 +250,14 @@ async def execute_optimization(request: ExecuteOptimizationRequest):
             allow_rotation=request.constraints.allow_rotation
         )
         
-        # Ottimizza
+        # Ottimizza con eventuali assegnazioni manuali
         optimizer = MultiAutoclaveOptimizer(constraints)
-        batches, metrics = optimizer.optimize(odls, autoclaves, elevated_tools)
+        batches, metrics = optimizer.optimize(
+            odls, 
+            autoclaves, 
+            elevated_tools,
+            request.autoclave_assignments  # Può essere None
+        )
         
         # Genera visualizzazioni
         layout_generator = LayoutGenerator()
@@ -284,13 +335,27 @@ async def execute_optimization(request: ExecuteOptimizationRequest):
         
         optimization_id = str(uuid.uuid4())
         
+        # Converti info efficienza
+        batches_by_efficiency = None
+        if 'batches_by_efficiency' in metrics:
+            batches_by_efficiency = [
+                BatchEfficiencyInfo(
+                    batch_id=batch_responses[i].batch_id,
+                    efficiency=info['efficiency'],
+                    odl_count=info['odl_count'],
+                    is_recommended=info['is_recommended']
+                )
+                for i, info in enumerate(metrics['batches_by_efficiency'])
+            ]
+        
         return OptimizationResultResponse(
             optimization_id=optimization_id,
             batches=batch_responses,
             total_odls_placed=metrics['total_odls_placed'],
             total_odls_input=metrics['total_odls_input'],
             success_rate=metrics['success_rate'],
-            execution_time_seconds=time.time() - start_time
+            execution_time_seconds=time.time() - start_time,
+            batches_by_efficiency=batches_by_efficiency
         )
         
     except Exception as e:

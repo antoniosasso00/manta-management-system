@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { odlIds, autoclaveIds, selectedCycles, elevatedTools, constraints } = body;
+    const { odlIds, autoclaveIds, selectedCycles, elevatedTools, constraints, autoclaveAssignments } = body;
 
     // Recupera dati dal database
     const [odls, autoclaves] = await Promise.all([
@@ -79,7 +79,8 @@ export async function POST(request: NextRequest) {
         min_border_distance: 50,
         min_tool_distance: 30,
         allow_rotation: true
-      }
+      },
+      autoclave_assignments: autoclaveAssignments || undefined
     };
 
     // Esegui ottimizzazione

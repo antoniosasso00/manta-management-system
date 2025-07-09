@@ -23,18 +23,37 @@ import {
   CheckCircle,
   RadioButtonUnchecked,
 } from '@mui/icons-material';
-import type { CycleGroup } from '@/services/optimization-service';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Select,
+  MenuItem,
+  FormControl,
+} from '@mui/material';
+import type { CycleGroup, AutoclaveSuggestion } from '@/services/optimization-service';
 
 interface CycleAnalysisStepProps {
   cycleGroups: CycleGroup[];
   selectedCycles: string[];
   setSelectedCycles: (cycles: string[]) => void;
+  autoclaveSuggestions?: Record<string, AutoclaveSuggestion>;
+  availableAutoclaves: any[];
+  autoclaveAssignments: Record<string, string>;
+  setAutoclaveAssignments: (assignments: Record<string, string>) => void;
 }
 
 export function CycleAnalysisStep({
   cycleGroups,
   selectedCycles,
   setSelectedCycles,
+  autoclaveSuggestions,
+  availableAutoclaves,
+  autoclaveAssignments,
+  setAutoclaveAssignments,
 }: CycleAnalysisStepProps) {
   const handleCycleToggle = (cycleCode: string) => {
     setSelectedCycles(
@@ -66,6 +85,13 @@ export function CycleAnalysisStep({
 
   // Ordina per score decrescente
   const sortedGroups = [...cycleGroups].sort((a, b) => b.optimization_score - a.optimization_score);
+
+  const handleAutoclaveChange = (cycleCode: string, autoclaveId: string) => {
+    setAutoclaveAssignments({
+      ...autoclaveAssignments,
+      [cycleCode]: autoclaveId,
+    });
+  };
 
   return (
     <Box>
@@ -232,6 +258,95 @@ export function CycleAnalysisStep({
             {selectedCycles.length} cicli selezionati per l'ottimizzazione
           </Typography>
         </Alert>
+      )}
+
+      {/* Sezione Assegnazione Autoclavi */}
+      {selectedCycles.length > 0 && availableAutoclaves.length > 0 && (
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Assegnazione Autoclavi
+          </Typography>
+          
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              Il sistema suggerisce l'assegnazione ottimale delle autoclavi basandosi sul numero di ODL 
+              e la superficie totale per ogni ciclo. Puoi modificare manualmente le assegnazioni se necessario.
+            </Typography>
+          </Alert>
+
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Ciclo di Cura</TableCell>
+                  <TableCell align="center">N° ODL</TableCell>
+                  <TableCell align="center">Superficie Tot.</TableCell>
+                  <TableCell>Autoclave Assegnata</TableCell>
+                  <TableCell>Suggerimento</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedCycles.map((cycleCode) => {
+                  const group = cycleGroups.find(g => g.cycle_code === cycleCode);
+                  const suggestion = autoclaveSuggestions?.[cycleCode];
+                  const currentAssignment = autoclaveAssignments[cycleCode] || 
+                    suggestion?.suggested_autoclave_id || '';
+                  
+                  if (!group) return null;
+                  
+                  return (
+                    <TableRow key={cycleCode}>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {cycleCode}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip label={group.odl_count} size="small" color="primary" />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">
+                          {(group.total_area / 1000000).toFixed(1)} m²
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            value={currentAssignment}
+                            onChange={(e) => handleAutoclaveChange(cycleCode, e.target.value)}
+                            displayEmpty
+                          >
+                            <MenuItem value="">
+                              <em>Seleziona...</em>
+                            </MenuItem>
+                            {availableAutoclaves.map((autoclave) => (
+                              <MenuItem key={autoclave.id} value={autoclave.id}>
+                                {autoclave.code} ({autoclave.width}x{autoclave.height}mm)
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                      <TableCell>
+                        {suggestion && (
+                          <Tooltip title={suggestion.reason}>
+                            <Chip
+                              label={`Consigliata: ${suggestion.suggested_autoclave_code}`}
+                              size="small"
+                              color="success"
+                              variant="outlined"
+                              icon={<TrendingUp />}
+                            />
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
       )}
     </Box>
   );

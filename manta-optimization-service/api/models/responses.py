@@ -9,9 +9,21 @@ class CycleGroupResponse(BaseModel):
     optimization_score: float = Field(ge=0, le=1)
     odl_ids: List[str]
 
+class AutoclaveSuggestion(BaseModel):
+    cycle_code: str
+    suggested_autoclave_id: str
+    suggested_autoclave_code: str
+    reason: str
+    odl_count: int
+    total_area: float
+
 class CycleAnalysisResponse(BaseModel):
     cycle_groups: List[CycleGroupResponse]
     recommendations: List[str] = Field(description="Cicli consigliati per ottimizzazione")
+    autoclave_suggestions: Optional[Dict[str, AutoclaveSuggestion]] = Field(
+        None, 
+        description="Suggerimenti assegnazione autoclave per ciclo"
+    )
 
 class ElevatedToolResponse(BaseModel):
     odl_id: str
@@ -57,6 +69,12 @@ class BatchLayoutResponse(BaseModel):
     status: LoadStatus = LoadStatus.DRAFT
     layout_image_base64: Optional[str] = None
 
+class BatchEfficiencyInfo(BaseModel):
+    batch_id: str
+    efficiency: float
+    odl_count: int
+    is_recommended: bool
+
 class OptimizationResultResponse(BaseModel):
     optimization_id: str
     batches: List[BatchLayoutResponse]
@@ -64,6 +82,10 @@ class OptimizationResultResponse(BaseModel):
     total_odls_input: int
     success_rate: float
     execution_time_seconds: float
+    batches_by_efficiency: Optional[List[BatchEfficiencyInfo]] = Field(
+        None,
+        description="Batch ordinati per efficienza con flag raccomandazione"
+    )
 
 class ErrorResponse(BaseModel):
     error: str
