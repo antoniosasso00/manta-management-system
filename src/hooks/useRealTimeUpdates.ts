@@ -157,7 +157,7 @@ export function useDashboardKPI() {
   const [kpiData, setKpiData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const fetchKPIDataRef = useRef<() => Promise<void>>(async () => {})
+  const fetchKPIDataRef = useRef<() => Promise<void>>()
 
   const fetchKPIData = useCallback(async () => {
     try {
@@ -209,7 +209,7 @@ export function useAuditEvents() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<any>({})
-  const fetchAuditDataRef = useRef<() => Promise<void>>(async () => {})
+  const fetchAuditDataRef = useRef<() => Promise<void>>()
 
   const fetchAuditData = useCallback(async () => {
     try {
@@ -277,7 +277,7 @@ export function useUserStats() {
   const [statsData, setStatsData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const fetchStatsDataRef = useRef<() => Promise<void>>(async () => {})
+  const fetchStatsDataRef = useRef<() => Promise<void>>()
 
   const fetchStatsData = useCallback(async () => {
     try {
