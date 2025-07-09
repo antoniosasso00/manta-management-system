@@ -33,6 +33,11 @@ export async function POST(request: NextRequest) {
                 include: {
                   tool: true
                 }
+              },
+              autoclaveConfig: {
+                include: {
+                  curingCycle: true
+                }
               }
             }
           }
@@ -43,9 +48,30 @@ export async function POST(request: NextRequest) {
       })
     ]);
 
+    // Filtra ODL che hanno configurazione autoclave
+    const validOdls = odls.filter(odl => odl.part.autoclaveConfig != null);
+    const excludedOdls = odls.filter(odl => odl.part.autoclaveConfig == null);
+
+    if (validOdls.length === 0) {
+      return NextResponse.json({ 
+        error: 'Nessun ODL disponibile per esecuzione ottimizzazione',
+        details: {
+          total_odls: odls.length,
+          excluded_by_config: excludedOdls.length,
+          missing_configurations: excludedOdls.map(odl => ({
+            odlId: odl.id,
+            odlNumber: odl.odlNumber,
+            partNumber: odl.part.partNumber,
+            partId: odl.part.id,
+            reason: 'Configurazione autoclave mancante'
+          }))
+        }
+      }, { status: 400 });
+    }
+
     // Converti per microservizio
     const optimizationData = {
-      odls: odls.map(convertODLToOptimizationData),
+      odls: validOdls.map(convertODLToOptimizationData),
       autoclaves: autoclaves.map(convertAutoclaveToOptimizationData),
       selected_cycles: selectedCycles,
       elevated_tools: elevatedTools || [],

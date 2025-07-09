@@ -2964,6 +2964,39 @@ async function main() {
   console.log('\n🚀 Aprire http://localhost:3001 per testare!')
   console.log('💡 Usare diversi utenti per testare autorizzazioni per reparto')
   console.log(`📈 Dataset ora include ${parts.length} parti e ${tools.length} tools per testing completo`)
+
+  // 🔄 SINCRONIZZAZIONE STATUS ODL
+  console.log('\n🔄 Sincronizzazione status ODL con eventi produzione...')
+  
+  // Aggiorna status ODL basandosi sull'ultimo evento per Clean Room
+  // Solo per ODL che sono ancora nel workflow Clean Room
+  await prisma.$executeRaw`
+    UPDATE odls 
+    SET status = CASE 
+      WHEN latest_event.event_type = 'ENTRY' THEN 'IN_CLEANROOM'::"ODLStatus"
+      WHEN latest_event.event_type = 'EXIT' THEN 'CLEANROOM_COMPLETED'::"ODLStatus"
+      ELSE status
+    END
+    FROM (
+      SELECT DISTINCT ON (o.id) 
+        o.id as odl_id,
+        pe."eventType" as event_type
+      FROM odls o 
+      JOIN production_events pe ON o.id = pe."odlId"
+      JOIN departments d ON pe."departmentId" = d.id
+      WHERE d.type = 'CLEANROOM'
+      ORDER BY o.id, pe.timestamp DESC
+    ) latest_event
+    WHERE odls.id = latest_event.odl_id
+    AND odls.status IN ('IN_CLEANROOM', 'CLEANROOM_COMPLETED')
+    AND NOT EXISTS (
+      SELECT 1 FROM production_events pe2 
+      JOIN departments d2 ON pe2."departmentId" = d2.id 
+      WHERE pe2."odlId" = odls.id 
+      AND d2.type IN ('AUTOCLAVE', 'NDI', 'CONTROLLO_NUMERICO', 'MONTAGGIO', 'VERNICIATURA', 'CONTROLLO_QUALITA')
+    )`
+
+  console.log('✅ Status ODL sincronizzati con eventi')
 }
 
 main()

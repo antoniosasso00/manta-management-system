@@ -49,14 +49,50 @@ export async function POST(request: NextRequest) {
     ]);
 
     // Filtra solo ODL nel reparto autoclavi
-    const validOdls = odls.filter(odl => 
+    const statusValidOdls = odls.filter(odl => 
       odl.status === 'IN_AUTOCLAVE' || odl.status === 'CLEANROOM_COMPLETED'
     );
 
+    // Separa ODL validi da quelli senza configurazione autoclave
+    const validOdls = statusValidOdls.filter(odl => 
+      odl.part.autoclaveConfig != null
+    );
+    
+    const excludedOdls = statusValidOdls.filter(odl => 
+      odl.part.autoclaveConfig == null
+    );
+
+    const excludedByStatus = odls.length - statusValidOdls.length;
+    const excludedByConfig = excludedOdls.length;
+
+    // Prepara informazioni dettagliate sulle parti escluse
+    const missingConfigurations = excludedOdls.map(odl => ({
+      odlId: odl.id,
+      odlNumber: odl.odlNumber,
+      partNumber: odl.part.partNumber,
+      partId: odl.part.id,
+      description: odl.part.description,
+      reason: 'Configurazione autoclave mancante'
+    }));
+
     if (validOdls.length === 0) {
       return NextResponse.json({ 
-        error: `Nessun ODL disponibile per ottimizzazione. Trovati ${odls.length} ODL totali, ma nessuno con status IN_AUTOCLAVE o CLEANROOM_COMPLETED.` 
+        error: 'Nessun ODL disponibile per ottimizzazione',
+        details: {
+          total_odls: odls.length,
+          excluded_by_status: excludedByStatus,
+          excluded_by_config: excludedByConfig,
+          missing_configurations: missingConfigurations,
+          available_for_optimization: 0
+        }
       }, { status: 400 });
+    }
+
+    // Log warning per parti escluse
+    if (excludedByConfig > 0) {
+      console.warn(`⚠️  ${excludedByConfig} ODL esclusi dall'ottimizzazione per mancanza configurazione autoclave:`, 
+        missingConfigurations.map(item => item.partNumber)
+      );
     }
 
     if (autoclaves.length === 0) {
@@ -87,7 +123,23 @@ export async function POST(request: NextRequest) {
     // Chiama microservizio
     const result = await OptimizationService.analyzeCycles(optimizationData);
 
-    return NextResponse.json(result);
+    // Aggiungi informazioni sui warning se ci sono parti escluse
+    const response = {
+      ...result,
+      warnings: excludedByConfig > 0 ? {
+        excluded_odls_count: excludedByConfig,
+        missing_configurations: missingConfigurations,
+        message: `${excludedByConfig} ODL esclusi per configurazione autoclave mancante`
+      } : null,
+      optimization_summary: {
+        total_input_odls: odls.length,
+        processed_odls: validOdls.length,
+        excluded_by_status: excludedByStatus,
+        excluded_by_config: excludedByConfig
+      }
+    };
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Errore analisi ottimizzazione:', error);

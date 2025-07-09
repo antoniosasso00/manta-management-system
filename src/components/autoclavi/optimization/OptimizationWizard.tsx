@@ -77,6 +77,19 @@ export function OptimizationWizard({
   const [elevatedTools, setElevatedTools] = useState<ElevatedTool[]>([]);
   const [selectedElevatedTools, setSelectedElevatedTools] = useState<string[]>([]);
   
+  // Warning per configurazioni mancanti
+  const [configurationWarnings, setConfigurationWarnings] = useState<{
+    excluded_odls_count: number;
+    missing_configurations: Array<{
+      odlId: string;
+      odlNumber: string;
+      partNumber: string;
+      partId: string;
+      reason: string;
+    }>;
+    message: string;
+  } | null>(null);
+  
   // Step 4: Risultati
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [confirmedBatches, setConfirmedBatches] = useState<string[]>([]);
@@ -141,6 +154,17 @@ export function OptimizationWizard({
 
       setCycleGroups(data.cycle_groups || []);
       setSelectedCycles(data.recommendations || []);
+      
+      // Gestisci warning per configurazioni mancanti
+      if (data.warnings) {
+        setConfigurationWarnings(data.warnings);
+        enqueueSnackbar(data.warnings.message, { 
+          variant: 'warning',
+          autoHideDuration: 8000 
+        });
+      } else {
+        setConfigurationWarnings(null);
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Errore durante l\'analisi dei cicli';
       enqueueSnackbar(errorMessage, { variant: 'error' });

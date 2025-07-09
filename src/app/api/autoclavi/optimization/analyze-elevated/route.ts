@@ -33,6 +33,11 @@ export async function POST(request: NextRequest) {
                 include: {
                   tool: true
                 }
+              },
+              autoclaveConfig: {
+                include: {
+                  curingCycle: true
+                }
               }
             }
           }
@@ -43,9 +48,32 @@ export async function POST(request: NextRequest) {
       })
     ]);
 
+    // Filtra ODL che hanno configurazione autoclave
+    const validOdls = odls.filter(odl => odl.part.autoclaveConfig != null);
+    const excludedOdls = odls.filter(odl => odl.part.autoclaveConfig == null);
+
+    if (validOdls.length === 0) {
+      const missingConfigurations = excludedOdls.map(odl => ({
+        odlId: odl.id,
+        odlNumber: odl.odlNumber,
+        partNumber: odl.part.partNumber,
+        partId: odl.part.id,
+        reason: 'Configurazione autoclave mancante'
+      }));
+
+      return NextResponse.json({ 
+        error: 'Nessun ODL disponibile per analisi supporti rialzati',
+        details: {
+          total_odls: odls.length,
+          excluded_by_config: excludedOdls.length,
+          missing_configurations: missingConfigurations
+        }
+      }, { status: 400 });
+    }
+
     // Converti per microservizio
     const optimizationData = {
-      odls: odls.map(convertODLToOptimizationData),
+      odls: validOdls.map(convertODLToOptimizationData),
       autoclaves: autoclaves.map(convertAutoclaveToOptimizationData),
       constraints: constraints || {
         min_border_distance: 50,
@@ -57,7 +85,23 @@ export async function POST(request: NextRequest) {
     // Chiama microservizio per analisi supporti rialzati
     const result = await OptimizationService.analyzeElevatedTools(optimizationData);
 
-    return NextResponse.json(result);
+    // Aggiungi warning se ci sono parti escluse
+    const response = {
+      ...result,
+      warnings: excludedOdls.length > 0 ? {
+        excluded_odls_count: excludedOdls.length,
+        missing_configurations: excludedOdls.map(odl => ({
+          odlId: odl.id,
+          odlNumber: odl.odlNumber,
+          partNumber: odl.part.partNumber,
+          partId: odl.part.id,
+          reason: 'Configurazione autoclave mancante'
+        })),
+        message: `${excludedOdls.length} ODL esclusi per configurazione autoclave mancante`
+      } : null
+    };
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Errore analisi supporti rialzati:', error);
