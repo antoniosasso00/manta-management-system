@@ -38,7 +38,7 @@ import {
   Architecture,
 } from '@mui/icons-material';
 import { useState } from 'react';
-import { enqueueSnackbar } from 'notistack';
+import { useSnackbar } from 'notistack';
 import { BatchLayoutViewer } from './BatchLayoutViewer';
 import type { OptimizationResult, BatchLayout } from '@/services/optimization-service';
 
@@ -53,6 +53,7 @@ export function OptimizationResultsStep({
   confirmedBatches,
   setConfirmedBatches,
 }: OptimizationResultsStepProps) {
+  const { enqueueSnackbar } = useSnackbar();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState<BatchLayout | null>(null);
 

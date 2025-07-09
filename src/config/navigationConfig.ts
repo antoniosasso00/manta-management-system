@@ -28,6 +28,28 @@ import {
   AutoMode,
   GridOn,
   Palette,
+  // Nuove icone per maggiore specificità
+  Speed,
+  Insights,
+  MonitorHeart,
+  PrecisionManufacturing,
+  QueryStats,
+  Timeline,
+  AccessTime,
+  ViewList,
+  Sync,
+  AdminPanelSettings as AdminSettings,
+  TrendingUp,
+  Memory,
+  Grain,
+  Water,
+  Build as AssemblyIcon,
+  ColorLens,
+  CheckCircle,
+  SettingsApplications,
+  Waves,
+  Storage,
+  DisplaySettings,
 } from '@mui/icons-material'
 
 export interface NavigationItem {
@@ -60,7 +82,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-overview',
           label: 'Overview Produzione',
-          icon: Analytics,
+          icon: Speed,
           href: '/production',
         },
         {
@@ -105,13 +127,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'cleanroom-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: MonitorHeart,
               href: '/production/cleanroom',
             },
             {
               id: 'cleanroom-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: SettingsApplications,
               href: '/production/cleanroom/part-extension',
             },
           ],
@@ -149,7 +171,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'autoclavi-management',
               label: 'Gestione Autoclavi',
-              icon: Settings,
+              icon: DisplaySettings,
               href: '/admin/departments/autoclavi/autoclaves',
             },
             {
@@ -161,7 +183,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'autoclavi-part-config',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Memory,
               href: '/admin/departments/autoclavi/part-config',
             },
           ],
@@ -169,19 +191,19 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-controllo-numerico',
           label: 'Controllo Numerico',
-          icon: Tune,
+          icon: PrecisionManufacturing,
           href: '/production/controllo-numerico',
           children: [
             {
               id: 'cnc-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: TrendingUp,
               href: '/production/controllo-numerico',
             },
             {
               id: 'cnc-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Storage,
               href: '/production/controllo-numerico/part-extension',
             },
           ],
@@ -195,13 +217,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'ndi-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: Insights,
               href: '/production/ndi',
             },
             {
               id: 'ndi-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Grain,
               href: '/production/ndi/part-extension',
             },
           ],
@@ -209,19 +231,19 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-montaggio',
           label: 'Montaggio',
-          icon: HomeRepairService,
+          icon: AssemblyIcon,
           href: '/production/montaggio',
           children: [
             {
               id: 'montaggio-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: QueryStats,
               href: '/production/montaggio',
             },
             {
               id: 'montaggio-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: ViewList,
               href: '/production/montaggio/part-extension',
             },
           ],
@@ -229,19 +251,19 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-verniciatura',
           label: 'Verniciatura',
-          icon: Brush,
+          icon: ColorLens,
           href: '/production/verniciatura',
           children: [
             {
               id: 'verniciatura-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: Water,
               href: '/production/verniciatura',
             },
             {
               id: 'verniciatura-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Palette,
               href: '/production/verniciatura/part-extension',
             },
           ],
@@ -249,7 +271,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-controllo-qualita',
           label: 'Controllo Qualità',
-          icon: VerifiedUser,
+          icon: CheckCircle,
           href: '/production/controllo-qualita',
         },
         // Reparti separati
@@ -269,13 +291,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'honeycomb-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: Waves,
               href: '/production/honeycomb',
             },
             {
               id: 'honeycomb-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Hexagon,
               href: '/production/honeycomb/part-extension',
             },
           ],
@@ -289,13 +311,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'motori-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: Engineering,
               href: '/production/motori',
             },
             {
               id: 'motori-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: DirectionsCar,
               href: '/production/motori/part-extension',
             },
           ],
@@ -338,7 +360,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
     {
       id: 'time-analysis',
       label: 'Analisi Tempi',
-      icon: Schedule,
+      icon: AccessTime,
       href: '/time-analysis',
     },
     {
@@ -393,7 +415,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'admin-departments-cnc',
               label: 'Config Controllo Numerico',
-              icon: Tune,
+              icon: PrecisionManufacturing,
               href: '/admin/departments/controllo-numerico',
             },
           ],
@@ -407,13 +429,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'admin-sync',
           label: 'Sincronizzazione Gamma',
-          icon: Engineering,
+          icon: Sync,
           href: '/admin/sync',
         },
         {
           id: 'admin-settings',
           label: 'Impostazioni Sistema',
-          icon: Settings,
+          icon: AdminSettings,
           href: '/admin/settings',
         },
       ],
@@ -437,7 +459,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-overview',
           label: 'Overview Produzione',
-          icon: Analytics,
+          icon: Speed,
           href: '/production',
         },
         {
@@ -476,13 +498,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'cleanroom-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: MonitorHeart,
               href: '/production/cleanroom',
             },
             {
               id: 'cleanroom-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: SettingsApplications,
               href: '/production/cleanroom/part-extension',
             },
           ],
@@ -520,7 +542,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'autoclavi-management',
               label: 'Gestione Autoclavi',
-              icon: Settings,
+              icon: DisplaySettings,
               href: '/admin/departments/autoclavi/autoclaves',
             },
             {
@@ -532,7 +554,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'autoclavi-part-config',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Memory,
               href: '/admin/departments/autoclavi/part-config',
             },
           ],
@@ -540,19 +562,19 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-controllo-numerico',
           label: 'Controllo Numerico',
-          icon: Tune,
+          icon: PrecisionManufacturing,
           href: '/production/controllo-numerico',
           children: [
             {
               id: 'cnc-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: TrendingUp,
               href: '/production/controllo-numerico',
             },
             {
               id: 'cnc-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Storage,
               href: '/production/controllo-numerico/part-extension',
             },
           ],
@@ -566,13 +588,13 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
             {
               id: 'ndi-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: Insights,
               href: '/production/ndi',
             },
             {
               id: 'ndi-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Grain,
               href: '/production/ndi/part-extension',
             },
           ],
@@ -580,19 +602,19 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-montaggio',
           label: 'Montaggio',
-          icon: HomeRepairService,
+          icon: AssemblyIcon,
           href: '/production/montaggio',
           children: [
             {
               id: 'montaggio-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: QueryStats,
               href: '/production/montaggio',
             },
             {
               id: 'montaggio-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: ViewList,
               href: '/production/montaggio/part-extension',
             },
           ],
@@ -600,19 +622,19 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-verniciatura',
           label: 'Verniciatura',
-          icon: Brush,
+          icon: ColorLens,
           href: '/production/verniciatura',
           children: [
             {
               id: 'verniciatura-dashboard',
               label: 'Dashboard',
-              icon: Analytics,
+              icon: Water,
               href: '/production/verniciatura',
             },
             {
               id: 'verniciatura-part-extensions',
               label: 'Configurazione Parti',
-              icon: Tune,
+              icon: Palette,
               href: '/production/verniciatura/part-extension',
             },
           ],
@@ -620,7 +642,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
         {
           id: 'production-controllo-qualita',
           label: 'Controllo Qualità',
-          icon: VerifiedUser,
+          icon: CheckCircle,
           href: '/production/controllo-qualita',
         },
       ],
@@ -655,7 +677,7 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
     {
       id: 'time-analysis',
       label: 'Analisi Tempi',
-      icon: Schedule,
+      icon: AccessTime,
       href: '/time-analysis',
     },
   ],

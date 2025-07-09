@@ -94,6 +94,18 @@ async function main() {
   } catch (e) { console.log('user table not found') }
   
   try {
+    await prisma.partAutoclave.deleteMany()
+  } catch (e) { console.log('partAutoclave table not found') }
+  
+  try {
+    await prisma.partCleanroom.deleteMany()
+  } catch (e) { console.log('partCleanroom table not found') }
+  
+  try {
+    await prisma.partNDI.deleteMany()
+  } catch (e) { console.log('partNDI table not found') }
+  
+  try {
     await prisma.department.deleteMany()
   } catch (e) { console.log('department table not found') }
   
@@ -715,6 +727,183 @@ async function main() {
         material: 'Alluminio 6061',
       },
     }),
+    
+    // === TOOLS AGGIUNTIVI ===
+    // Stampi per Embraer
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T009-MOLD-EMB-WING',
+        description: 'Stampo ala Embraer',
+        base: 2000,
+        height: 250,
+        weight: 120,
+        material: 'Alluminio 7075',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T010-MOLD-EMB-FUSE',
+        description: 'Stampo fusoliera Embraer',
+        base: 2800,
+        height: 350,
+        weight: 180,
+        material: 'Acciaio Inox',
+      },
+    }),
+    
+    // Stampi per CRJ
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T011-MOLD-CRJ-STAB',
+        description: 'Stampo stabilizzatore CRJ',
+        base: 1800,
+        height: 200,
+        weight: 90,
+        material: 'Alluminio 6061',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T012-MOLD-CRJ-VSTAB',
+        description: 'Stampo deriva CRJ',
+        base: 1200,
+        height: 180,
+        weight: 65,
+        material: 'Alluminio 7075',
+      },
+    }),
+    
+    // Stampi per A350
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T013-MOLD-A350-WINGBOX',
+        description: 'Stampo cassone alare A350',
+        base: 4500,
+        height: 600,
+        weight: 500,
+        material: 'Acciaio Temprato',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T014-MOLD-A350-SHARKLET',
+        description: 'Stampo sharklet A350',
+        base: 1000,
+        height: 120,
+        weight: 40,
+        material: 'Alluminio 6061',
+      },
+    }),
+    
+    // Tools militari
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T015-MOLD-EFA-CANARD',
+        description: 'Stampo canard Eurofighter',
+        base: 1500,
+        height: 180,
+        weight: 75,
+        material: 'Fibra di Carbonio',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T016-MOLD-F35-INTAKE',
+        description: 'Stampo presa aria F-35',
+        base: 2000,
+        height: 300,
+        weight: 140,
+        material: 'Acciaio Inox',
+      },
+    }),
+    
+    // Tools elicotteri
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T017-MOLD-AW139-BLADE',
+        description: 'Stampo pala AW139',
+        base: 800,
+        height: 80,
+        weight: 25,
+        material: 'Alluminio 7075',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T018-MOLD-NH90-TAIL',
+        description: 'Stampo coda NH90',
+        base: 1800,
+        height: 220,
+        weight: 95,
+        material: 'Fibra di Carbonio',
+      },
+    }),
+    
+    // Tools UAV
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T019-MOLD-PREDATOR-WING',
+        description: 'Stampo ala Predator',
+        base: 1200,
+        height: 100,
+        weight: 35,
+        material: 'Alluminio 6061',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T020-MOLD-GLOBAL-HAWK',
+        description: 'Stampo muso Global Hawk',
+        base: 800,
+        height: 150,
+        weight: 45,
+        material: 'Fibra di Carbonio',
+      },
+    }),
+    
+    // Tools spaziali
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T021-MOLD-VEGA-FAIRING',
+        description: 'Stampo carenatura Vega',
+        base: 3000,
+        height: 400,
+        weight: 250,
+        material: 'Acciaio Temprato',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T022-MOLD-ARIANE-TANK',
+        description: 'Stampo serbatoio Ariane',
+        base: 3500,
+        height: 500,
+        weight: 320,
+        material: 'Acciaio Inox',
+      },
+    }),
+    
+    // Tools F1
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T023-MOLD-F1-FRONT-WING',
+        description: 'Stampo ala anteriore F1',
+        base: 600,
+        height: 40,
+        weight: 15,
+        material: 'Alluminio 7075',
+      },
+    }),
+    prisma.tool.create({
+      data: {
+        toolPartNumber: 'T024-MOLD-F1-FLOOR',
+        description: 'Stampo fondo F1',
+        base: 1200,
+        height: 60,
+        weight: 30,
+        material: 'Fibra di Carbonio',
+      },
+    }),
   ])
 
   // 6. PARTS - Dataset esteso con varietà aeronautica
@@ -909,6 +1098,167 @@ async function main() {
         defaultVacuumLines: 1,
       },
     }),
+    
+    // === PARTI AGGIUNTIVE PER AMPLIAMENTO ===
+    // Embraer E-Jets
+    prisma.part.create({
+      data: {
+        partNumber: 'EMB190-WING-001',
+        description: 'Pannello alare Embraer E190',
+        gammaId: 'GM016',
+        defaultCuringCycleId: curingCycles[0].id,
+        defaultVacuumLines: 2,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'EMB170-FUSE-002',
+        description: 'Sezione fusoliera Embraer E170',
+        gammaId: 'GM017',
+        defaultCuringCycleId: curingCycles[1].id,
+        defaultVacuumLines: 3,
+      },
+    }),
+    
+    // Bombardier CRJ
+    prisma.part.create({
+      data: {
+        partNumber: 'CRJ900-HSTAB-001',
+        description: 'Stabilizzatore CRJ900',
+        gammaId: 'GM018',
+        defaultCuringCycleId: curingCycles[2].id,
+        defaultVacuumLines: 2,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'CRJ700-VSTAB-001',
+        description: 'Deriva CRJ700',
+        gammaId: 'GM019',
+        defaultCuringCycleId: curingCycles[1].id,
+        defaultVacuumLines: 1,
+      },
+    }),
+    
+    // Airbus A350
+    prisma.part.create({
+      data: {
+        partNumber: 'A350-WINGBOX-001',
+        description: 'Cassone alare A350',
+        gammaId: 'GM020',
+        defaultCuringCycleId: curingCycles[3].id,
+        defaultVacuumLines: 6,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'A350-SHARKLET-001',
+        description: 'Sharklet A350',
+        gammaId: 'GM021',
+        defaultCuringCycleId: curingCycles[0].id,
+        defaultVacuumLines: 2,
+      },
+    }),
+    
+    // Parti militari
+    prisma.part.create({
+      data: {
+        partNumber: 'EFA-CANARD-001',
+        description: 'Canard Eurofighter',
+        gammaId: 'GM022',
+        defaultCuringCycleId: curingCycles[2].id,
+        defaultVacuumLines: 2,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'F35-INTAKE-001',
+        description: 'Presa d\'aria F-35',
+        gammaId: 'GM023',
+        defaultCuringCycleId: curingCycles[3].id,
+        defaultVacuumLines: 4,
+      },
+    }),
+    
+    // Parti elicotteri
+    prisma.part.create({
+      data: {
+        partNumber: 'AW139-BLADE-001',
+        description: 'Pala rotore AW139',
+        gammaId: 'GM024',
+        defaultCuringCycleId: curingCycles[1].id,
+        defaultVacuumLines: 1,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'NH90-TAIL-001',
+        description: 'Coda NH90',
+        gammaId: 'GM025',
+        defaultCuringCycleId: curingCycles[0].id,
+        defaultVacuumLines: 3,
+      },
+    }),
+    
+    // Parti UAV/Droni
+    prisma.part.create({
+      data: {
+        partNumber: 'PREDATOR-WING-001',
+        description: 'Ala drone Predator',
+        gammaId: 'GM026',
+        defaultCuringCycleId: curingCycles[4].id,
+        defaultVacuumLines: 2,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'GLOBAL-HAWK-NOSE',
+        description: 'Muso Global Hawk',
+        gammaId: 'GM027',
+        defaultCuringCycleId: curingCycles[1].id,
+        defaultVacuumLines: 1,
+      },
+    }),
+    
+    // Parti spaziali
+    prisma.part.create({
+      data: {
+        partNumber: 'VEGA-FAIRING-001',
+        description: 'Carenatura Vega',
+        gammaId: 'GM028',
+        defaultCuringCycleId: curingCycles[2].id,
+        defaultVacuumLines: 4,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'ARIANE-TANK-001',
+        description: 'Serbatoio Ariane',
+        gammaId: 'GM029',
+        defaultCuringCycleId: curingCycles[3].id,
+        defaultVacuumLines: 6,
+      },
+    }),
+    
+    // Parti automotive F1
+    prisma.part.create({
+      data: {
+        partNumber: 'F1-FRONT-WING-001',
+        description: 'Ala anteriore F1',
+        gammaId: 'GM030',
+        defaultCuringCycleId: curingCycles[4].id,
+        defaultVacuumLines: 1,
+      },
+    }),
+    prisma.part.create({
+      data: {
+        partNumber: 'F1-FLOOR-001',
+        description: 'Fondo F1',
+        gammaId: 'GM031',
+        defaultCuringCycleId: curingCycles[1].id,
+        defaultVacuumLines: 2,
+      },
+    }),
   ])
 
   // 7. PART-TOOL ASSOCIATIONS - Esteso
@@ -934,6 +1284,32 @@ async function main() {
     prisma.partTool.create({ data: { partId: parts[12].id, toolId: tools[6].id } }),
     prisma.partTool.create({ data: { partId: parts[13].id, toolId: tools[4].id } }),
     prisma.partTool.create({ data: { partId: parts[14].id, toolId: tools[7].id } }),
+    
+    // === NUOVE ASSOCIAZIONI ===
+    // Embraer parts
+    prisma.partTool.create({ data: { partId: parts[15].id, toolId: tools[8].id } }),
+    prisma.partTool.create({ data: { partId: parts[16].id, toolId: tools[9].id } }),
+    // CRJ parts
+    prisma.partTool.create({ data: { partId: parts[17].id, toolId: tools[10].id } }),
+    prisma.partTool.create({ data: { partId: parts[18].id, toolId: tools[11].id } }),
+    // A350 parts
+    prisma.partTool.create({ data: { partId: parts[19].id, toolId: tools[12].id } }),
+    prisma.partTool.create({ data: { partId: parts[20].id, toolId: tools[13].id } }),
+    // Military parts
+    prisma.partTool.create({ data: { partId: parts[21].id, toolId: tools[14].id } }),
+    prisma.partTool.create({ data: { partId: parts[22].id, toolId: tools[15].id } }),
+    // Helicopter parts
+    prisma.partTool.create({ data: { partId: parts[23].id, toolId: tools[16].id } }),
+    prisma.partTool.create({ data: { partId: parts[24].id, toolId: tools[17].id } }),
+    // UAV parts
+    prisma.partTool.create({ data: { partId: parts[25].id, toolId: tools[18].id } }),
+    prisma.partTool.create({ data: { partId: parts[26].id, toolId: tools[19].id } }),
+    // Space parts
+    prisma.partTool.create({ data: { partId: parts[27].id, toolId: tools[20].id } }),
+    prisma.partTool.create({ data: { partId: parts[28].id, toolId: tools[21].id } }),
+    // F1 parts
+    prisma.partTool.create({ data: { partId: parts[29].id, toolId: tools[22].id } }),
+    prisma.partTool.create({ data: { partId: parts[30].id, toolId: tools[23].id } }),
   ])
 
   // 8. AUTOCLAVES - Esteso (aggiornato per nuovo reparto AUTOCLAVE)
@@ -1289,6 +1665,474 @@ async function main() {
 
   // Add remaining ODLs to the main array
   odls.push(...remainingOdls)
+  
+  // === CREARE PIU' ODL CON NUOVE PARTI ===
+  console.log('📋 Creazione ODL aggiuntivi...')
+  const additionalOdls = await Promise.all([
+    // Embraer ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-030',
+        partId: parts[15].id, // Embraer wing
+        quantity: 2,
+        priority: 'HIGH' as const,
+        status: ODLStatus.CREATED,
+        qrCode: 'QR-ODL-24-030',
+        gammaId: 'GM-ODL-030',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-031',
+        partId: parts[16].id, // Embraer fuselage
+        quantity: 1,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.IN_CLEANROOM,
+        qrCode: 'QR-ODL-24-031',
+        gammaId: 'GM-ODL-031',
+      },
+    }),
+    
+    // CRJ ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-032',
+        partId: parts[17].id, // CRJ stabilizer
+        quantity: 1,
+        priority: 'URGENT' as const,
+        status: ODLStatus.CLEANROOM_COMPLETED,
+        qrCode: 'QR-ODL-24-032',
+        gammaId: 'GM-ODL-032',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-033',
+        partId: parts[18].id, // CRJ vertical stabilizer
+        quantity: 1,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.IN_AUTOCLAVE,
+        qrCode: 'QR-ODL-24-033',
+        gammaId: 'GM-ODL-033',
+      },
+    }),
+    
+    // A350 ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-034',
+        partId: parts[19].id, // A350 wingbox
+        quantity: 1,
+        priority: 'HIGH' as const,
+        status: ODLStatus.AUTOCLAVE_COMPLETED,
+        qrCode: 'QR-ODL-24-034',
+        gammaId: 'GM-ODL-034',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-035',
+        partId: parts[20].id, // A350 sharklet
+        quantity: 4,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.IN_NDI,
+        qrCode: 'QR-ODL-24-035',
+        gammaId: 'GM-ODL-035',
+      },
+    }),
+    
+    // Military ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-036',
+        partId: parts[21].id, // Eurofighter canard
+        quantity: 2,
+        priority: 'URGENT' as const,
+        status: ODLStatus.COMPLETED,
+        qrCode: 'QR-ODL-24-036',
+        gammaId: 'GM-ODL-036',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-037',
+        partId: parts[22].id, // F-35 intake
+        quantity: 1,
+        priority: 'URGENT' as const,
+        status: ODLStatus.ON_HOLD,
+        qrCode: 'QR-ODL-24-037',
+        gammaId: 'GM-ODL-037',
+      },
+    }),
+    
+    // Helicopter ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-038',
+        partId: parts[23].id, // AW139 blade
+        quantity: 8,
+        priority: 'HIGH' as const,
+        status: ODLStatus.CREATED,
+        qrCode: 'QR-ODL-24-038',
+        gammaId: 'GM-ODL-038',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-039',
+        partId: parts[24].id, // NH90 tail
+        quantity: 1,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.IN_CLEANROOM,
+        qrCode: 'QR-ODL-24-039',
+        gammaId: 'GM-ODL-039',
+      },
+    }),
+    
+    // UAV ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-040',
+        partId: parts[25].id, // Predator wing
+        quantity: 2,
+        priority: 'NORMAL' as const,
+        status: ODLStatus.CLEANROOM_COMPLETED,
+        qrCode: 'QR-ODL-24-040',
+        gammaId: 'GM-ODL-040',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-041',
+        partId: parts[26].id, // Global Hawk nose
+        quantity: 1,
+        priority: 'LOW' as const,
+        status: ODLStatus.IN_AUTOCLAVE,
+        qrCode: 'QR-ODL-24-041',
+        gammaId: 'GM-ODL-041',
+      },
+    }),
+    
+    // Space ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-042',
+        partId: parts[27].id, // Vega fairing
+        quantity: 1,
+        priority: 'URGENT' as const,
+        status: ODLStatus.AUTOCLAVE_COMPLETED,
+        qrCode: 'QR-ODL-24-042',
+        gammaId: 'GM-ODL-042',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-043',
+        partId: parts[28].id, // Ariane tank
+        quantity: 1,
+        priority: 'HIGH' as const,
+        status: ODLStatus.IN_NDI,
+        qrCode: 'QR-ODL-24-043',
+        gammaId: 'GM-ODL-043',
+      },
+    }),
+    
+    // F1 ODLs
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-044',
+        partId: parts[29].id, // F1 front wing
+        quantity: 6,
+        priority: 'URGENT' as const,
+        status: ODLStatus.COMPLETED,
+        qrCode: 'QR-ODL-24-044',
+        gammaId: 'GM-ODL-044',
+      },
+    }),
+    prisma.oDL.create({
+      data: {
+        odlNumber: 'ODL-24-045',
+        partId: parts[30].id, // F1 floor
+        quantity: 2,
+        priority: 'HIGH' as const,
+        status: ODLStatus.IN_CONTROLLO_QUALITA,
+        qrCode: 'QR-ODL-24-045',
+        gammaId: 'GM-ODL-045',
+      },
+    }),
+  ])
+  
+  odls.push(...additionalOdls)
+
+  // 8A. PART CONFIGURATIONS - Estensioni tabelle
+  console.log('⚙️ Creazione configurazioni parte...')
+  
+  // PartAutoclave configurations
+  const autoclaveConfigs = await Promise.all([
+    // A320 parts
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[0].id, // A320 ala superiore
+        curingCycleId: curingCycles[0].id,
+        vacuumLines: 2,
+        setupTime: 30,
+      },
+    }),
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[1].id, // A320 ala inferiore
+        curingCycleId: curingCycles[0].id,
+        vacuumLines: 2,
+        setupTime: 25,
+      },
+    }),
+    
+    // B777 parts
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[4].id, // B777 longherone
+        curingCycleId: curingCycles[2].id,
+        vacuumLines: 3,
+        setupTime: 45,
+      },
+    }),
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[5].id, // B777 fusoliera
+        curingCycleId: curingCycles[2].id,
+        vacuumLines: 4,
+        setupTime: 60,
+      },
+    }),
+    
+    // A350 parts
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[19].id, // A350 wingbox
+        curingCycleId: curingCycles[3].id,
+        vacuumLines: 6,
+        setupTime: 90,
+        notes: 'Configurazione prepreg A350',
+      },
+    }),
+    
+    // Military parts
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[21].id, // Eurofighter canard
+        curingCycleId: curingCycles[2].id,
+        vacuumLines: 2,
+        setupTime: 40,
+      },
+    }),
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[22].id, // F-35 intake
+        curingCycleId: curingCycles[3].id,
+        vacuumLines: 4,
+        setupTime: 75,
+        notes: 'Configurazione stealth - materiali speciali',
+      },
+    }),
+    
+    // Space parts
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[27].id, // Vega fairing
+        curingCycleId: curingCycles[2].id,
+        vacuumLines: 4,
+        setupTime: 120,
+        notes: 'Configurazione spaziale - resistenza termica',
+      },
+    }),
+    prisma.partAutoclave.create({
+      data: {
+        partId: parts[28].id, // Ariane tank
+        curingCycleId: curingCycles[3].id,
+        vacuumLines: 6,
+        setupTime: 180,
+        notes: 'Configurazione criogenica - alta pressione',
+      },
+    }),
+  ])
+
+  // PartCleanroom configurations
+  const cleanroomConfigs = await Promise.all([
+    // A320 parts
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[0].id, // A320 ala superiore
+        layupSequence: '[0/45/90/-45]s',
+        resinType: 'RTM6',
+        fiberOrientation: ['0°', '45°', '90°', '-45°'],
+        cycleTime: 480,
+      },
+    }),
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[1].id, // A320 ala inferiore
+        layupSequence: '[0/45/90/-45]s',
+        resinType: 'RTM6',
+        fiberOrientation: ['0°', '45°', '90°', '-45°'],
+        cycleTime: 420,
+      },
+    }),
+    
+    // B777 parts
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[4].id, // B777 longherone
+        layupSequence: '[0/90/0/90]s',
+        resinType: 'CYCOM977-2',
+        fiberOrientation: ['0°', '90°', '0°', '90°'],
+        cycleTime: 600,
+      },
+    }),
+    
+    // Military parts
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[21].id, // Eurofighter canard
+        layupSequence: '[0/45/90/-45/0]s',
+        resinType: 'CYCOM977-3',
+        fiberOrientation: ['0°', '45°', '90°', '-45°', '0°'],
+        cycleTime: 360,
+      },
+    }),
+    
+    // F1 parts
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[29].id, // F1 front wing
+        layupSequence: '[0/45/-45/0]s',
+        resinType: 'PRIME20LV',
+        fiberOrientation: ['0°', '45°', '-45°', '0°'],
+        cycleTime: 120,
+      },
+    }),
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[30].id, // F1 floor
+        layupSequence: '[0/90/0/90/0]s',
+        resinType: 'PRIME20LV',
+        fiberOrientation: ['0°', '90°', '0°', '90°', '0°'],
+        cycleTime: 180,
+      },
+    }),
+    
+    // UAV parts
+    prisma.partCleanroom.create({
+      data: {
+        partId: parts[25].id, // Predator wing
+        layupSequence: '[0/45/-45/90]s',
+        resinType: 'CYCOM5250-4',
+        fiberOrientation: ['0°', '45°', '-45°', '90°'],
+        cycleTime: 300,
+      },
+    }),
+  ])
+
+  // PartNDI configurations
+  const ndiConfigs = await Promise.all([
+    // A320 parts
+    prisma.partNDI.create({
+      data: {
+        partId: parts[0].id, // A320 ala superiore
+        inspectionMethod: ['ULTRASUONI'],
+        acceptanceCriteria: 'AS9100 Rev D',
+        samplingPercentage: 100,
+        notes: 'Controllo completo per componenti critici',
+      },
+    }),
+    prisma.partNDI.create({
+      data: {
+        partId: parts[1].id, // A320 ala inferiore
+        inspectionMethod: ['ULTRASUONI'],
+        acceptanceCriteria: 'AS9100 Rev D',
+        samplingPercentage: 100,
+        notes: 'Controllo completo per componenti critici',
+      },
+    }),
+    
+    // B777 parts
+    prisma.partNDI.create({
+      data: {
+        partId: parts[4].id, // B777 longherone
+        inspectionMethod: ['ULTRASUONI'],
+        acceptanceCriteria: 'Boeing BSS7260',
+        samplingPercentage: 100,
+        notes: 'Controllo Boeing standard',
+      },
+    }),
+    prisma.partNDI.create({
+      data: {
+        partId: parts[5].id, // B777 fusoliera
+        inspectionMethod: ['RAGGI_X'],
+        acceptanceCriteria: 'Boeing BSS7260',
+        samplingPercentage: 100,
+        notes: 'Controllo radiografico fusoliera',
+      },
+    }),
+    
+    // Military parts
+    prisma.partNDI.create({
+      data: {
+        partId: parts[21].id, // Eurofighter canard
+        inspectionMethod: ['ULTRASUONI'],
+        acceptanceCriteria: 'MIL-HDBK-17',
+        samplingPercentage: 100,
+      },
+    }),
+    prisma.partNDI.create({
+      data: {
+        partId: parts[22].id, // F-35 intake
+        inspectionMethod: 'TERMOGRAFIA',
+        acceptanceCriteria: 'MIL-STD-1530',
+        samplingPercentage: 100,
+        notes: 'Controllo termografico per stealth',
+      },
+    }),
+    
+    // Space parts
+    prisma.partNDI.create({
+      data: {
+        partId: parts[27].id, // Vega fairing
+        inspectionMethod: ['ULTRASUONI'],
+        acceptanceCriteria: 'ESA-PSS-01-702',
+        samplingPercentage: 100,
+        notes: 'Standard spaziale ESA',
+      },
+    }),
+    prisma.partNDI.create({
+      data: {
+        partId: parts[28].id, // Ariane tank
+        inspectionMethod: ['RAGGI_X'],
+        acceptanceCriteria: 'ESA-PSS-01-702',
+        samplingPercentage: 100,
+        notes: 'Controllo criogenico - saldature',
+      },
+    }),
+    
+    // F1 parts
+    prisma.partNDI.create({
+      data: {
+        partId: parts[29].id, // F1 front wing
+        inspectionMethod: 'CORRENTI_PARASSITE',
+        acceptanceCriteria: 'FIA Technical Regulations',
+        samplingPercentage: 100,
+        notes: 'Controllo FIA - sicurezza pilota',
+      },
+    }),
+    prisma.partNDI.create({
+      data: {
+        partId: parts[30].id, // F1 floor
+        inspectionMethod: ['ULTRASUONI'],
+        acceptanceCriteria: 'FIA Technical Regulations',
+        samplingPercentage: 100,
+        notes: 'Controllo FIA - struttura monoscocca',
+      },
+    }),
+  ])
 
   // 10. AUTOCLAVE LOADS - Esteso con vari stati
   console.log('🔥 Creazione carichi autoclave...')
@@ -1908,9 +2752,23 @@ async function main() {
   console.log('\n📊 DATI CREATI:')
   console.log(`👥 Utenti: ${users.length} (${users.filter(u => u.role === 'ADMIN').length} admin, ${users.filter(u => u.role === 'SUPERVISOR').length} supervisor, ${users.filter(u => u.role === 'OPERATOR').length} operatori)`)
   console.log(`🏭 Reparti: ${departments.length}`)
-  console.log(`🔩 Parti: ${parts.length} (A320: 4, B777: 3, A330: 2, B787: 2, Speciali: 4)`)
+  console.log(`🔩 Parti: ${parts.length} (A320: 4, B777: 3, A330: 2, B787: 2, Embraer: 2, CRJ: 2, A350: 2, Militari: 2, Elicotteri: 2, UAV: 2, Spaziali: 2, F1: 2, Speciali: 4)`)
   console.log(`📋 ODL: ${odls.length} distribuiti in tutti gli stati del workflow`)
-  console.log(`🔧 Utensili: ${tools.length}`)
+  console.log(`   - ${odls.filter(o => o.status === 'CREATED').length} creati`)
+  console.log(`   - ${odls.filter(o => o.status === 'IN_CLEANROOM').length} in cleanroom`)
+  console.log(`   - ${odls.filter(o => o.status === 'CLEANROOM_COMPLETED').length} cleanroom completati`)
+  console.log(`   - ${odls.filter(o => o.status === 'IN_AUTOCLAVE').length} in autoclave`)
+  console.log(`   - ${odls.filter(o => o.status === 'AUTOCLAVE_COMPLETED').length} autoclave completati`)
+  console.log(`   - ${odls.filter(o => o.status === 'IN_NDI').length} in NDI`)
+  console.log(`   - ${odls.filter(o => o.status === 'IN_CONTROLLO_QUALITA').length} in controllo qualità`)
+  console.log(`   - ${odls.filter(o => o.status === 'COMPLETED').length} completati`)
+  console.log(`   - ${odls.filter(o => o.status === 'ON_HOLD').length} in hold`)
+  console.log(`🔧 Utensili: ${tools.length} (${tools.length - 8} nuovi stampi aggiunti)`)
+  console.log(`🔗 Associazioni Parte-Tool: ${15 + 16} associazioni create`)
+  console.log(`⚙️ Configurazioni Parti:`)
+  console.log(`   - ${autoclaveConfigs.length} configurazioni autoclave`)
+  console.log(`   - ${cleanroomConfigs.length} configurazioni cleanroom`)
+  console.log(`   - ${ndiConfigs.length} configurazioni NDI`)
   console.log(`🔥 Cicli di cura: ${curingCycles.length}`)
   console.log(`🏭 Autoclavi: ${autoclaves.length}`)
   console.log(`📦 Carichi autoclave: ${autoclaveLoads.length} (vari stati)`)
@@ -1958,9 +2816,14 @@ async function main() {
   console.log('• 5 batch autoclave in stati diversi')
   console.log('• Timeline eventi produzione realistica (ultima settimana)')
   console.log('• Logs di audit e sincronizzazione per test amministrazione')
+  console.log('• Ampia varietà di parti: civili, militari, spaziali, F1')
+  console.log('• Tools specializzati per ogni tipologia di parte')
+  console.log('• Configurazioni complete per tutti i reparti')
+  console.log('• Configurazioni PartAutoclave, PartCleanroom, PartNDI')
   
   console.log('\n🚀 Aprire http://localhost:3001 per testare!')
   console.log('💡 Usare diversi utenti per testare autorizzazioni per reparto')
+  console.log(`📈 Dataset ora include ${parts.length} parti e ${tools.length} tools per testing completo`)
 }
 
 main()

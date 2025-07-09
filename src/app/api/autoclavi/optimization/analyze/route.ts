@@ -33,6 +33,11 @@ export async function POST(request: NextRequest) {
                 include: {
                   tool: true
                 }
+              },
+              autoclaveConfig: {
+                include: {
+                  curingCycle: true
+                }
               }
             }
           }
@@ -50,20 +55,34 @@ export async function POST(request: NextRequest) {
 
     if (validOdls.length === 0) {
       return NextResponse.json({ 
-        error: 'Nessun ODL disponibile per ottimizzazione' 
+        error: `Nessun ODL disponibile per ottimizzazione. Trovati ${odls.length} ODL totali, ma nessuno con status IN_AUTOCLAVE o CLEANROOM_COMPLETED.` 
+      }, { status: 400 });
+    }
+
+    if (autoclaves.length === 0) {
+      return NextResponse.json({ 
+        error: 'Nessuna autoclave trovata' 
       }, { status: 400 });
     }
 
     // Converti per microservizio
-    const optimizationData = {
-      odls: validOdls.map(convertODLToOptimizationData),
-      autoclaves: autoclaves.map(convertAutoclaveToOptimizationData),
-      constraints: constraints || {
-        min_border_distance: 50,
-        min_tool_distance: 30,
-        allow_rotation: true
-      }
-    };
+    let optimizationData;
+    try {
+      optimizationData = {
+        odls: validOdls.map(convertODLToOptimizationData),
+        autoclaves: autoclaves.map(convertAutoclaveToOptimizationData),
+        constraints: constraints || {
+          min_border_distance: 50,
+          min_tool_distance: 30,
+          allow_rotation: true
+        }
+      };
+    } catch (conversionError) {
+      console.error('Errore conversione dati:', conversionError);
+      return NextResponse.json({ 
+        error: `Errore conversione dati: ${conversionError instanceof Error ? conversionError.message : 'Errore sconosciuto'}` 
+      }, { status: 400 });
+    }
 
     // Chiama microservizio
     const result = await OptimizationService.analyzeCycles(optimizationData);

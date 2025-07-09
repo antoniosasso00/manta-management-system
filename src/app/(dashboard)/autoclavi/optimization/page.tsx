@@ -47,7 +47,12 @@ export default async function OptimizationPage() {
                 tool: true
               }
             },
-            defaultCuringCycle: true
+            defaultCuringCycle: true,
+            autoclaveConfig: {
+              include: {
+                curingCycle: true
+              }
+            }
           }
         },
       }
@@ -55,6 +60,12 @@ export default async function OptimizationPage() {
 
     // Recupera autoclavi attive
     const availableAutoclaves = await AutoclaveService.findAllActive();
+    
+    // Verifica configurazioni autoclave per ODLs
+    const odlsWithoutConfig = availableODLs.filter(odl => !odl.part.autoclaveConfig);
+    if (odlsWithoutConfig.length > 0) {
+      console.warn('ODLs senza configurazione autoclave:', odlsWithoutConfig.map(odl => odl.part.partNumber));
+    }
 
     // Verifica servizio di ottimizzazione
     let optimizationServiceAvailable = false;

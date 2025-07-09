@@ -131,6 +131,8 @@ export function ODLSelectionStep({
                       />
                     </ListItemIcon>
                     <ListItemText
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <QrCode2 fontSize="small" />
@@ -145,11 +147,9 @@ export function ODLSelectionStep({
                         </Box>
                       }
                       secondary={
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" component="span">
-                            {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
-                          </Typography>
-                        </Box>
+                        <Typography variant="caption" color="text.secondary" component="span">
+                          {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
+                        </Typography>
                       }
                     />
                   </ListItem>
@@ -199,6 +199,8 @@ export function ODLSelectionStep({
                   />
                 </ListItemIcon>
                 <ListItemText
+                  primaryTypographyProps={{ component: 'div' }}
+                  secondaryTypographyProps={{ component: 'div' }}
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LocalFireDepartment fontSize="small" color="primary" />
@@ -208,13 +210,12 @@ export function ODLSelectionStep({
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ mt: 0.5 }}>
+                    <Box sx={{ mt: 0.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip
                         icon={<Straighten fontSize="small" />}
                         label={`${autoclave.maxWidth} x ${autoclave.maxLength} mm`}
                         size="small"
                         variant="outlined"
-                        sx={{ mr: 1 }}
                       />
                       <Chip
                         label={`${autoclave.vacuumLines} linee`}

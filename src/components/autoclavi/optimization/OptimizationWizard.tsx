@@ -34,7 +34,7 @@ import {
   Visibility,
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import { enqueueSnackbar } from 'notistack';
+import { useSnackbar } from 'notistack';
 import { ODLSelectionStep } from './ODLSelectionStep';
 import { CycleAnalysisStep } from './CycleAnalysisStep';
 import { ElevatedToolsStep } from './ElevatedToolsStep';
@@ -56,6 +56,7 @@ export function OptimizationWizard({
   availableAutoclaves 
 }: OptimizationWizardProps) {
   const router = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   
@@ -113,6 +114,14 @@ export function OptimizationWizard({
   const analyzeCycles = async () => {
     setLoading(true);
     try {
+      if (selectedODLs.length === 0) {
+        throw new Error('Seleziona almeno un ODL per procedere');
+      }
+      
+      if (selectedAutoclaves.length === 0) {
+        throw new Error('Seleziona almeno un autoclave per procedere');
+      }
+
       const response = await fetch('/api/autoclavi/optimization/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,14 +132,19 @@ export function OptimizationWizard({
         }),
       });
 
-      if (!response.ok) throw new Error('Errore analisi cicli');
-
       const data = await response.json();
-      setCycleGroups(data.cycle_groups);
-      setSelectedCycles(data.recommendations);
+
+      if (!response.ok) {
+        const errorMessage = data.error || `Errore ${response.status}: ${response.statusText}`;
+        throw new Error(errorMessage);
+      }
+
+      setCycleGroups(data.cycle_groups || []);
+      setSelectedCycles(data.recommendations || []);
     } catch (error) {
-      enqueueSnackbar('Errore durante l\'analisi dei cicli', { variant: 'error' });
-      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'Errore durante l\'analisi dei cicli';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+      console.error('Errore analisi cicli:', error);
     } finally {
       setLoading(false);
     }
