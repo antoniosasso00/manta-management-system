@@ -20,12 +20,16 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import {
   QrCode2,
   Engineering,
   Straighten,
   LocalFireDepartment,
+  Warning,
+  Settings,
 } from '@mui/icons-material';
 import type { OptimizationConstraints } from '@/services/optimization-service';
 
@@ -50,6 +54,15 @@ export function ODLSelectionStep({
   constraints,
   setConstraints,
 }: ODLSelectionStepProps) {
+  
+  // Verifica se un ODL ha configurazione autoclave completa
+  const hasAutoclaveConfig = (odl: any): boolean => {
+    return odl.part?.autoclaveConfig != null;
+  };
+
+  // Filtra ODL selezionabili (con configurazione autoclave)
+  const selectableODLs = availableODLs.filter(hasAutoclaveConfig);
+
   const handleODLToggle = (odlId: string) => {
     setSelectedODLs(
       selectedODLs.includes(odlId)
@@ -67,10 +80,10 @@ export function ODLSelectionStep({
   };
 
   const handleSelectAllODLs = () => {
-    if (selectedODLs.length === availableODLs.length) {
+    if (selectedODLs.length === selectableODLs.length) {
       setSelectedODLs([]);
     } else {
-      setSelectedODLs(availableODLs.map(odl => odl.id));
+      setSelectedODLs(selectableODLs.map(odl => odl.id));
     }
   };
 
@@ -102,15 +115,16 @@ export function ODLSelectionStep({
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={selectedODLs.length === availableODLs.length}
+                  checked={selectedODLs.length === selectableODLs.length && selectableODLs.length > 0}
                   indeterminate={
                     selectedODLs.length > 0 && 
-                    selectedODLs.length < availableODLs.length
+                    selectedODLs.length < selectableODLs.length
                   }
                   onChange={handleSelectAllODLs}
+                  disabled={selectableODLs.length === 0}
                 />
               }
-              label="Seleziona tutti"
+              label={`Seleziona tutti (${selectableODLs.length} configurati)`}
             />
           </Box>
 
@@ -121,39 +135,88 @@ export function ODLSelectionStep({
               </Typography>
               
               <List dense>
-                {(odls as any[]).map((odl, index) => (
-                  <ListItem key={`${cycle}-${odl.id}-${index}`} disablePadding>
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        checked={selectedODLs.includes(odl.id)}
-                        onChange={() => handleODLToggle(odl.id)}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primaryTypographyProps={{ component: 'div' }}
-                      secondaryTypographyProps={{ component: 'div' }}
-                      primary={
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <QrCode2 fontSize="small" />
-                          <Typography variant="body2" component="span">
-                            {odl.odlNumber}
+                {(odls as any[]).map((odl, index) => {
+                  const isConfigured = hasAutoclaveConfig(odl);
+                  const isDisabled = !isConfigured;
+                  
+                  return (
+                    <ListItem key={`${cycle}-${odl.id}-${index}`} disablePadding>
+                      <ListItemIcon>
+                        <Checkbox
+                          edge="start"
+                          checked={selectedODLs.includes(odl.id)}
+                          onChange={() => handleODLToggle(odl.id)}
+                          disabled={isDisabled}
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        primaryTypographyProps={{ component: 'div' }}
+                        secondaryTypographyProps={{ component: 'div' }}
+                        primary={
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <QrCode2 fontSize="small" color={isDisabled ? 'disabled' : 'inherit'} />
+                            <Typography 
+                              variant="body2" 
+                              component="span"
+                              color={isDisabled ? 'text.disabled' : 'inherit'}
+                            >
+                              {odl.odlNumber}
+                            </Typography>
+                            <Chip
+                              label={odl.part.partNumber}
+                              size="small"
+                              variant="outlined"
+                              color={isDisabled ? 'default' : 'primary'}
+                              sx={{ opacity: isDisabled ? 0.5 : 1 }}
+                            />
+                            {isDisabled && (
+                              <Tooltip 
+                                title={
+                                  <Box>
+                                    <Typography variant="caption" display="block">
+                                      Configurazione autoclave mancante
+                                    </Typography>
+                                    <Typography variant="caption" display="block">
+                                      Vai in Gestione Parti → {odl.part.partNumber} → Configurazione Autoclave
+                                    </Typography>
+                                  </Box>
+                                }
+                                arrow
+                              >
+                                <Warning fontSize="small" color="warning" />
+                              </Tooltip>
+                            )}
+                          </Box>
+                        }
+                        secondary={
+                          <Typography 
+                            variant="caption" 
+                            color={isDisabled ? 'text.disabled' : 'text.secondary'} 
+                            component="span"
+                          >
+                            {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
+                            {isDisabled && ' • Configurazione mancante'}
                           </Typography>
-                          <Chip
-                            label={odl.part.partNumber}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Box>
-                      }
-                      secondary={
-                        <Typography variant="caption" color="text.secondary" component="span">
-                          {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
-                        </Typography>
-                      }
-                    />
-                  </ListItem>
-                ))}
+                        }
+                      />
+                      {isDisabled && (
+                        <ListItemSecondaryAction>
+                          <Tooltip title="Configura parte per autoclavi">
+                            <IconButton
+                              size="small"
+                              component="a"
+                              href={`/admin/departments/autoclavi/part-config?part=${odl.part.partNumber}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Settings fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </ListItemSecondaryAction>
+                      )}
+                    </ListItem>
+                  );
+                })}
               </List>
             </Box>
           ))}
@@ -295,15 +358,28 @@ export function ODLSelectionStep({
 
       {/* Riepilogo selezione */}
       <Grid size={12}>
-        <Alert 
-          severity={selectedODLs.length > 0 && selectedAutoclaves.length > 0 ? "success" : "info"}
-        >
-          <Typography variant="body2">
-            {selectedODLs.length} ODL selezionati su {availableODLs.length} disponibili
-            {' • '}
-            {selectedAutoclaves.length} autoclavi selezionate su {availableAutoclaves.length} disponibili
-          </Typography>
-        </Alert>
+        <Stack spacing={1}>
+          <Alert 
+            severity={selectedODLs.length > 0 && selectedAutoclaves.length > 0 ? "success" : "info"}
+          >
+            <Typography variant="body2">
+              {selectedODLs.length} ODL selezionati su {selectableODLs.length} configurati correttamente
+              {' • '}
+              {selectedAutoclaves.length} autoclavi selezionate su {availableAutoclaves.length} disponibili
+            </Typography>
+          </Alert>
+          
+          {availableODLs.length - selectableODLs.length > 0 && (
+            <Alert severity="warning">
+              <Typography variant="body2">
+                <Warning fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+                {availableODLs.length - selectableODLs.length} ODL esclusi per configurazione autoclave mancante.
+                {' '}
+                Configura le parti per includerli nell'ottimizzazione.
+              </Typography>
+            </Alert>
+          )}
+        </Stack>
       </Grid>
     </Grid>
   );
