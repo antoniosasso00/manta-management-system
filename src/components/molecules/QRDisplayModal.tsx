@@ -195,9 +195,7 @@ export function QRDisplayModal({ open, onClose, odl }: QRDisplayModalProps) {
         alignItems: 'center',
         pb: 1
       }}>
-        <Typography variant="h6">
-          QR Code - {odl.odlNumber}
-        </Typography>
+        QR Code - {odl.odlNumber}
         <IconButton onClick={onClose} size="small">
           <Close />
         </IconButton>

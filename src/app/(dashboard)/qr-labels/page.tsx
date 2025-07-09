@@ -78,14 +78,27 @@ function PreviewQRCode({ odl, size, errorCorrection }: {
       
       try {
         const dataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
-          width: size === 'XLARGE' ? 120 : size === 'LARGE' ? 100 : size === 'MEDIUM' ? 80 : 60,
-          margin: 1,
+          width: size === 'XLARGE' ? 200 : size === 'LARGE' ? 160 : size === 'MEDIUM' ? 120 : 80,
+          margin: 2,
           color: { dark: '#000000', light: '#FFFFFF' },
-          errorCorrectionLevel: errorCorrection
+          errorCorrectionLevel: errorCorrection,
+          type: 'image/png',
+          rendererOpts: { quality: 1.0 }
         })
         setQrDataUrl(dataUrl)
       } catch (error) {
         console.error('Error generating preview QR:', error)
+        // Fallback per preview
+        try {
+          const fallbackUrl = await QRCode.toDataURL(odl.odlNumber, {
+            width: 100,
+            margin: 1,
+            errorCorrectionLevel: 'M'
+          })
+          setQrDataUrl(fallbackUrl)
+        } catch (fallbackError) {
+          console.error('Preview fallback failed:', fallbackError)
+        }
       }
     }
     
@@ -273,16 +286,38 @@ export default function QRLabelsPage() {
           
           try {
             const QRCode = (await import('qrcode')).default
+            
+            // Calcola dimensioni ottimali per stampa basate su DPI e dimensione QR
+            const qrSizeMapping = { SMALL: 30, MEDIUM: 40, LARGE: 50, XLARGE: 60 }
+            const qrMmSize = qrSizeMapping[printConfig.qrSize]
+            const pixelSize = Math.floor((qrMmSize * printConfig.dpi) / 25.4) // Conversione mm to pixels
+            
             const qrCodeDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
-              width: printConfig.dpi === 600 ? 512 : 300,  // Dimensione in pixel basata su DPI
+              width: pixelSize,
               margin: 4,  // Quiet zone di 4 moduli come da best practice
               color: { dark: '#000000', light: '#FFFFFF' },
-              errorCorrectionLevel: printConfig.errorCorrection || 'H'  // Alto livello per ambiente industriale
+              errorCorrectionLevel: printConfig.errorCorrection || 'H',  // Alto livello per ambiente industriale
+              type: 'image/png',  // Formato esplicito
+              rendererOpts: {
+                quality: 1.0  // Qualità massima
+              }
             })
             return { ...odl, qrCode: qrCodeDataUrl }
           } catch (error) {
-            console.error('Error generating QR code:', error)
-            return odl
+            console.error('Error generating QR code for ODL:', odl.odlNumber, error)
+            // Fallback: tenta generazione semplificata
+            try {
+              const QRCode = (await import('qrcode')).default
+              const fallbackDataUrl = await QRCode.toDataURL(odl.odlNumber, {
+                width: 200,
+                margin: 2,
+                errorCorrectionLevel: 'M'
+              })
+              return { ...odl, qrCode: fallbackDataUrl }
+            } catch (fallbackError) {
+              console.error('Fallback QR generation failed:', fallbackError)
+              return odl
+            }
           }
         }
         return odl
@@ -329,7 +364,8 @@ export default function QRLabelsPage() {
         </div>
         <div class="qr-code">
           ${odl.qrCode ? 
-            `<img src="${odl.qrCode}" alt="QR ${odl.odlNumber}" class="qr-image" />` : 
+            `<img src="${odl.qrCode}" alt="QR ${odl.odlNumber}" class="qr-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="no-qr" style="display:none;">QR non disponibile</div>` : 
             '<div class="no-qr">QR non disponibile</div>'
           }
         </div>
@@ -429,6 +465,10 @@ export default function QRLabelsPage() {
               image-rendering: crisp-edges;  /* Rendering nitido per QR */
               image-rendering: -webkit-optimize-contrast;
               image-rendering: pixelated;
+              max-width: 100% !important;
+              max-height: 100% !important;
+              display: block !important;
+              margin: 0 auto !important;
             }
             .no-qr {
               width: ${qrSizes[printConfig.qrSize]};
@@ -492,7 +532,15 @@ export default function QRLabelsPage() {
                 page-break-inside: avoid;
               }
               .qr-image {
-                filter: contrast(2);  /* Aumenta contrasto per stampa */
+                filter: contrast(2) brightness(1.1);  /* Aumenta contrasto e luminosità per stampa */
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                image-rendering: crisp-edges !important;
+              }
+              .qr-code {
+                background: white !important;
+                border: 1px solid #000 !important;
               }
             }
             @page {
