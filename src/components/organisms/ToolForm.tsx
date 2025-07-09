@@ -17,9 +17,11 @@ import {
   Box,
   Typography,
   IconButton,
-  Divider
+  Divider,
+  CircularProgress,
+  InputAdornment
 } from '@mui/material'
-import { Add, Remove, Search } from '@mui/icons-material'
+import { Add, Remove, Search, CheckCircle, Error } from '@mui/icons-material'
 import { CreateToolWithPartsInput, UpdateToolWithPartsInput } from '@/domains/core/schemas/tool.schema'
 
 interface Part {
@@ -66,6 +68,8 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
   const [selectedParts, setSelectedParts] = useState<Part[]>([])
   const [partsLoading, setPartsLoading] = useState(false)
   const [partSearchTerm, setPartSearchTerm] = useState('')
+  const [partNumberExists, setPartNumberExists] = useState(false)
+  const [checkingPartNumber, setCheckingPartNumber] = useState(false)
 
   // Load parts for autocomplete
   useEffect(() => {
@@ -73,6 +77,36 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       loadParts()
     }
   }, [open])
+
+  // Check Part Number uniqueness with debouncing
+  useEffect(() => {
+    const checkPartNumberUniqueness = async () => {
+      const partNumber = formData.toolPartNumber.trim()
+      
+      // Skip check if empty, same as current tool, or invalid format
+      if (!partNumber || (tool && tool.toolPartNumber === partNumber) || !/^[A-Z0-9]{6,15}$/.test(partNumber)) {
+        setPartNumberExists(false)
+        return
+      }
+
+      setCheckingPartNumber(true)
+      
+      try {
+        const response = await fetch(`/api/tools?checkUnique=${encodeURIComponent(partNumber)}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPartNumberExists(data.exists)
+        }
+      } catch (error) {
+        console.error('Error checking part number uniqueness:', error)
+      } finally {
+        setCheckingPartNumber(false)
+      }
+    }
+
+    const timeoutId = setTimeout(checkPartNumberUniqueness, 500) // 500ms debounce
+    return () => clearTimeout(timeoutId)
+  }, [formData.toolPartNumber, tool])
 
   // Initialize form when tool changes
   useEffect(() => {
@@ -131,6 +165,8 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
     })
     setSelectedParts([])
     setFormErrors({})
+    setPartNumberExists(false)
+    setCheckingPartNumber(false)
   }
 
   const validateForm = () => {
@@ -141,6 +177,8 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       errors.toolPartNumber = 'Part Number richiesto'
     } else if (!/^[A-Z0-9]{6,15}$/.test(toolPartNumber)) {
       errors.toolPartNumber = 'Part Number deve essere 6-15 caratteri alfanumerici maiuscoli'
+    } else if (partNumberExists) {
+      errors.toolPartNumber = 'Part Number già esistente'
     }
 
     if (!formData.base || parseFloat(formData.base) <= 0) {
@@ -193,9 +231,12 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
 
       onClose()
       resetForm()
-    } catch (error) {
-      console.error('Error in form submission:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Errore nel salvataggio'
+    } catch (err: unknown) {
+      console.error('Error in form submission:', err)
+      let errorMessage = 'Errore nel salvataggio'
+      if (err instanceof Error) {
+        errorMessage = (err as Error).message
+      }
       setFormErrors({ general: errorMessage })
     } finally {
       setSubmitting(false)
@@ -254,8 +295,29 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
               label="Part Number"
               value={formData.toolPartNumber}
               onChange={(e) => setFormData({ ...formData, toolPartNumber: e.target.value.toUpperCase() })}
-              error={!!formErrors.toolPartNumber}
-              helperText={formErrors.toolPartNumber}
+              error={!!formErrors.toolPartNumber || partNumberExists}
+              helperText={
+                formErrors.toolPartNumber || 
+                (partNumberExists ? 'Part Number già esistente' : 
+                 checkingPartNumber ? 'Verifica unicità...' : 
+                 formData.toolPartNumber && /^[A-Z0-9]{6,15}$/.test(formData.toolPartNumber) && !partNumberExists ? 'Part Number disponibile' : 
+                 'Formato: 6-15 caratteri alfanumerici maiuscoli')
+              }
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {checkingPartNumber ? (
+                      <CircularProgress size={20} />
+                    ) : formData.toolPartNumber && /^[A-Z0-9]{6,15}$/.test(formData.toolPartNumber) ? (
+                      partNumberExists ? (
+                        <Error color="error" />
+                      ) : (
+                        <CheckCircle color="success" />
+                      )
+                    ) : null}
+                  </InputAdornment>
+                )
+              }}
             />
           </Grid>
           
@@ -396,7 +458,11 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
         <Button onClick={onClose} disabled={submitting}>
           Annulla
         </Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
+        <Button 
+          variant="contained" 
+          onClick={handleSubmit} 
+          disabled={submitting || checkingPartNumber || partNumberExists}
+        >
           {submitting ? 'Salvataggio...' : 'Salva'}
         </Button>
       </DialogActions>

@@ -29,6 +29,11 @@ export default function PartsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterValues, setFilterValues] = useState<FilterValues>({})
+  const [totalCount, setTotalCount] = useState(0)
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [sortBy, setSortBy] = useState<string>('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedPart, setSelectedPart] = useState<Part | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -55,30 +60,43 @@ export default function PartsPage() {
   // Use the appropriate form based on editing state
   const { control, handleSubmit, reset, formState: { errors } } = isEditing ? updateForm : createForm
 
-  // Fetch parts
+  // Fetch parts con paginazione server-side
   const fetchParts = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const params: Record<string, string | number | boolean> = {}
-      if (searchQuery) params.search = searchQuery
-      if (filterValues.partNumber && typeof filterValues.partNumber === 'string') {
-        params.partNumber = filterValues.partNumber
-      }
-      if (filterValues.description && typeof filterValues.description === 'string') {
-        params.description = filterValues.description
+      const params: Record<string, string | number | boolean> = {
+        page: page + 1, // API usa paginazione 1-based
+        limit: rowsPerPage,
+        sortBy,
+        sortOrder
       }
       
-      const data = await partRepository.getAll(params)
-      setParts(data)
+      // Combina tutti i filtri di ricerca in un unico parametro search
+      let searchTerms: string[] = []
+      if (searchQuery) searchTerms.push(searchQuery)
+      if (filterValues.partNumber && typeof filterValues.partNumber === 'string') {
+        searchTerms.push(filterValues.partNumber)
+      }
+      if (filterValues.description && typeof filterValues.description === 'string') {
+        searchTerms.push(filterValues.description)
+      }
+      
+      if (searchTerms.length > 0) {
+        params.search = searchTerms.join(' ')
+      }
+      
+      const response = await partRepository.getPaginated(params)
+      setParts(response.parts)
+      setTotalCount(response.total)
     } catch (error) {
       console.error('Error fetching parts:', error)
       setError(error instanceof Error ? error.message : 'Errore caricamento parti')
     } finally {
       setLoading(false)
     }
-  }, [searchQuery, filterValues])
+  }, [searchQuery, filterValues, page, rowsPerPage, sortBy, sortOrder])
 
   useEffect(() => {
     fetchParts()
@@ -126,6 +144,7 @@ export default function PartsPage() {
       }
       setFormOpen(false)
       reset()
+      setPage(0) // Reset alla prima pagina dopo create/update
       await fetchParts()
     } catch (error) {
       console.error('Error saving part:', error)
@@ -135,8 +154,9 @@ export default function PartsPage() {
 
   const handleExport = async () => {
     try {
-      const data = await partRepository.getAll()
-      const csv = convertToCSV(data)
+      // Per export, prendiamo tutti i dati senza paginazione
+      const response = await partRepository.getPaginated({ limit: 10000 })
+      const csv = convertToCSV(response.parts)
       downloadCSV(csv, 'parts-export.csv')
     } catch (error) {
       console.error('Error exporting parts:', error)
@@ -164,8 +184,8 @@ export default function PartsPage() {
       format: (_value, row) => String(row._count?.odls || 0)
     },
     {
-      id: 'updatedAt',
-      label: 'Ultima Modifica',
+      id: 'createdAt',
+      label: 'Data Creazione',
       minWidth: 180,
       format: (value) => 
         value ? new Date(value as string).toLocaleString('it-IT') : ''
@@ -221,6 +241,7 @@ export default function PartsPage() {
         columns={columns}
         loading={loading}
         error={error}
+        totalCount={totalCount}
         
         // Page Config
         title="Gestione Parti"
@@ -237,18 +258,47 @@ export default function PartsPage() {
         onView={handleView}
         
         // Toolbar Actions
-        onSearch={setSearchQuery}
+        onSearch={(query) => {
+          setSearchQuery(query)
+          setPage(0) // Reset alla prima pagina quando si cerca
+        }}
         onExport={handleExport}
-        onRefresh={fetchParts}
+        onRefresh={() => {
+          setPage(0)
+          fetchParts()
+        }}
         
         // Filter Config
         filters={filters}
         filterValues={filterValues}
         onFilterChange={setFilterValues}
-        onFilterApply={fetchParts}
+        onFilterApply={() => {
+          setPage(0) // Reset alla prima pagina quando si applicano filtri
+          fetchParts()
+        }}
         onFilterReset={() => {
           setFilterValues({})
+          setPage(0)
           fetchParts()
+        }}
+        
+        // Pagination Config
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={setPage}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setRowsPerPage(newRowsPerPage)
+          setPage(0) // Reset alla prima pagina quando si cambia rows per page
+        }}
+        enableServerPagination={true}
+        
+        // Sorting Config
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={(newSortBy, newSortOrder) => {
+          setSortBy(newSortBy)
+          setSortOrder(newSortOrder)
+          setPage(0) // Reset alla prima pagina quando si cambia ordinamento
         }}
         
         // Table Config

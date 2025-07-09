@@ -29,6 +29,7 @@ interface DataManagementTemplateProps<T extends Record<string, unknown>> {
   columns: Column<T>[]
   loading?: boolean
   error?: string | null
+  totalCount?: number  // Totale elementi server-side
   
   // Page Config
   title: string
@@ -63,6 +64,18 @@ interface DataManagementTemplateProps<T extends Record<string, unknown>> {
   showFilter?: boolean
   showRefresh?: boolean
   
+  // Pagination Config
+  page?: number
+  rowsPerPage?: number
+  onPageChange?: (page: number) => void
+  onRowsPerPageChange?: (rowsPerPage: number) => void
+  enableServerPagination?: boolean
+  
+  // Sorting Config
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void
+  
   // Delete Confirmation
   deleteConfirmTitle?: (item: T) => string
   deleteConfirmMessage?: (item: T) => string
@@ -82,6 +95,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
   columns,
   loading = false,
   error = null,
+  totalCount,
   
   // Page Config
   title,
@@ -116,6 +130,18 @@ export function DataManagementTemplate<T extends { id: string | number }>({
   showFilter = true,
   showRefresh = true,
   
+  // Pagination Config
+  page: propPage,
+  rowsPerPage: propRowsPerPage,
+  onPageChange: propOnPageChange,
+  onRowsPerPageChange: propOnRowsPerPageChange,
+  enableServerPagination = false,
+  
+  // Sorting Config
+  sortBy,
+  sortOrder,
+  onSortChange,
+  
   // Delete Confirmation
   deleteConfirmTitle = () => 'Conferma eliminazione',
   deleteConfirmMessage = () => 'Sei sicuro di voler eliminare questo elemento?',
@@ -130,8 +156,14 @@ export function DataManagementTemplate<T extends { id: string | number }>({
 }: DataManagementTemplateProps<T>) {
   const [filterOpen, setFilterOpen] = useState(false)
   const [deleteItem, setDeleteItem] = useState<T | null>(null)
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  
+  // Usa paginazione server-side se abilitata, altrimenti client-side
+  const [localPage, setLocalPage] = useState(0)
+  const [localRowsPerPage, setLocalRowsPerPage] = useState(10)
+  
+  const currentPage = enableServerPagination ? (propPage ?? 0) : localPage
+  const currentRowsPerPage = enableServerPagination ? (propRowsPerPage ?? 10) : localRowsPerPage
+  const currentTotalCount = enableServerPagination ? (totalCount ?? data.length) : data.length
   
   const handleFilterOpen = useCallback(() => {
     setFilterOpen(true)
@@ -244,11 +276,14 @@ export function DataManagementTemplate<T extends { id: string | number }>({
           <DataTable
             data={data}
             columns={enhancedColumns}
-            totalCount={data.length}
-            page={page}
-            rowsPerPage={rowsPerPage}
-            onPageChange={setPage}
-            onRowsPerPageChange={setRowsPerPage}
+            totalCount={currentTotalCount}
+            page={currentPage}
+            rowsPerPage={currentRowsPerPage}
+            onPageChange={enableServerPagination ? propOnPageChange ?? (() => {}) : setLocalPage}
+            onRowsPerPageChange={enableServerPagination ? propOnRowsPerPageChange ?? (() => {}) : setLocalRowsPerPage}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={onSortChange}
             stickyHeader
           />
         )}

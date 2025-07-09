@@ -17,6 +17,20 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const isActive = searchParams.get('isActive')
+    const checkUnique = searchParams.get('checkUnique')
+
+    // Endpoint per verificare unicità Part Number
+    if (checkUnique) {
+      const existing = await prisma.tool.findUnique({
+        where: { toolPartNumber: checkUnique },
+        select: { id: true, toolPartNumber: true }
+      })
+      
+      return NextResponse.json({ 
+        exists: !!existing,
+        toolPartNumber: checkUnique 
+      })
+    }
 
     const where: any = {}
     
@@ -215,6 +229,20 @@ export async function POST(request: NextRequest) {
         { error: 'Dati non validi', details: error.errors },
         { status: 400 }
       )
+    }
+
+    // Gestisci errori di database constraint (duplicati)
+    if (error && typeof error === 'object' && 'code' in error) {
+      const dbError = error as { code: string; constraint?: string; meta?: { target: string[] } }
+      
+      // Prisma error P2002 = constraint violation (unique constraint)
+      if (dbError.code === 'P2002') {
+        console.error('❌ Database constraint violation:', dbError)
+        return NextResponse.json(
+          { error: 'Part Number già esistente' },
+          { status: 400 }
+        )
+      }
     }
 
     console.error('Error creating tool:', error)
