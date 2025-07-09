@@ -179,28 +179,22 @@ export function OptimizationResultsStep({
               >
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={isConfirmed}
-                          onChange={() => handleBatchToggle(batch.batch_id)}
-                          checkedIcon={<CheckCircle />}
-                        />
-                      }
-                      label={
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <LocalFireDepartment color="primary" />
-                          <Typography variant="h6">
-                            Autoclave {batch.autoclave_code}
-                          </Typography>
-                          <Chip
-                            label={batch.curing_cycle}
-                            color="primary"
-                            size="small"
-                          />
-                        </Stack>
-                      }
-                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Checkbox
+                        checked={isConfirmed}
+                        onChange={() => handleBatchToggle(batch.batch_id)}
+                        checkedIcon={<CheckCircle />}
+                      />
+                      <LocalFireDepartment color="primary" />
+                      <Typography variant="h6" component="span">
+                        Autoclave {batch.autoclave_code}
+                      </Typography>
+                      <Chip
+                        label={batch.curing_cycle}
+                        color="primary"
+                        size="small"
+                      />
+                    </Box>
                     
                     <Stack direction="row" spacing={1}>
                       <Tooltip title="Visualizza layout">

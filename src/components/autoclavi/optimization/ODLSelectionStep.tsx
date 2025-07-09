@@ -134,7 +134,7 @@ export function ODLSelectionStep({
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
                       primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <QrCode2 fontSize="small" />
                           <Typography variant="body2" component="span">
                             {odl.odlNumber}
@@ -202,7 +202,7 @@ export function ODLSelectionStep({
                   primaryTypographyProps={{ component: 'div' }}
                   secondaryTypographyProps={{ component: 'div' }}
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LocalFireDepartment fontSize="small" color="primary" />
                       <Typography variant="body1" component="span">
                         {autoclave.name} ({autoclave.code})
@@ -210,7 +210,7 @@ export function ODLSelectionStep({
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ mt: 0.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Box component="span" sx={{ mt: 0.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip
                         icon={<Straighten fontSize="small" />}
                         label={`${autoclave.maxWidth} x ${autoclave.maxLength} mm`}

@@ -183,6 +183,8 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
         associatedPartIds: selectedParts.map(p => p.id)
       }
 
+      console.log('📤 Sending payload:', JSON.stringify(payload, null, 2))
+
       if (tool) {
         await onSubmit({ ...payload, id: tool.id })
       } else {

@@ -94,24 +94,33 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    console.log('🔍 Received body for tool creation:', JSON.stringify(body, null, 2))
+    
     const validatedData = createToolWithPartsSchema.parse(body)
+    console.log('✅ Validation passed, data:', JSON.stringify(validatedData, null, 2))
 
     // Verifica unicità del Part Number
+    console.log('🔍 Checking if tool part number exists:', validatedData.toolPartNumber)
     const existingTool = await prisma.tool.findUnique({
       where: { toolPartNumber: validatedData.toolPartNumber }
     })
 
     if (existingTool) {
+      console.log('❌ Tool part number already exists')
       return NextResponse.json(
         { error: 'Part Number già esistente' },
         { status: 400 }
       )
     }
 
+    console.log('✅ Tool part number is unique')
     const { associatedPartIds, ...toolData } = validatedData
+    console.log('📝 Tool data to create:', JSON.stringify(toolData, null, 2))
+    console.log('🔗 Associated part IDs:', associatedPartIds)
     
     const newTool = await prisma.$transaction(async (tx) => {
       // Create the tool
+      console.log('🏗️ Creating tool in database...')
       const tool = await tx.tool.create({
         data: {
           ...toolData
@@ -133,6 +142,7 @@ export async function POST(request: NextRequest) {
 
       // Create part associations if provided
       if (associatedPartIds && associatedPartIds.length > 0) {
+        console.log('🔗 Creating part associations...')
         await tx.partTool.createMany({
           data: associatedPartIds.map(partId => ({
             toolId: tool.id,
@@ -159,10 +169,14 @@ export async function POST(request: NextRequest) {
         })
       }
 
+      console.log('✅ Tool created successfully without associations')
       return tool
     })
 
+    console.log('✅ Tool creation transaction completed')
+    
     // Log audit
+    console.log('📝 Creating audit log...')
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
@@ -196,6 +210,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof ZodError) {
+      console.error('❌ Zod validation error:', error.errors)
       return NextResponse.json(
         { error: 'Dati non validi', details: error.errors },
         { status: 400 }

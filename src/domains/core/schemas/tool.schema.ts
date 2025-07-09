@@ -9,17 +9,20 @@ export const createToolSchema = z.object({
     .regex(toolPartNumberRegex, 'Tool part number must be 6-15 alphanumeric characters'),
   description: z.string()
     .max(255, 'Description too long')
-    .optional(),
+    .nullish()
+    .transform(val => val || undefined),
   base: z.number()
     .positive('Base dimension must be positive'),
   height: z.number()
     .positive('Height must be positive'),
   weight: z.number()
     .positive('Weight must be positive')
-    .optional(),
+    .nullish()
+    .transform(val => val || undefined),
   material: z.string()
     .max(100, 'Material description too long')
-    .optional(),
+    .nullish()
+    .transform(val => val || undefined),
   isActive: z.boolean().default(true),
 })
 
