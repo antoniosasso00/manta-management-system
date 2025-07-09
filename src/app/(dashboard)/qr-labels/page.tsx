@@ -81,9 +81,7 @@ function PreviewQRCode({ odl, size, errorCorrection }: {
           width: size === 'XLARGE' ? 200 : size === 'LARGE' ? 160 : size === 'MEDIUM' ? 120 : 80,
           margin: 2,
           color: { dark: '#000000', light: '#FFFFFF' },
-          errorCorrectionLevel: errorCorrection,
-          type: 'image/png',
-          rendererOpts: { quality: 1.0 }
+          errorCorrectionLevel: errorCorrection
         })
         setQrDataUrl(dataUrl)
       } catch (error) {
@@ -296,11 +294,7 @@ export default function QRLabelsPage() {
               width: pixelSize,
               margin: 4,  // Quiet zone di 4 moduli come da best practice
               color: { dark: '#000000', light: '#FFFFFF' },
-              errorCorrectionLevel: printConfig.errorCorrection || 'H',  // Alto livello per ambiente industriale
-              type: 'image/png',  // Formato esplicito
-              rendererOpts: {
-                quality: 1.0  // Qualità massima
-              }
+              errorCorrectionLevel: printConfig.errorCorrection || 'H'  // Alto livello per ambiente industriale
             })
             return { ...odl, qrCode: qrCodeDataUrl }
           } catch (error) {
