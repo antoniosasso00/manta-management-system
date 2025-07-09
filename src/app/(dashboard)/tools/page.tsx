@@ -37,6 +37,11 @@ export default function ToolsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterValues, setFilterValues] = useState<FilterValues>({})
+  const [totalCount, setTotalCount] = useState(0)
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [sortBy, setSortBy] = useState<string>('toolPartNumber')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [toolFormOpen, setToolFormOpen] = useState(false)
   const [selectedTool, setSelectedTool] = useState<any>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -45,14 +50,20 @@ export default function ToolsPage() {
 
   useEffect(() => {
     loadTools()
-  }, [])
+  }, [searchQuery, filterValues, page, rowsPerPage, sortBy, sortOrder])
 
   const loadTools = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const params: Record<string, string> = {}
+      const params: Record<string, string | number> = {
+        page: page + 1, // API usa paginazione 1-based
+        limit: rowsPerPage,
+        sortBy,
+        sortOrder
+      }
+      
       if (searchQuery) params.search = searchQuery
       if (filterValues.material && typeof filterValues.material === 'string') {
         params.material = filterValues.material
@@ -61,12 +72,13 @@ export default function ToolsPage() {
         params.isActive = String(filterValues.isActive)
       }
       
-      const queryString = new URLSearchParams(params).toString()
+      const queryString = new URLSearchParams(params as Record<string, string>).toString()
       const response = await fetch(`/api/tools${queryString ? `?${queryString}` : ''}`)
       
       if (response.ok) {
         const data = await response.json()
-        setTools(data)
+        setTools(data.tools)
+        setTotalCount(data.total)
       } else {
         throw new Error('Errore nel caricamento degli strumenti')
       }
@@ -76,7 +88,7 @@ export default function ToolsPage() {
     } finally {
       setLoading(false)
     }
-  }, [searchQuery, filterValues])
+  }, [searchQuery, filterValues, page, rowsPerPage, sortBy, sortOrder])
 
   const handleAdd = () => {
     setSelectedTool(null)
@@ -142,6 +154,7 @@ export default function ToolsPage() {
 
       setToolFormOpen(false)
       setSelectedTool(null)
+      setPage(0) // Reset alla prima pagina dopo create/update
       await loadTools()
     } catch (error) {
       console.error('Error saving tool:', error)
@@ -233,6 +246,7 @@ export default function ToolsPage() {
         columns={columns}
         loading={loading}
         error={error}
+        totalCount={totalCount}
         
         // Page Config
         title="Gestione Strumenti"
@@ -249,17 +263,46 @@ export default function ToolsPage() {
         onView={handleView}
         
         // Toolbar Actions
-        onSearch={setSearchQuery}
-        onRefresh={loadTools}
+        onSearch={(query) => {
+          setSearchQuery(query)
+          setPage(0) // Reset alla prima pagina quando si cerca
+        }}
+        onRefresh={() => {
+          setPage(0)
+          loadTools()
+        }}
         
         // Filter Config
         filters={filters}
         filterValues={filterValues}
         onFilterChange={setFilterValues}
-        onFilterApply={loadTools}
+        onFilterApply={() => {
+          setPage(0) // Reset alla prima pagina quando si applicano filtri
+          loadTools()
+        }}
         onFilterReset={() => {
           setFilterValues({})
+          setPage(0)
           loadTools()
+        }}
+        
+        // Pagination Config
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={setPage}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setRowsPerPage(newRowsPerPage)
+          setPage(0) // Reset alla prima pagina quando si cambia rows per page
+        }}
+        enableServerPagination={true}
+        
+        // Sorting Config
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={(newSortBy, newSortOrder) => {
+          setSortBy(newSortBy)
+          setSortOrder(newSortOrder)
+          setPage(0) // Reset alla prima pagina quando si cambia ordinamento
         }}
         
         // Table Config

@@ -18,6 +18,10 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const isActive = searchParams.get('isActive')
     const checkUnique = searchParams.get('checkUnique')
+    const pageParam = searchParams.get('page')
+    const limitParam = searchParams.get('limit')
+    const sortByParam = searchParams.get('sortBy')
+    const sortOrderParam = searchParams.get('sortOrder')
 
     // Endpoint per verificare unicità Part Number
     if (checkUnique) {
@@ -46,6 +50,32 @@ export async function GET(request: NextRequest) {
       where.isActive = isActive === 'true'
     }
 
+    // Pagination parameters
+    const page = pageParam ? Math.max(1, parseInt(pageParam)) || 1 : 1
+    const limit = limitParam ? Math.min(100, Math.max(1, parseInt(limitParam))) || 10 : 10
+    const sortBy = ['toolPartNumber', 'description', 'material', 'createdAt'].includes(sortByParam || '') ? sortByParam : 'toolPartNumber'
+    const sortOrder = ['asc', 'desc'].includes(sortOrderParam || '') ? sortOrderParam : 'asc'
+
+    // Build orderBy clause
+    const orderBy: any[] = []
+    if (sortBy === 'toolPartNumber') {
+      orderBy.push({ toolPartNumber: sortOrder })
+    } else if (sortBy === 'description') {
+      orderBy.push({ description: sortOrder })
+    } else if (sortBy === 'material') {
+      orderBy.push({ material: sortOrder })
+    } else if (sortBy === 'createdAt') {
+      orderBy.push({ createdAt: sortOrder })
+    }
+    
+    // Add secondary sort by toolPartNumber for consistency
+    if (sortBy !== 'toolPartNumber') {
+      orderBy.push({ toolPartNumber: 'asc' })
+    }
+
+    // Get total count for pagination
+    const total = await prisma.tool.count({ where })
+
     const tools = await prisma.tool.findMany({
       where,
       include: {
@@ -61,10 +91,9 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: [
-        { isActive: 'desc' },
-        { toolPartNumber: 'asc' }
-      ]
+      orderBy,
+      skip: (page - 1) * limit,
+      take: limit
     })
 
     // Trasforma i dati per l'interfaccia
@@ -83,7 +112,14 @@ export async function GET(request: NextRequest) {
       updatedAt: tool.updatedAt
     }))
 
-    return NextResponse.json(transformedTools)
+    // Return paginated response
+    return NextResponse.json({
+      tools: transformedTools,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    })
 
   } catch (error) {
     console.error('Error fetching tools:', error)
