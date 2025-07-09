@@ -136,8 +136,11 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
   const validateForm = () => {
     const errors: Record<string, string> = {}
 
-    if (!formData.toolPartNumber.trim()) {
+    const toolPartNumber = formData.toolPartNumber.trim()
+    if (!toolPartNumber) {
       errors.toolPartNumber = 'Part Number richiesto'
+    } else if (!/^[A-Z0-9]{6,15}$/.test(toolPartNumber)) {
+      errors.toolPartNumber = 'Part Number deve essere 6-15 caratteri alfanumerici maiuscoli'
     }
 
     if (!formData.base || parseFloat(formData.base) <= 0) {
@@ -150,6 +153,14 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
 
     if (formData.weight && parseFloat(formData.weight) <= 0) {
       errors.weight = 'Peso deve essere un numero positivo'
+    }
+
+    if (formData.description && formData.description.length > 255) {
+      errors.description = 'Descrizione troppo lunga (max 255 caratteri)'
+    }
+
+    if (formData.material && formData.material.length > 100) {
+      errors.material = 'Materiale troppo lungo (max 100 caratteri)'
     }
 
     setFormErrors(errors)
@@ -181,7 +192,9 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       onClose()
       resetForm()
     } catch (error) {
-      setFormErrors({ general: 'Errore nel salvataggio' })
+      console.error('Error in form submission:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Errore nel salvataggio'
+      setFormErrors({ general: errorMessage })
     } finally {
       setSubmitting(false)
     }
@@ -238,7 +251,7 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
               required
               label="Part Number"
               value={formData.toolPartNumber}
-              onChange={(e) => setFormData({ ...formData, toolPartNumber: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, toolPartNumber: e.target.value.toUpperCase() })}
               error={!!formErrors.toolPartNumber}
               helperText={formErrors.toolPartNumber}
             />
@@ -250,6 +263,8 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
               label="Descrizione"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              error={!!formErrors.description}
+              helperText={formErrors.description || `${formData.description.length}/255 caratteri`}
             />
           </Grid>
           
@@ -297,6 +312,8 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
               label="Materiale"
               value={formData.material}
               onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+              error={!!formErrors.material}
+              helperText={formErrors.material || `${formData.material.length}/100 caratteri`}
             />
           </Grid>
           
