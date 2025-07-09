@@ -2370,7 +2370,7 @@ async function main() {
       prisma.productionEvent.create({
         data: {
           odlId: odls[i].id,
-          departmentId: departments[0].id,
+          departmentId: departments[1].id, // Clean Room
           eventType: 'ENTRY',
           timestamp: entryTime,
           userId: users[4 + (i % 2)].id, // Alterna tra operatori
@@ -2389,7 +2389,7 @@ async function main() {
       prisma.productionEvent.create({
         data: {
           odlId: odls[i].id,
-          departmentId: departments[0].id,
+          departmentId: departments[1].id, // Clean Room
           eventType: 'ENTRY',
           timestamp: startTime,
           userId: users[4 + (i % 5)].id,
@@ -2399,7 +2399,7 @@ async function main() {
       prisma.productionEvent.create({
         data: {
           odlId: odls[i].id,
-          departmentId: departments[0].id,
+          departmentId: departments[1].id, // Clean Room
           eventType: 'EXIT',
           timestamp: endTime,
           userId: users[4 + (i % 5)].id,
@@ -2421,7 +2421,7 @@ async function main() {
       prisma.productionEvent.create({
         data: {
           odlId: odls[i].id,
-          departmentId: departments[0].id,
+          departmentId: departments[1].id, // Clean Room
           eventType: 'ENTRY',
           timestamp: cleanroomStart,
           userId: users[4].id,
@@ -2431,7 +2431,7 @@ async function main() {
       prisma.productionEvent.create({
         data: {
           odlId: odls[i].id,
-          departmentId: departments[0].id,
+          departmentId: departments[1].id, // Clean Room
           eventType: 'EXIT',
           timestamp: cleanroomEnd,
           userId: users[4].id,
@@ -2526,7 +2526,7 @@ async function main() {
     prisma.productionEvent.create({
       data: {
         odlId: odls[14].id, // B787 ala centrale
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // Clean Room
         eventType: 'ENTRY',
         timestamp: completedStart,
         userId: users[4].id,
@@ -2536,7 +2536,7 @@ async function main() {
     prisma.productionEvent.create({
       data: {
         odlId: odls[14].id,
-        departmentId: departments[0].id,
+        departmentId: departments[1].id, // Clean Room
         eventType: 'EXIT',
         timestamp: completedMidpoint1,
         userId: users[4].id,
