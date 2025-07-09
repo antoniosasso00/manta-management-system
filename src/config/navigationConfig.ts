@@ -164,12 +164,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
               icon: Tune,
               href: '/admin/departments/autoclavi/part-config',
             },
-            {
-              id: 'autoclavi-part-extensions',
-              label: 'Estensioni Parti',
-              icon: Tune,
-              href: '/production/autoclave/part-extension',
-            },
           ],
         },
         {
@@ -540,12 +534,6 @@ export const navigationConfig: Record<string, NavigationItem[]> = {
               label: 'Configurazione Parti',
               icon: Tune,
               href: '/admin/departments/autoclavi/part-config',
-            },
-            {
-              id: 'autoclavi-part-extensions',
-              label: 'Estensioni Parti',
-              icon: Tune,
-              href: '/production/autoclave/part-extension',
             },
           ],
         },
