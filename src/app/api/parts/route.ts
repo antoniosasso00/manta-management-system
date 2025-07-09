@@ -14,13 +14,18 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
+    const pageParam = searchParams.get('page')
+    const limitParam = searchParams.get('limit')
+    const sortByParam = searchParams.get('sortBy')
+    const sortOrderParam = searchParams.get('sortOrder')
+    
     const queryParams = {
       search: searchParams.get('search') || undefined,
       isActive: searchParams.get('isActive') ? searchParams.get('isActive') === 'true' : undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || '10'),
-      sortBy: searchParams.get('sortBy') || 'partNumber',
-      sortOrder: searchParams.get('sortOrder') || 'asc',
+      page: pageParam ? Math.max(1, parseInt(pageParam)) || 1 : 1,
+      limit: limitParam ? Math.min(100, Math.max(1, parseInt(limitParam))) || 10 : 10,
+      sortBy: ['partNumber', 'description', 'createdAt'].includes(sortByParam || '') ? sortByParam : 'partNumber',
+      sortOrder: ['asc', 'desc'].includes(sortOrderParam || '') ? sortOrderParam : 'asc',
     }
 
     console.log('Raw searchParams:', Object.fromEntries(searchParams.entries()))

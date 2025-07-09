@@ -189,14 +189,10 @@ export function ODLSelectionStep({
                           </Box>
                         }
                         secondary={
-                          <Typography 
-                            variant="caption" 
-                            color={isDisabled ? 'text.disabled' : 'text.secondary'} 
-                            component="span"
-                          >
+                          <span>
                             {odl.part.partTools.length} tool • {odl.part.defaultVacuumLines || 1} linee vuoto
                             {isDisabled && ' • Configurazione mancante'}
-                          </Typography>
+                          </span>
                         }
                       />
                       {isDisabled && (
@@ -273,7 +269,7 @@ export function ODLSelectionStep({
                     </Box>
                   }
                   secondary={
-                    <Box component="span" sx={{ mt: 0.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                       <Chip
                         icon={<Straighten fontSize="small" />}
                         label={`${autoclave.maxWidth} x ${autoclave.maxLength} mm`}
@@ -286,7 +282,7 @@ export function ODLSelectionStep({
                         color="primary"
                         variant="outlined"
                       />
-                    </Box>
+                    </span>
                   }
                 />
               </ListItem>
