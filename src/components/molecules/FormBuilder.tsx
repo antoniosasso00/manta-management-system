@@ -356,6 +356,42 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
           />
         )
 
+      case 'number':
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            render={({ field: controllerField }) => (
+              <TextField
+                {...controllerField}
+                value={controllerField.value || ''}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Convert to number if not empty, otherwise set undefined
+                  controllerField.onChange(value === '' ? undefined : Number(value))
+                }}
+                type="number"
+                label={!field.hideLabel ? field.label : undefined}
+                placeholder={field.placeholder}
+                fullWidth
+                error={!!error}
+                helperText={errorMessage || field.helperText}
+                disabled={field.disabled}
+                required={field.required}
+                inputProps={{
+                  min: field.min,
+                  max: field.max,
+                  step: field.step
+                }}
+                InputProps={{
+                  startAdornment: field.startAdornment,
+                  endAdornment: field.endAdornment
+                }}
+              />
+            )}
+          />
+        )
+
       default:
         return (
           <Controller

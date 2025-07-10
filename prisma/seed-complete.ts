@@ -250,19 +250,22 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 12)
   const users = await Promise.all([
     // Admin globale
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'admin@mantaaero.com' },
+      create: {
         email: 'admin@mantaaero.com',
         name: 'Amministratore Sistema',
         password: hashedPassword,
         role: 'ADMIN',
       },
+      update: {},
     }),
     
     // === HONEYCOMB TEAM ===
     // Capo reparto Honeycomb
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.honeycomb@mantaaero.com' },
+      create: {
         email: 'capo.honeycomb@mantaaero.com',
         name: 'Andrea Cortese',
         password: hashedPassword,
@@ -270,10 +273,12 @@ async function main() {
         departmentId: departments[0].id, // HONEYCOMB
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori Honeycomb
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.honeycomb@mantaaero.com' },
+      create: {
         email: 'op1.honeycomb@mantaaero.com',
         name: 'Luca Martini',
         password: hashedPassword,
@@ -281,9 +286,11 @@ async function main() {
         departmentId: departments[0].id, // HONEYCOMB
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.honeycomb@mantaaero.com' },
+      create: {
         email: 'op2.honeycomb@mantaaero.com',
         name: 'Giulia Ferretti',
         password: hashedPassword,
@@ -291,12 +298,14 @@ async function main() {
         departmentId: departments[0].id, // HONEYCOMB
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
 
     // === CLEAN ROOM TEAM ===
     // Capo reparto Camera Bianca
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.cleanroom@mantaaero.com' },
+      create: {
         email: 'capo.cleanroom@mantaaero.com',
         name: 'Marco Rossi',
         password: hashedPassword,
@@ -304,10 +313,12 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Capo turno Camera Bianca - Mattino
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'turno1.cleanroom@mantaaero.com' },
+      create: {
         email: 'turno1.cleanroom@mantaaero.com',
         name: 'Laura Bianchi',
         password: hashedPassword,
@@ -315,10 +326,12 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'CAPO_TURNO',
       },
+      update: {},
     }),
     // Capo turno Camera Bianca - Pomeriggio
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'turno2.cleanroom@mantaaero.com' },
+      create: {
         email: 'turno2.cleanroom@mantaaero.com',
         name: 'Paolo Verdi',
         password: hashedPassword,
@@ -326,10 +339,12 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'CAPO_TURNO',
       },
+      update: {},
     }),
     // Operatori Camera Bianca - Turno Mattino
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.cleanroom@mantaaero.com' },
+      create: {
         email: 'op1.cleanroom@mantaaero.com',
         name: 'Giuseppe Verdi',
         password: hashedPassword,
@@ -337,9 +352,11 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.cleanroom@mantaaero.com' },
+      create: {
         email: 'op2.cleanroom@mantaaero.com',
         name: 'Sofia Neri',
         password: hashedPassword,
@@ -347,9 +364,11 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op3.cleanroom@mantaaero.com' },
+      create: {
         email: 'op3.cleanroom@mantaaero.com',
         name: 'Francesca Blu',
         password: hashedPassword,
@@ -357,10 +376,12 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
     // Operatori Camera Bianca - Turno Pomeriggio
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op4.cleanroom@mantaaero.com' },
+      create: {
         email: 'op4.cleanroom@mantaaero.com',
         name: 'Antonio Giallo',
         password: hashedPassword,
@@ -368,9 +389,11 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op5.cleanroom@mantaaero.com' },
+      create: {
         email: 'op5.cleanroom@mantaaero.com',
         name: 'Valentina Rosa',
         password: hashedPassword,
@@ -378,12 +401,14 @@ async function main() {
         departmentId: departments[1].id, // CLEANROOM
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
 
     // === CONTROLLO NUMERICO TEAM ===
     // Capo reparto CNC
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.cnc@mantaaero.com' },
+      create: {
         email: 'capo.cnc@mantaaero.com',
         name: 'Stefano Rinaldi',
         password: hashedPassword,
@@ -391,10 +416,12 @@ async function main() {
         departmentId: departments[2].id, // CONTROLLO_NUMERICO
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori CNC
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.cnc@mantaaero.com' },
+      create: {
         email: 'op1.cnc@mantaaero.com',
         name: 'Marco Bianchi',
         password: hashedPassword,
@@ -402,9 +429,11 @@ async function main() {
         departmentId: departments[2].id, // CONTROLLO_NUMERICO
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.cnc@mantaaero.com' },
+      create: {
         email: 'op2.cnc@mantaaero.com',
         name: 'Silvia Galli',
         password: hashedPassword,
@@ -412,12 +441,14 @@ async function main() {
         departmentId: departments[2].id, // CONTROLLO_NUMERICO
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
 
     // === MONTAGGIO TEAM ===
     // Capo reparto Montaggio
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.montaggio@mantaaero.com' },
+      create: {
         email: 'capo.montaggio@mantaaero.com',
         name: 'Roberto Conti',
         password: hashedPassword,
@@ -425,10 +456,12 @@ async function main() {
         departmentId: departments[3].id, // MONTAGGIO
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori Montaggio
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.montaggio@mantaaero.com' },
+      create: {
         email: 'op1.montaggio@mantaaero.com',
         name: 'Anna Moretti',
         password: hashedPassword,
@@ -436,9 +469,11 @@ async function main() {
         departmentId: departments[3].id, // MONTAGGIO
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.montaggio@mantaaero.com' },
+      create: {
         email: 'op2.montaggio@mantaaero.com',
         name: 'Pietro Ricci',
         password: hashedPassword,
@@ -446,12 +481,14 @@ async function main() {
         departmentId: departments[3].id, // MONTAGGIO
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
     
     // === AUTOCLAVE TEAM ===
     // Capo reparto Autoclavi
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.autoclave@mantaaero.com' },
+      create: {
         email: 'capo.autoclave@mantaaero.com',
         name: 'Roberto Viola',
         password: hashedPassword,
@@ -459,10 +496,12 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Capo turno Autoclavi
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'turno1.autoclave@mantaaero.com' },
+      create: {
         email: 'turno1.autoclave@mantaaero.com',
         name: 'Cristina Arancio',
         password: hashedPassword,
@@ -470,10 +509,12 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'CAPO_TURNO',
       },
+      update: {},
     }),
     // Operatori Autoclavi
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.autoclave@mantaaero.com' },
+      create: {
         email: 'op1.autoclave@mantaaero.com',
         name: 'Elena Rosa',
         password: hashedPassword,
@@ -481,9 +522,11 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.autoclave@mantaaero.com' },
+      create: {
         email: 'op2.autoclave@mantaaero.com',
         name: 'Francesco Blu',
         password: hashedPassword,
@@ -491,9 +534,11 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op3.autoclave@mantaaero.com' },
+      create: {
         email: 'op3.autoclave@mantaaero.com',
         name: 'Michele Grigio',
         password: hashedPassword,
@@ -501,12 +546,14 @@ async function main() {
         departmentId: departments[4].id, // AUTOCLAVE
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
     
     // === NDI TEAM ===
     // Capo reparto NDI
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.ndi@mantaaero.com' },
+      create: {
         email: 'capo.ndi@mantaaero.com',
         name: 'Davide Marrone',
         password: hashedPassword,
@@ -514,10 +561,12 @@ async function main() {
         departmentId: departments[5].id, // NDI
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori NDI
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.ndi@mantaaero.com' },
+      create: {
         email: 'op1.ndi@mantaaero.com',
         name: 'Chiara Gialli',
         password: hashedPassword,
@@ -525,9 +574,11 @@ async function main() {
         departmentId: departments[5].id, // NDI
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.ndi@mantaaero.com' },
+      create: {
         email: 'op2.ndi@mantaaero.com',
         name: 'Luca Verde',
         password: hashedPassword,
@@ -535,12 +586,14 @@ async function main() {
         departmentId: departments[5].id, // NDI
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
     
     // === VERNICIATURA TEAM ===
     // Capo reparto Verniciatura
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.verniciatura@mantaaero.com' },
+      create: {
         email: 'capo.verniciatura@mantaaero.com',
         name: 'Simone Nero',
         password: hashedPassword,
@@ -548,10 +601,12 @@ async function main() {
         departmentId: departments[6].id, // VERNICIATURA
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori Verniciatura
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.verniciatura@mantaaero.com' },
+      create: {
         email: 'op1.verniciatura@mantaaero.com',
         name: 'Federica Azzurri',
         password: hashedPassword,
@@ -559,9 +614,11 @@ async function main() {
         departmentId: departments[6].id, // VERNICIATURA
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.verniciatura@mantaaero.com' },
+      create: {
         email: 'op2.verniciatura@mantaaero.com',
         name: 'Matteo Grigi',
         password: hashedPassword,
@@ -569,12 +626,14 @@ async function main() {
         departmentId: departments[6].id, // VERNICIATURA
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
 
     // === MOTORI TEAM ===
     // Capo reparto Motori
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.motori@mantaaero.com' },
+      create: {
         email: 'capo.motori@mantaaero.com',
         name: 'Alberto Verdi',
         password: hashedPassword,
@@ -582,10 +641,12 @@ async function main() {
         departmentId: departments[7].id, // MOTORI
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori Motori
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.motori@mantaaero.com' },
+      create: {
         email: 'op1.motori@mantaaero.com',
         name: 'Claudia Rossi',
         password: hashedPassword,
@@ -593,9 +654,11 @@ async function main() {
         departmentId: departments[7].id, // MOTORI
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.motori@mantaaero.com' },
+      create: {
         email: 'op2.motori@mantaaero.com',
         name: 'Giorgio Bianchi',
         password: hashedPassword,
@@ -603,12 +666,14 @@ async function main() {
         departmentId: departments[7].id, // MOTORI
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
 
     // === CONTROLLO QUALITA TEAM ===
     // Capo reparto Controllo Qualità
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'capo.qualita@mantaaero.com' },
+      create: {
         email: 'capo.qualita@mantaaero.com',
         name: 'Maria Fabbri',
         password: hashedPassword,
@@ -616,10 +681,12 @@ async function main() {
         departmentId: departments[8].id, // CONTROLLO_QUALITA
         departmentRole: 'CAPO_REPARTO',
       },
+      update: {},
     }),
     // Operatori Controllo Qualità
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op1.qualita@mantaaero.com' },
+      create: {
         email: 'op1.qualita@mantaaero.com',
         name: 'Andrea Arancio',
         password: hashedPassword,
@@ -627,9 +694,11 @@ async function main() {
         departmentId: departments[8].id, // CONTROLLO_QUALITA
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'op2.qualita@mantaaero.com' },
+      create: {
         email: 'op2.qualita@mantaaero.com',
         name: 'Giulia Azzurro',
         password: hashedPassword,
@@ -637,6 +706,7 @@ async function main() {
         departmentId: departments[8].id, // CONTROLLO_QUALITA
         departmentRole: 'OPERATORE',
       },
+      update: {},
     }),
   ])
 

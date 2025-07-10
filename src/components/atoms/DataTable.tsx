@@ -373,7 +373,7 @@ export function DataTable<T extends Record<string, any>>({
                         })}
                       </TableRow>
                       {isMobile && expandedColumns.length > 0 && (
-                        <TableRow>
+                        <TableRow key={`${rowKey}-expanded`}>
                           <TableCell colSpan={visibleColumns.length + 1} sx={{ py: 0 }}>
                             <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                               <Box sx={{ p: 2, bgcolor: 'background.default' }}>
