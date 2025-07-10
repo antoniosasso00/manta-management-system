@@ -55,13 +55,13 @@ export class PartService {
     return data ? Part.fromPrisma(data) : null
   }
 
-  static async findMany(query: PartQueryInput): Promise<{
+  static async findMany(query: PartQueryInput & { includeTools?: boolean }): Promise<{
     parts: Part[]
     total: number
     page: number
     totalPages: number
   }> {
-    const { search, page, limit, sortBy, sortOrder } = query
+    const { search, page, limit, sortBy, sortOrder, includeTools } = query
     const skip = (page - 1) * limit
 
     const where = search ? {
@@ -73,17 +73,26 @@ export class PartService {
 
     const orderBy = { [sortBy]: sortOrder }
 
+    const include = {
+      _count: {
+        select: { odls: true }
+      },
+      ...(includeTools && {
+        partTools: {
+          include: {
+            tool: true
+          }
+        }
+      })
+    }
+
     const [data, total] = await Promise.all([
       prisma.part.findMany({
         where,
         orderBy,
         skip,
         take: limit,
-        include: {
-          _count: {
-            select: { odls: true }
-          }
-        }
+        include
       }),
       prisma.part.count({ where })
     ])

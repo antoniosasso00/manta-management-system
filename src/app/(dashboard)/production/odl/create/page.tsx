@@ -45,7 +45,6 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { debounce } from 'lodash'
-import DepartmentConfigurationSection from '@/components/production/DepartmentConfigurationSection'
 
 // Form validation schema (matching API schema + additional validation)
 const createODLFormSchema = z.object({
@@ -56,35 +55,8 @@ const createODLFormSchema = z.object({
   expectedCompletionDate: z.date().optional(),
   notes: z.string().optional(),
   
-  // Department-specific configurations (optional overrides)
-  partAutoclave: z.object({
-    curingCycleId: z.string().cuid().optional(),
-    vacuumLines: z.number().int().min(1).max(10).optional(),
-    setupTime: z.number().int().positive().optional(),
-    loadPosition: z.string().optional(),
-    notes: z.string().optional(),
-  }).optional(),
-  
-  partCleanroom: z.object({
-    layupSequence: z.any().optional(), // JSON field
-    fiberOrientation: z.array(z.string()).optional(),
-    resinType: z.string().optional(),
-    prepregCode: z.string().optional(),
-    roomTemperature: z.number().positive().optional(),
-    humidity: z.number().min(0).max(100).optional(),
-    shelfLife: z.number().int().positive().optional(),
-    setupTime: z.number().int().positive().optional(),
-    cycleTime: z.number().int().positive().optional(),
-  }).optional(),
-  
-  partNDI: z.object({
-    inspectionMethod: z.array(z.string()).optional(),
-    acceptanceCriteria: z.any().optional(), // JSON field
-    criticalAreas: z.any().optional(), // JSON field
-    inspectionTime: z.number().int().positive().optional(),
-    requiredCerts: z.array(z.string()).optional(),
-    calibrationReq: z.string().optional(),
-  }).optional(),
+  // Tool selection (required for production)
+  toolId: z.string().cuid().optional(),
 })
 
 const createPartFormSchema = z.object({
@@ -99,22 +71,32 @@ interface Part {
   id: string
   partNumber: string
   description: string
-  defaultCuringCycleId?: string
-  defaultVacuumLines?: number
+  partTools?: PartTool[]
 }
 
-interface CuringCycle {
+interface PartTool {
   id: string
-  name: string
-  duration: number
+  toolId: string
+  tool: Tool
 }
+
+interface Tool {
+  id: string
+  toolPartNumber: string
+  description?: string
+  base: number
+  height: number
+  weight?: number
+}
+
 
 export default function CreateODLPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [parts, setParts] = useState<Part[]>([])
-  const [curingCycles, setCuringCycles] = useState<CuringCycle[]>([])
   const [selectedPart, setSelectedPart] = useState<Part | null>(null)
+  const [availableTools, setAvailableTools] = useState<Tool[]>([])
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
   const [partsLoading, setPartsLoading] = useState(false)
   const [odlNumberCheck, setOdlNumberCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
   const [createPartDialog, setCreatePartDialog] = useState(false)
@@ -131,9 +113,7 @@ export default function CreateODLPage() {
       priority: 'NORMAL',
       expectedCompletionDate: undefined,
       notes: '',
-      partAutoclave: undefined,
-      partCleanroom: undefined,
-      partNDI: undefined,
+      toolId: undefined,
     }
   })
 
@@ -153,10 +133,6 @@ export default function CreateODLPage() {
 
   const watchedOdlNumber = watch('odlNumber')
 
-  // Load curing cycles on mount
-  useEffect(() => {
-    loadCuringCycles()
-  }, [])
 
   // ODL number uniqueness check with debounce
   const debouncedOdlCheck = useCallback(
@@ -207,7 +183,7 @@ export default function CreateODLPage() {
 
       setPartsLoading(true)
       try {
-        const response = await fetch(`/api/parts?search=${encodeURIComponent(searchTerm)}&limit=20`)
+        const response = await fetch(`/api/parts?search=${encodeURIComponent(searchTerm)}&limit=20&include=partTools`)
         const data = await response.json()
         setParts(data.parts || [])
       } catch (error) {
@@ -220,22 +196,35 @@ export default function CreateODLPage() {
     []
   )
 
-  const loadCuringCycles = async () => {
-    try {
-      const response = await fetch('/api/curing-cycles')
-      const data = await response.json()
-      setCuringCycles(data.data || [])
-    } catch (error) {
-      console.error('Error loading curing cycles:', error)
-    }
-  }
 
   const handlePartSelection = (part: Part | null) => {
     setSelectedPart(part)
     if (part) {
       setValue('partId', part.id)
+      
+      // Handle tool selection based on available tools
+      const tools = part.partTools?.map(pt => pt.tool) || []
+      setAvailableTools(tools)
+      
+      if (tools.length === 1) {
+        // Auto-select single tool
+        const tool = tools[0]
+        setSelectedTool(tool)
+        setValue('toolId', tool.id)
+      } else if (tools.length > 1) {
+        // Multiple tools available - user must choose
+        setSelectedTool(null)
+        setValue('toolId', undefined)
+      } else {
+        // No tools available
+        setSelectedTool(null)
+        setValue('toolId', undefined)
+      }
     } else {
       setValue('partId', '')
+      setValue('toolId', undefined)
+      setAvailableTools([])
+      setSelectedTool(null)
     }
   }
 
@@ -539,14 +528,62 @@ export default function CreateODLPage() {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ my: 4 }} />
-
-              <DepartmentConfigurationSection
-                control={control}
-                errors={errors}
-                curingCycles={curingCycles}
-                mode="create"
-              />
+                {/* Tool Selection */}
+                {availableTools.length > 0 && (
+                  <Grid size={{ xs: 12 }}>
+                    <Divider sx={{ my: 3 }} />
+                    
+                    <Typography variant="h6" gutterBottom>
+                      Configurazione Avanzata
+                    </Typography>
+                    
+                    {availableTools.length === 1 ? (
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        Tool automaticamente selezionato: <strong>{availableTools[0].toolPartNumber}</strong>
+                        {availableTools[0].description && ` - ${availableTools[0].description}`}
+                      </Alert>
+                    ) : (
+                      <Controller
+                        name="toolId"
+                        control={control}
+                        render={({ field }) => (
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Seleziona Tool</InputLabel>
+                            <Select
+                              {...field}
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                field.onChange(e.target.value)
+                                const tool = availableTools.find(t => t.id === e.target.value)
+                                setSelectedTool(tool || null)
+                              }}
+                              label="Seleziona Tool"
+                            >
+                              {availableTools.map((tool) => (
+                                <MenuItem key={tool.id} value={tool.id}>
+                                  <Box>
+                                    <Typography variant="subtitle2">
+                                      {tool.toolPartNumber}
+                                    </Typography>
+                                    {tool.description && (
+                                      <Typography variant="body2" color="text.secondary">
+                                        {tool.description}
+                                      </Typography>
+                                    )}
+                                    <Typography variant="caption" color="text.secondary">
+                                      {tool.base} x {tool.height} mm
+                                      {tool.weight && ` • ${tool.weight} kg`}
+                                    </Typography>
+                                  </Box>
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      />
+                    )}
+                  </Grid>
+                )}
             </Paper>
           </Grid>
 
@@ -567,8 +604,24 @@ export default function CreateODLPage() {
                   </Typography>
                   
                   <Typography variant="body2">
-                    <strong>Configurazioni:</strong> Personalizzabili per reparto
+                    <strong>Tool disponibili:</strong> {availableTools.length}
                   </Typography>
+                  
+                  {selectedTool && (
+                    <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                      <Typography variant="subtitle2" color="primary">
+                        Tool selezionato:
+                      </Typography>
+                      <Typography variant="body2">
+                        {selectedTool.toolPartNumber}
+                      </Typography>
+                      {selectedTool.description && (
+                        <Typography variant="caption" color="text.secondary">
+                          {selectedTool.description}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -592,11 +645,11 @@ export default function CreateODLPage() {
                 </Typography>
                 
                 <Typography variant="body2" paragraph>
-                  <strong>Configurazioni per Reparto:</strong> Personalizza parametri specifici per Autoclavi, Clean Room e NDI.
+                  <strong>Selezione Tool:</strong> Seleziona il tool appropriato per la lavorazione della parte.
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
-                  I tool e le configurazioni specifiche per reparto verranno gestite man mano che l&apos;ODL avanza nel workflow.
+                  Se la parte ha un solo tool associato, sarà selezionato automaticamente. Le configurazioni specifiche per reparto sono gestite a livello di parte.
                 </Typography>
               </CardContent>
             </Card>

@@ -177,7 +177,7 @@ export default function ToolsPage() {
       format: (value) => String(value || '-')
     },
     {
-      id: 'dimensions' as keyof Tool,
+      id: 'base' as keyof Tool,
       label: 'Dimensioni (mm)',
       minWidth: 120,
       format: (_, row) => `${row.base} × ${row.height} mm`

@@ -14,11 +14,29 @@ Built as a Next.js 15.3.4 application following Domain-Driven Design principles 
 ```bash
 npm run dev          # Start development server with Turbopack (http://localhost:3000)
 npm run dev:standard # Start development server without Turbopack (fallback)
+npm run dev:clean    # Clean development start using ./start-dev.sh
+npm run dev:port     # Development with custom port flag
 npm run dev -- -p 3001 # Force specific port (use when multiple Claude instances)
 npm run build        # Create production build (does NOT start services)
+npm run build:netlify # Specialized Netlify build with database push
 npm run start        # Start production server (after build)
 npm run lint         # Run ESLint checks
 npm run type-check   # Type check without emitting files
+```
+
+### Advanced Development Scripts
+```bash
+./scripts/start.sh                    # Interactive startup menu with options:
+                                      # - Development mode (default)
+                                      # - Production mode
+                                      # - Docker complete setup
+                                      # - Services only (DB + Redis)
+                                      # - Initial setup
+                                      # - Cleanup and status checking
+
+./scripts/dev/start-dev.sh            # Clean development start with port detection
+./scripts/dev/test-dashboard.sh       # Dashboard testing with API checks
+./scripts/dev/monitor-server.sh       # Server monitoring utilities
 ```
 
 ### Database
@@ -27,10 +45,21 @@ docker compose up -d           # Start PostgreSQL and Redis for development
 npm run db:generate            # Generate Prisma client after schema changes
 npm run db:push                # Push schema changes to database (development)
 npm run db:migrate             # Create and run database migrations (production)
+npm run db:migrate:deploy      # Production migration deployment
 npm run db:studio              # Open Prisma Studio GUI
 npm run db:seed                # Seed database with initial data
 npm run db:seed-complete       # Run complete seed for testing and validation
+npm run db:setup-production    # Production database setup
 docker compose down            # Stop services
+```
+
+### Netlify Database Management
+```bash
+npm run db:netlify-info        # Access Netlify database information
+npm run db:reset-netlify       # Reset Netlify database (shows command)
+npm run db:deploy-netlify      # Deploy to Netlify database
+./scripts/netlify-db-access.sh # Netlify database access instructions
+./scripts/deploy-neon.sh       # Complete deployment to Neon database
 ```
 
 ### Microservices
@@ -41,11 +70,33 @@ docker compose -f docker-compose.dev.yml up -d --build  # Start optimization mic
 docker compose -f docker-compose.dev.yml down           # Stop optimization microservice
 docker compose -f docker-compose.dev.yml logs           # View microservice logs
 curl http://localhost:8000/api/v1/health/               # Test microservice health
+pytest                                                  # Run Python tests
+pytest --cov=core --cov=api                            # Run tests with coverage
 cd ..
+```
+
+### Testing Framework
+```bash
+# Comprehensive Test Suite
+node tests/run-all-tests.js     # Run complete test suite with:
+                                # - Server health checks
+                                # - Authentication testing
+                                # - Parts, ODL, Departments API testing
+                                # - Production events and workflow testing
+                                # - Time metrics testing
+                                # - Automatic report generation
+
+# Manual API Testing
+curl http://localhost:3000/api/health                   # Check API health
+./scripts/dev/test-dashboard.sh                        # Dashboard API checks
 ```
 
 ### Complete Local Setup
 ```bash
+# Interactive Setup (Recommended)
+./scripts/start.sh
+
+# Manual Setup
 # 1. Start all infrastructure
 docker compose up -d
 cd manta-optimization-service && docker compose -f docker-compose.dev.yml up -d && cd ..

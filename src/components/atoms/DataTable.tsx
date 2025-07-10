@@ -265,7 +265,7 @@ export function DataTable<T extends Record<string, any>>({
           <Box sx={{ p: 2 }}>
             {data.map((row, index) => (
               <Box 
-                key={String(row.id) || index}
+                key={row.id ? String(row.id) : `card-${index}`}
                 onClick={() => onRowClick?.(row)}
               >
                 {renderMobileCard(row, index)}
@@ -331,7 +331,7 @@ export function DataTable<T extends Record<string, any>>({
               <TableBody>
                 {data.map((row, index) => {
                   const isExpanded = expandedRows.has(index)
-                  const rowKey = String(row.id) || String(index)
+                  const rowKey = row.id ? String(row.id) : `row-${index}`
                   return (
                     <React.Fragment key={rowKey}>
                       <TableRow

@@ -41,6 +41,20 @@ export class ODLService {
     
     const qrCode = await QRCode.toString(QRGenerator.toQRString(qrData), { type: 'svg' })
 
+    // Verify tool association if provided
+    if (input.toolId) {
+      const toolAssociation = await prisma.partTool.findFirst({
+        where: {
+          partId: input.partId,
+          toolId: input.toolId
+        }
+      })
+      
+      if (!toolAssociation) {
+        throw new Error(`Tool not associated with part ${part.partNumber}`)
+      }
+    }
+
     const data = await prisma.oDL.create({
       data: {
         odlNumber: input.odlNumber,
@@ -48,90 +62,23 @@ export class ODLService {
         quantity: input.quantity,
         priority: input.priority,
         qrCode: qrCode,
+        notes: input.notes,
+        expectedCompletionDate: input.expectedCompletionDate,
+        toolId: input.toolId,
       },
       include: {
-        part: true
+        part: {
+          include: {
+            partTools: {
+              include: {
+                tool: true
+              }
+            }
+          }
+        },
+        tool: true
       }
     })
-
-    // Create department-specific configurations if provided
-    if (input.partAutoclave && Object.keys(input.partAutoclave).some(key => input.partAutoclave![key as keyof typeof input.partAutoclave] !== undefined)) {
-      // Check if we have a valid curing cycle ID
-      const curingCycleId = input.partAutoclave.curingCycleId || part.defaultCuringCycleId
-      
-      if (curingCycleId) {
-        await prisma.partAutoclave.upsert({
-          where: { partId: input.partId },
-          update: {
-            curingCycleId,
-            vacuumLines: input.partAutoclave.vacuumLines || part.defaultVacuumLines || 1,
-            setupTime: input.partAutoclave.setupTime,
-            loadPosition: input.partAutoclave.loadPosition,
-            notes: input.partAutoclave.notes,
-          },
-          create: {
-            partId: input.partId,
-            curingCycleId,
-            vacuumLines: input.partAutoclave.vacuumLines || part.defaultVacuumLines || 1,
-            setupTime: input.partAutoclave.setupTime,
-            loadPosition: input.partAutoclave.loadPosition,
-            notes: input.partAutoclave.notes,
-          }
-        })
-      }
-    }
-
-    if (input.partCleanroom && Object.keys(input.partCleanroom).some(key => input.partCleanroom![key as keyof typeof input.partCleanroom] !== undefined)) {
-      await prisma.partCleanroom.upsert({
-        where: { partId: input.partId },
-        update: {
-          layupSequence: input.partCleanroom.layupSequence,
-          fiberOrientation: input.partCleanroom.fiberOrientation,
-          resinType: input.partCleanroom.resinType,
-          prepregCode: input.partCleanroom.prepregCode,
-          roomTemperature: input.partCleanroom.roomTemperature,
-          humidity: input.partCleanroom.humidity,
-          shelfLife: input.partCleanroom.shelfLife,
-          setupTime: input.partCleanroom.setupTime,
-          cycleTime: input.partCleanroom.cycleTime,
-        },
-        create: {
-          partId: input.partId,
-          layupSequence: input.partCleanroom.layupSequence,
-          fiberOrientation: input.partCleanroom.fiberOrientation,
-          resinType: input.partCleanroom.resinType,
-          prepregCode: input.partCleanroom.prepregCode,
-          roomTemperature: input.partCleanroom.roomTemperature,
-          humidity: input.partCleanroom.humidity,
-          shelfLife: input.partCleanroom.shelfLife,
-          setupTime: input.partCleanroom.setupTime,
-          cycleTime: input.partCleanroom.cycleTime,
-        }
-      })
-    }
-
-    if (input.partNDI && Object.keys(input.partNDI).some(key => input.partNDI![key as keyof typeof input.partNDI] !== undefined)) {
-      await prisma.partNDI.upsert({
-        where: { partId: input.partId },
-        update: {
-          inspectionMethod: input.partNDI.inspectionMethod,
-          acceptanceCriteria: input.partNDI.acceptanceCriteria,
-          criticalAreas: input.partNDI.criticalAreas,
-          inspectionTime: input.partNDI.inspectionTime,
-          requiredCerts: input.partNDI.requiredCerts,
-          calibrationReq: input.partNDI.calibrationReq,
-        },
-        create: {
-          partId: input.partId,
-          inspectionMethod: input.partNDI.inspectionMethod,
-          acceptanceCriteria: input.partNDI.acceptanceCriteria,
-          criticalAreas: input.partNDI.criticalAreas,
-          inspectionTime: input.partNDI.inspectionTime,
-          requiredCerts: input.partNDI.requiredCerts,
-          calibrationReq: input.partNDI.calibrationReq,
-        }
-      })
-    }
 
     return ODL.fromPrisma(data)
   }
@@ -141,6 +88,7 @@ export class ODLService {
       where: { id },
       include: {
         part: true,
+        tool: true,
         events: {
           include: {
             department: true,
@@ -160,6 +108,7 @@ export class ODLService {
       where: { odlNumber },
       include: {
         part: true,
+        tool: true,
         events: {
           include: {
             department: true,
@@ -212,6 +161,7 @@ export class ODLService {
         take: limit,
         include: {
           part: true,
+          tool: true,
           _count: {
             select: { events: true }
           }
@@ -268,9 +218,13 @@ export class ODLService {
         partId: input.partId,
         quantity: input.quantity,
         priority: input.priority,
+        notes: input.notes,
+        expectedCompletionDate: input.expectedCompletionDate,
+        toolId: input.toolId,
       },
       include: {
-        part: true
+        part: true,
+        tool: true
       }
     })
 

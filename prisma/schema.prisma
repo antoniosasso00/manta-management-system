@@ -131,6 +131,8 @@ model ODL {
   status                 ODLStatus            @default(CREATED)
   qrCode                 String               @unique
   expectedCompletionDate DateTime?
+  notes                  String?
+  toolId                 String?
   createdAt              DateTime             @default(now())
   updatedAt              DateTime             @updatedAt
   gammaId                String?
@@ -139,6 +141,7 @@ model ODL {
   autoclaveLoadItems     AutoclaveLoadItem[]
   nonConformities        NonConformity[]
   part                   Part                 @relation(fields: [partId], references: [id])
+  tool                   Tool?                @relation(fields: [toolId], references: [id])
   events                 ProductionEvent[]
   qualityCertificates    QualityCertificate[]
   qualityInspections     QualityInspection[]
@@ -149,6 +152,7 @@ model ODL {
   @@index([status, priority, createdAt])
   @@index([gammaId])
   @@index([createdAt])
+  @@index([toolId])
   @@map("odls")
 }
 
@@ -271,6 +275,7 @@ model Tool {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   partTools      PartTool[]
+  odls           ODL[]
 
   @@index([toolPartNumber])
   @@map("tools")

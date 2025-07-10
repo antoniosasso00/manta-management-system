@@ -36,12 +36,9 @@ import {
 import {
   CheckCircle,
   Cancel,
-  Download,
   Visibility,
   LocalFireDepartment,
   Speed,
-  Scale,
-  AirlineSeatFlat,
   PictureAsPdf,
   Architecture,
 } from '@mui/icons-material';

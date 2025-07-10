@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       limit: limitParam ? Math.min(100, Math.max(1, parseInt(limitParam))) || 10 : 10,
       sortBy: ['partNumber', 'description', 'createdAt'].includes(sortByParam || '') ? sortByParam : 'partNumber',
       sortOrder: ['asc', 'desc'].includes(sortOrderParam || '') ? sortOrderParam : 'asc',
+      includeTools: searchParams.get('include') === 'partTools',
     }
 
     console.log('Raw searchParams:', Object.fromEntries(searchParams.entries()))

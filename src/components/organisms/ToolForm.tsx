@@ -21,7 +21,7 @@ import {
   CircularProgress,
   InputAdornment
 } from '@mui/material'
-import { Add, Remove, Search, CheckCircle, Error } from '@mui/icons-material'
+import { Add, Remove, Search, CheckCircle, Error as ErrorIcon } from '@mui/icons-material'
 import { CreateToolWithPartsInput, UpdateToolWithPartsInput } from '@/domains/core/schemas/tool.schema'
 
 interface Part {
@@ -210,12 +210,25 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
 
     setSubmitting(true)
     try {
+      const baseValue = parseFloat(formData.base)
+      const heightValue = parseFloat(formData.height)
+      const weightValue = formData.weight ? parseFloat(formData.weight) : undefined
+      
+      // Check for NaN values
+      if (isNaN(baseValue) || isNaN(heightValue)) {
+        throw new Error('Base e altezza devono essere numeri validi')
+      }
+      
+      if (formData.weight && isNaN(weightValue!)) {
+        throw new Error('Il peso deve essere un numero valido')
+      }
+
       const payload = {
         toolPartNumber: formData.toolPartNumber.trim(),
         description: formData.description.trim() || undefined,
-        base: parseFloat(formData.base),
-        height: parseFloat(formData.height),
-        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        base: baseValue,
+        height: heightValue,
+        weight: weightValue,
         material: formData.material.trim() || undefined,
         isActive: formData.isActive,
         associatedPartIds: selectedParts.map(p => p.id)
@@ -310,7 +323,7 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
                       <CircularProgress size={20} />
                     ) : formData.toolPartNumber && /^[A-Z0-9]{6,15}$/.test(formData.toolPartNumber) ? (
                       partNumberExists ? (
-                        <Error color="error" />
+                        <ErrorIcon color="error" />
                       ) : (
                         <CheckCircle color="success" />
                       )

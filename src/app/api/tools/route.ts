@@ -146,8 +146,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🔍 Received body for tool creation:', JSON.stringify(body, null, 2))
     
+    try {
+      const validatedData = createToolWithPartsSchema.parse(body)
+      console.log('✅ Validation passed, data:', JSON.stringify(validatedData, null, 2))
+    } catch (validationError) {
+      console.error('❌ Schema validation failed:', validationError)
+      throw validationError
+    }
+    
     const validatedData = createToolWithPartsSchema.parse(body)
-    console.log('✅ Validation passed, data:', JSON.stringify(validatedData, null, 2))
 
     // Verifica unicità del Part Number
     console.log('🔍 Checking if tool part number exists:', validatedData.toolPartNumber)
@@ -201,7 +208,7 @@ export async function POST(request: NextRequest) {
         })
 
         // Refetch with associations
-        return await tx.tool.findUnique({
+        const toolWithAssociations = await tx.tool.findUnique({
           where: { id: tool.id },
           include: {
             partTools: {
@@ -217,31 +224,51 @@ export async function POST(request: NextRequest) {
             }
           }
         })
+
+        // Log audit inside transaction
+        console.log('📝 Creating audit log in transaction...')
+        await tx.auditLog.create({
+          data: {
+            userId: session.user.id,
+            userEmail: session.user.email || 'unknown',
+            action: 'CREATE',
+            resource: 'Tool',
+            resourceId: tool.id,
+            details: {
+              toolPartNumber: tool.toolPartNumber,
+              associatedParts: toolWithAssociations!.partTools?.length || 0
+            },
+            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+            userAgent: request.headers.get('user-agent') || 'unknown'
+          }
+        })
+
+        return toolWithAssociations
       }
+
+      // Log audit inside transaction for tools without associations
+      console.log('📝 Creating audit log in transaction...')
+      await tx.auditLog.create({
+        data: {
+          userId: session.user.id,
+          userEmail: session.user.email || 'unknown',
+          action: 'CREATE',
+          resource: 'Tool',
+          resourceId: tool.id,
+          details: {
+            toolPartNumber: tool.toolPartNumber,
+            associatedParts: 0
+          },
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown'
+        }
+      })
 
       console.log('✅ Tool created successfully without associations')
       return tool
     })
 
     console.log('✅ Tool creation transaction completed')
-    
-    // Log audit
-    console.log('📝 Creating audit log...')
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        userEmail: session.user.email || 'unknown',
-        action: 'CREATE',
-        resource: 'Tool',
-        resourceId: newTool!.id,
-        details: {
-          toolPartNumber: newTool!.toolPartNumber,
-          associatedParts: newTool!.partTools?.length || 0
-        },
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown'
-      }
-    })
 
     return NextResponse.json({
       id: newTool!.id,
