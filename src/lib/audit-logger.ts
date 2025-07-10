@@ -22,6 +22,23 @@ export async function logAuditAction({
   request
 }: AuditLogData) {
   try {
+    // Skip audit logging if userId is empty/invalid
+    if (!userId || userId.trim() === '') {
+      console.warn('Skipping audit log: userId is empty')
+      return
+    }
+
+    // Verify user exists in database before creating audit log
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true }
+    })
+
+    if (!userExists) {
+      console.warn(`Skipping audit log: userId ${userId} not found in database`)
+      return
+    }
+
     // Extract IP address and User Agent from request if available
     let ipAddress: string | undefined
     let userAgent: string | undefined

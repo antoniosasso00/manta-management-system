@@ -158,7 +158,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
       });
 
-      // 3. Crea log audit per tracciabilità
+      // 3. Crea log audit per tracciabilità (user already verified to exist)
       await tx.auditLog.create({
         data: {
           userId: user.id,

@@ -168,22 +168,33 @@ export async function PUT(
       return tool
     })
 
-    // Log audit
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        userEmail: session.user.email || 'unknown',
-        action: 'UPDATE',
-        resource: 'Tool',
-        resourceId: updatedTool!.id,
-        details: {
-          toolPartNumber: updatedTool!.toolPartNumber,
-          associatedParts: updatedTool!.partTools?.length || 0
-        },
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown'
+    // Log audit only if user ID exists and is valid
+    if (session.user.id) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true }
+      })
+      
+      if (userExists) {
+        await prisma.auditLog.create({
+          data: {
+            userId: session.user.id,
+            userEmail: session.user.email || 'unknown',
+            action: 'UPDATE',
+            resource: 'Tool',
+            resourceId: updatedTool!.id,
+            details: {
+              toolPartNumber: updatedTool!.toolPartNumber,
+              associatedParts: updatedTool!.partTools?.length || 0
+            },
+            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+            userAgent: request.headers.get('user-agent') || 'unknown'
+          }
+        })
+      } else {
+        console.warn(`Skipping audit log: userId ${session.user.id} not found in database`)
       }
-    })
+    }
 
     return NextResponse.json({
       id: updatedTool!.id,
@@ -259,22 +270,33 @@ export async function DELETE(
       })
     })
 
-    // Log audit
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        userEmail: session.user.email || 'unknown',
-        action: 'DELETE',
-        resource: 'Tool',
-        resourceId: id,
-        details: {
-          toolPartNumber: existingTool.toolPartNumber,
-          removedAssociations: existingTool.partTools.length
-        },
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown'
+    // Log audit only if user ID exists and is valid
+    if (session.user.id) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true }
+      })
+      
+      if (userExists) {
+        await prisma.auditLog.create({
+          data: {
+            userId: session.user.id,
+            userEmail: session.user.email || 'unknown',
+            action: 'DELETE',
+            resource: 'Tool',
+            resourceId: id,
+            details: {
+              toolPartNumber: existingTool.toolPartNumber,
+              removedAssociations: existingTool.partTools.length
+            },
+            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+            userAgent: request.headers.get('user-agent') || 'unknown'
+          }
+        })
+      } else {
+        console.warn(`Skipping audit log: userId ${session.user.id} not found in database`)
       }
-    })
+    }
 
     return NextResponse.json({ message: 'Strumento eliminato con successo' })
 

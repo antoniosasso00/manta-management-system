@@ -225,44 +225,66 @@ export async function POST(request: NextRequest) {
           }
         })
 
-        // Log audit inside transaction
-        console.log('📝 Creating audit log in transaction...')
-        await tx.auditLog.create({
-          data: {
-            userId: session.user.id,
-            userEmail: session.user.email || 'unknown',
-            action: 'CREATE',
-            resource: 'Tool',
-            resourceId: tool.id,
-            details: {
-              toolPartNumber: tool.toolPartNumber,
-              associatedParts: toolWithAssociations!.partTools?.length || 0
-            },
-            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-            userAgent: request.headers.get('user-agent') || 'unknown'
+        // Log audit inside transaction only if user ID exists and is valid
+        if (session.user.id) {
+          const userExists = await tx.user.findUnique({
+            where: { id: session.user.id },
+            select: { id: true }
+          })
+          
+          if (userExists) {
+            console.log('📝 Creating audit log in transaction...')
+            await tx.auditLog.create({
+              data: {
+                userId: session.user.id,
+                userEmail: session.user.email || 'unknown',
+                action: 'CREATE',
+                resource: 'Tool',
+                resourceId: tool.id,
+                details: {
+                  toolPartNumber: tool.toolPartNumber,
+                  associatedParts: toolWithAssociations!.partTools?.length || 0
+                },
+                ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+                userAgent: request.headers.get('user-agent') || 'unknown'
+              }
+            })
+          } else {
+            console.warn(`Skipping audit log: userId ${session.user.id} not found in database`)
           }
-        })
+        }
 
         return toolWithAssociations
       }
 
-      // Log audit inside transaction for tools without associations
-      console.log('📝 Creating audit log in transaction...')
-      await tx.auditLog.create({
-        data: {
-          userId: session.user.id,
-          userEmail: session.user.email || 'unknown',
-          action: 'CREATE',
-          resource: 'Tool',
-          resourceId: tool.id,
-          details: {
-            toolPartNumber: tool.toolPartNumber,
-            associatedParts: 0
-          },
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown'
+      // Log audit inside transaction for tools without associations only if user ID exists and is valid
+      if (session.user.id) {
+        const userExists = await tx.user.findUnique({
+          where: { id: session.user.id },
+          select: { id: true }
+        })
+        
+        if (userExists) {
+          console.log('📝 Creating audit log in transaction...')
+          await tx.auditLog.create({
+            data: {
+              userId: session.user.id,
+              userEmail: session.user.email || 'unknown',
+              action: 'CREATE',
+              resource: 'Tool',
+              resourceId: tool.id,
+              details: {
+                toolPartNumber: tool.toolPartNumber,
+                associatedParts: 0
+              },
+              ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+              userAgent: request.headers.get('user-agent') || 'unknown'
+            }
+          })
+        } else {
+          console.warn(`Skipping audit log: userId ${session.user.id} not found in database`)
         }
-      })
+      }
 
       console.log('✅ Tool created successfully without associations')
       return tool
