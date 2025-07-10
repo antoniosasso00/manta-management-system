@@ -155,7 +155,22 @@ export class AutoclaviBatchService {
       // Recupera ODL con dettagli
       const odls = await tx.oDL.findMany({
         where: { id: { in: data.odlIds } },
-        include: { part: true },
+        include: { 
+        part: {
+          include: {
+            autoclaveConfig: {
+              include: {
+                curingCycle: true,
+              }
+            },
+            partTools: {
+              include: {
+                tool: true,
+              }
+            }
+          }
+        }
+      },
       });
 
       // Aggiungi ODL al batch
@@ -380,7 +395,22 @@ export class AutoclaviBatchService {
         id: { in: data.odlIds },
         status: 'CLEANROOM_COMPLETED',
       },
-      include: { part: true },
+      include: { 
+        part: {
+          include: {
+            autoclaveConfig: {
+              include: {
+                curingCycle: true,
+              }
+            },
+            partTools: {
+              include: {
+                tool: true,
+              }
+            }
+          }
+        }
+      },
     });
 
     if (odls.length !== data.odlIds.length) {
@@ -389,7 +419,7 @@ export class AutoclaviBatchService {
 
     // Verifica compatibilità cicli
     const incompatible = odls.filter(odl => {
-      const odlCycleId = odl.part.defaultCuringCycleId;
+      const odlCycleId = odl.part.autoclaveConfig?.curingCycleId;
       return odlCycleId !== data.curingCycleId;
     });
 
@@ -415,9 +445,11 @@ export class AutoclaviBatchService {
 
   private static mapBatchToSummary(batch: any): BatchSummary {
     const totalVolume = batch.loadItems.reduce((sum: number, item: any) => {
-      const length = item.odl.length || item.odl.part.standardLength || 0;
-      const width = item.odl.width || item.odl.part.standardWidth || 0;
-      const height = item.odl.height || item.odl.part.standardHeight || 0;
+      // Usa dimensioni del Tool associato al Part
+      const tool = item.odl.part.partTools?.[0]?.tool;
+      const length = item.odl.length || tool?.base || 0;
+      const width = item.odl.width || tool?.base || 0; // Tool ha solo base e height
+      const height = item.odl.height || tool?.height || 0;
       return sum + (length * width * height * item.odl.quantity);
     }, 0);
 
@@ -456,9 +488,9 @@ export class AutoclaviBatchService {
         status: item.odl.status,
         previousStatus: item.previousStatus,
         dimensions: {
-          length: item.odl.length || item.odl.part.standardLength,
-          width: item.odl.width || item.odl.part.standardWidth,
-          height: item.odl.height || item.odl.part.standardHeight,
+          length: item.odl.length || item.odl.part.partTools?.[0]?.tool?.base,
+          width: item.odl.width || item.odl.part.partTools?.[0]?.tool?.base, // Tool ha solo base e height
+          height: item.odl.height || item.odl.part.partTools?.[0]?.tool?.height,
         },
       })),
       autoclave: batch.autoclave ? {

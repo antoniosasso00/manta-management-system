@@ -10,7 +10,7 @@ export const createPartSchema = z.object({
   description: z.string()
     .min(1, 'La descrizione è obbligatoria'),
   
-  // Configurazioni Autoclavi (opzionali)
+  // Configurazioni Autoclavi (opzionali) - gestite in PartAutoclave
   defaultCuringCycleId: z.string().cuid().optional(),
   defaultVacuumLines: z.number().int().min(1).max(10).optional(),
   autoclaveSetupTime: z.number().int().positive().optional(),

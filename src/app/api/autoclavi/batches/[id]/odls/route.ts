@@ -48,7 +48,16 @@ export async function POST(
       include: {
         part: {
           include: {
-            defaultCuringCycle: true,
+            autoclaveConfig: {
+              include: {
+                curingCycle: true,
+              }
+            },
+            partTools: {
+              include: {
+                tool: true,
+              }
+            }
           }
         }
       },
@@ -63,7 +72,7 @@ export async function POST(
 
     // Verifica compatibilità cicli di cura
     const incompatibleOdls = odls.filter(odl => {
-      const odlCycleId = odl.part.defaultCuringCycleId;
+      const odlCycleId = odl.part.autoclaveConfig?.curingCycleId;
       return odlCycleId !== batch.curingCycleId;
     });
 

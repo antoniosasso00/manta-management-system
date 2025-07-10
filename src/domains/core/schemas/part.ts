@@ -13,12 +13,7 @@ export const partSchema = z.object({
   lastSyncAt: z.string().datetime().nullable().optional(),
   syncStatus: z.enum(['SUCCESS', 'FAILED', 'PENDING']),
   
-  // Production specifications
-  defaultCuringCycle: z.string().nullable().optional(),
-  standardLength: z.number().nullable().optional(),
-  standardWidth: z.number().nullable().optional(), 
-  standardHeight: z.number().nullable().optional(),
-  defaultVacuumLines: z.number().nullable().optional(),
+  // Production specifications removed - use Tool dimensions via PartTool relation
   
   // Optional counts for API responses
   _count: z.object({
@@ -59,7 +54,6 @@ export const createPartSchema = z.object({
     .min(1, 'Materiale richiesto')
     .max(100, 'Materiale troppo lungo'),
   isActive: z.boolean().default(true),
-  defaultCuringCycleId: z.string().nullable().optional(),
   dimensions: z.string().nullable().optional(),
   weight: z.number().positive('Il peso deve essere positivo').nullable().optional()
 })
@@ -79,7 +73,6 @@ export const updatePartSchema = z.object({
     .max(100, 'Materiale troppo lungo')
     .optional(),
   isActive: z.boolean().optional(),
-  defaultCuringCycleId: z.string().nullable().optional(),
   dimensions: z.string().nullable().optional(),
   weight: z.number().positive('Il peso deve essere positivo').nullable().optional()
 })

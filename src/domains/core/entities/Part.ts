@@ -12,12 +12,7 @@ export interface PartEntity {
   lastSyncAt?: Date | null
   syncStatus: SyncStatus
   
-  // Production specifications
-  defaultCuringCycle?: string | null
-  standardLength?: number | null
-  standardWidth?: number | null
-  standardHeight?: number | null
-  defaultVacuumLines?: number | null
+  // Production specifications removed - use Tool dimensions via PartTool relation
   
   // Relations
   partTools?: PartToolRelation[]
@@ -51,12 +46,7 @@ export class Part implements PartEntity {
   public lastSyncAt?: Date | null
   public syncStatus: SyncStatus
   
-  // Production specifications
-  public defaultCuringCycle?: string | null
-  public standardLength?: number | null
-  public standardWidth?: number | null
-  public standardHeight?: number | null
-  public defaultVacuumLines?: number | null
+  // Production specifications removed - use Tool dimensions via PartTool relation
   
   // Relations
   public partTools?: PartToolRelation[]
@@ -73,11 +63,7 @@ export class Part implements PartEntity {
     this.gammaId = data.gammaId
     this.lastSyncAt = data.lastSyncAt
     this.syncStatus = data.syncStatus
-    this.defaultCuringCycle = data.defaultCuringCycle
-    this.standardLength = data.standardLength
-    this.standardWidth = data.standardWidth
-    this.standardHeight = data.standardHeight
-    this.defaultVacuumLines = data.defaultVacuumLines
+    // Production specifications removed - use Tool dimensions via PartTool relation
     this.partTools = data.partTools
     this._count = data._count
   }
@@ -88,30 +74,8 @@ export class Part implements PartEntity {
     this.markAsUpdated()
   }
 
-  public updateProductionSpecs(specs: {
-    defaultCuringCycle?: string
-    standardLength?: number
-    standardWidth?: number
-    standardHeight?: number
-    defaultVacuumLines?: number
-  }): void {
-    if (specs.defaultCuringCycle !== undefined) {
-      this.defaultCuringCycle = specs.defaultCuringCycle
-    }
-    if (specs.standardLength !== undefined) {
-      this.standardLength = specs.standardLength
-    }
-    if (specs.standardWidth !== undefined) {
-      this.standardWidth = specs.standardWidth
-    }
-    if (specs.standardHeight !== undefined) {
-      this.standardHeight = specs.standardHeight
-    }
-    if (specs.defaultVacuumLines !== undefined) {
-      this.defaultVacuumLines = specs.defaultVacuumLines
-    }
-    this.markAsUpdated()
-  }
+  // Production specifications removed - use Tool dimensions via PartTool relation
+  // Method removed as dimensions are now managed via Tool entities
 
   public markAsSynced(gammaId?: string): void {
     this.lastSyncAt = new Date()
@@ -128,11 +92,11 @@ export class Part implements PartEntity {
   }
 
   public hasDimensions(): boolean {
-    return !!(this.standardLength && this.standardWidth && this.standardHeight)
+    return !!(this.partTools && this.partTools.length > 0 && this.partTools[0].tool)
   }
 
   public hasProductionSpecs(): boolean {
-    return !!(this.defaultCuringCycle || this.defaultVacuumLines)
+    return !!(this.partTools && this.partTools.length > 0)
   }
 
   public isFromGamma(): boolean {

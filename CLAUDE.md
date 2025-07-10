@@ -469,7 +469,28 @@ npm run build && npm run lint && npm run type-check
 - **Gerarchia Dati**: `ODL` → `Part` → Configurazioni Reparto-Specifiche
 - **Eliminazione Ridondanza**: Rimossi `curingCycleId`, `vacuumLines`, `length`, `width`, `height` dal modello ODL
 
-### Flusso Dati Corretto
+### Architettura DDD Part - Solo Tabelle di Estensione (AGGIORNAMENTO CRITICO)
+
+⚠️ **IMPORTANTE**: I campi `defaultCuringCycleId`, `defaultVacuumLines`, `standardLength`, `standardWidth`, `standardHeight` sono stati **RIMOSSI DEFINITIVAMENTE** dal modello Part per seguire l'architettura DDD.
+
+#### Modello Part Pulito
+```prisma
+model Part {
+  id           String   @id @default(cuid())
+  partNumber   String   @unique
+  description  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Solo configurazioni tramite tabelle di estensione
+  autoclaveConfig  PartAutoclave?  @relation("PartAutoclaveConfig")
+  cleanroomConfig  PartCleanroom?  @relation("PartCleanroomConfig") 
+  ndiConfig        PartNDI?        @relation("PartNDIConfig")
+  partTools        PartTool[]      // Dimensioni via Tool
+}
+```
+
+#### Flusso Dati Corretto (AGGIORNATO)
 ```
 ODL.partId → Part.partNumber → PartAutoclave.{curingCycleId, vacuumLines, setupTime}
                               → PartCleanroom.{layupSequence, resinType, cycleTime}
@@ -477,22 +498,52 @@ ODL.partId → Part.partNumber → PartAutoclave.{curingCycleId, vacuumLines, se
                               → PartTool.{toolId} → Tool.{base, height, weight}
 ```
 
-### Accesso ai Dati di Configurazione
-- **Ciclo di Cura**: `odl.part.defaultCuringCycleId` (NOT `odl.curingCycleId`)
-- **Linee Vacuum**: `odl.part.defaultVacuumLines` (NOT `odl.vacuumLines`)
-- **Dimensioni**: Tool-based tramite `odl.part.partTools[0].tool.{base, height}` (NOT ODL fields)
-- **Configurazioni Reparto**: Via `PartAutoclave`, `PartCleanroom`, `PartNDI`
-
-### Pattern di Query Corretti
+#### Accesso ai Dati di Configurazione (NUOVO PATTERN)
 ```typescript
-// ✅ CORRETTO - Usa configurazione Part
-const cycleId = odl.part.defaultCuringCycleId;
-const vacuumLines = odl.part.defaultVacuumLines;
+// ✅ CORRETTO - Usa tabelle di estensione
+const cycleId = odl.part.autoclaveConfig?.curingCycleId;
+const vacuumLines = odl.part.autoclaveConfig?.vacuumLines;
+const dimensions = {
+  length: odl.part.partTools?.[0]?.tool?.base,
+  width: odl.part.partTools?.[0]?.tool?.base,  // Tool ha solo base e height
+  height: odl.part.partTools?.[0]?.tool?.height,
+};
 
-// ❌ SBAGLIATO - Campi rimossi dal modello ODL
-const cycleId = odl.curingCycleId || odl.part.defaultCuringCycleId;
-const dimensions = { length: odl.length, width: odl.width };
+// ❌ SBAGLIATO - Campi rimossi dal modello Part
+const cycleId = odl.part.defaultCuringCycleId;  // NON ESISTE PIÙ
+const vacuumLines = odl.part.defaultVacuumLines; // NON ESISTE PIÙ
+const length = odl.part.standardLength;          // NON ESISTE PIÙ
 ```
+
+#### Pattern di Query con Include Obbligatorio
+```typescript
+// ✅ CORRETTO - Include configurazioni necessarie
+const odls = await prisma.oDL.findMany({
+  include: {
+    part: {
+      include: {
+        autoclaveConfig: {
+          include: { curingCycle: true }
+        },
+        partTools: {
+          include: { tool: true }
+        }
+      }
+    }
+  }
+});
+
+// ❌ SBAGLIATO - Missing include causa errori
+const odls = await prisma.oDL.findMany({
+  include: { part: true } // Configurazioni non incluse
+});
+```
+
+#### Migrazione Completata
+- ✅ Database: Campi rimossi dal schema Part
+- ✅ Service Layer: Usa solo tabelle di estensione  
+- ✅ API Routes: Include configurazioni via relazioni
+- ✅ Frontend: Accesso tramite configurazioni estese
 
 ## Memories
 - **Rispondi in italiano**: Indicates a preference for Italian language interactions when possible

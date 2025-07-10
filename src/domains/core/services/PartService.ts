@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Part } from '../entities/Part'
 import { CreatePartInput, UpdatePartInput, PartQueryInput, GammaSyncPartInput, BulkCreatePartsInput } from '../schemas/part.schema'
-import { SyncStatus } from '@prisma/client'
+import { SyncStatus, Prisma } from '@prisma/client'
 
 export class PartService {
   
@@ -16,26 +16,29 @@ export class PartService {
     }
 
     return await prisma.$transaction(async (tx) => {
-      // Create main part
+      // Create main part - solo campi base
       const part = await tx.part.create({
         data: {
           partNumber: input.partNumber,
           description: input.description,
-          defaultCuringCycleId: input.defaultCuringCycleId,
-          defaultVacuumLines: input.defaultVacuumLines,
         }
       })
 
       // Create PartAutoclave configuration if provided
       if (input.defaultCuringCycleId || input.defaultVacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
+        // curingCycleId è obbligatorio per PartAutoclave
+        if (!input.defaultCuringCycleId) {
+          throw new Error('curingCycleId è richiesto per la configurazione autoclave')
+        }
+        
         await tx.partAutoclave.create({
           data: {
             partId: part.id,
-            curingCycleId: input.defaultCuringCycleId || '',
+            curingCycleId: input.defaultCuringCycleId,
             vacuumLines: input.defaultVacuumLines || 1,
-            setupTime: input.autoclaveSetupTime,
-            loadPosition: input.autoclaveLoadPosition,
-            notes: null as any,
+            setupTime: input.autoclaveSetupTime || null,
+            loadPosition: input.autoclaveLoadPosition || null,
+            notes: null,
           }
         })
       }
@@ -45,15 +48,15 @@ export class PartService {
         await tx.partCleanroom.create({
           data: {
             partId: part.id,
-            layupSequence: null as any,
+            layupSequence: Prisma.JsonNull,
             fiberOrientation: [],
-            resinType: input.resinType,
-            prepregCode: input.prepregCode,
-            roomTemperature: input.roomTemperature,
-            humidity: null as any,
-            shelfLife: null as any,
-            setupTime: null as any,
-            cycleTime: input.cycleTime,
+            resinType: input.resinType || null,
+            prepregCode: input.prepregCode || null,
+            roomTemperature: input.roomTemperature || null,
+            humidity: null,
+            shelfLife: null,
+            setupTime: null,
+            cycleTime: input.cycleTime || null,
           }
         })
       }
@@ -186,8 +189,6 @@ export class PartService {
         data: {
           partNumber: input.partNumber,
           description: input.description,
-          defaultCuringCycleId: input.defaultCuringCycleId,
-          defaultVacuumLines: input.defaultVacuumLines,
         }
       })
 
@@ -337,8 +338,7 @@ export class PartService {
     const data = await prisma.part.findMany({
       where: {
         AND: [
-          { defaultCuringCycleId: null },
-          { defaultVacuumLines: null }
+          { autoclaveConfig: null }
         ]
       },
       orderBy: { partNumber: 'asc' }
@@ -414,8 +414,7 @@ export class PartService {
       prisma.part.count({
         where: {
           AND: [
-            { defaultCuringCycleId: null },
-            { defaultVacuumLines: null }
+            { autoclaveConfig: null }
           ]
         }
       }),

@@ -100,8 +100,6 @@ model Part {
   gammaId              String?
   lastSyncAt           DateTime?
   syncStatus           SyncStatus             @default(SUCCESS)
-  defaultCuringCycleId String?
-  defaultVacuumLines   Int?
   odls                 ODL[]
   cncConfig            PartControlloNumerico? @relation("PartCNCConfig")
   honeycombConfig      PartHoneycomb?         @relation("PartHoneycombConfig")
@@ -112,13 +110,11 @@ model Part {
   autoclaveConfig      PartAutoclave?         @relation("PartAutoclaveConfig")
   cleanroomConfig      PartCleanroom?         @relation("PartCleanroomConfig")
   ndiConfig            PartNDI?               @relation("PartNDIConfig")
-  defaultCuringCycle   CuringCycle?           @relation("DefaultCuringCycle", fields: [defaultCuringCycleId], references: [id])
   qualityPlans         QualityControlPlan[]
   timeStatistics       PartTimeStatistics[]
 
   @@index([partNumber])
   @@index([gammaId])
-  @@index([defaultCuringCycleId])
   @@map("parts")
 }
 
@@ -309,7 +305,6 @@ model CuringCycle {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   autoclaveLoads    AutoclaveLoad[]
-  defaultParts      Part[]          @relation("DefaultCuringCycle")
   partAutoclaves    PartAutoclave[]
 
   @@index([code])

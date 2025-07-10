@@ -640,10 +640,10 @@ function convertToCSV(data: Part[]): string {
   const rows = data.map(part => [
     part.partNumber,
     part.description,
-    part.standardLength || '',
-    part.standardWidth || '',
-    part.standardHeight || '',
-    part.defaultVacuumLines || '',
+    part.partTools?.[0]?.tool?.base || '',
+    part.partTools?.[0]?.tool?.base || '', // Tool ha solo base e height
+    part.partTools?.[0]?.tool?.height || '',
+    part.autoclaveConfig?.vacuumLines || '',
     new Date(part.createdAt).toLocaleDateString('it-IT')
   ])
   

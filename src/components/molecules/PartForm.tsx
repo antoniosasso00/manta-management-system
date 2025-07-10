@@ -152,14 +152,14 @@ export function PartForm({
 
             {/* REMOVED: Non-existent fields from Part schema */}
             {/* 
-            Dimensions Section - COMMENTED OUT (fields not in schema)
-            - standardLength
-            - standardWidth  
-            - standardHeight
+            Dimensions Section - REMOVED (now managed via Tool entities)
+            - standardLength → Use Tool.base
+            - standardWidth → Use Tool.base
+            - standardHeight → Use Tool.height
             
-            Production Settings - COMMENTED OUT (fields not in schema)
-            - defaultVacuumLines
-            - defaultCuringCycleId
+            Production Settings - REMOVED (now managed via extension tables)
+            - defaultVacuumLines → Use PartAutoclave.vacuumLines
+            - defaultCuringCycleId → Use PartAutoclave.curingCycleId
             */}
           </Box>
         </Box>

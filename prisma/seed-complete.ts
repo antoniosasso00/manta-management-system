@@ -914,49 +914,25 @@ async function main() {
       data: {
         partNumber: '8G5350A0001',
         description: 'Pannello ala superiore A320 - Settore 1',
-        gammaId: 'GM001',
-        defaultCuringCycleId: curingCycles[0].id,
-        // standardLength: 2400,
-        // standardWidth: 800,
-        // standardHeight: 25,
-        defaultVacuumLines: 2,
-      },
+        gammaId: 'GM001',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '8G5350B0002',
         description: 'Pannello ala inferiore A320 - Settore 2',
-        gammaId: 'GM002',
-        defaultCuringCycleId: curingCycles[0].id,
-        // standardLength: 2200,
-        // standardWidth: 750,
-        // standardHeight: 20,
-        defaultVacuumLines: 2,
-      },
+        gammaId: 'GM002',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '8G5350C0003',
         description: 'Nervatura centrale ala A320',
-        gammaId: 'GM003',
-        defaultCuringCycleId: curingCycles[1].id,
-        // standardLength: 1800,
-        // standardWidth: 300,
-        // standardHeight: 80,
-        defaultVacuumLines: 1,
-      },
+        gammaId: 'GM003',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '8G5350D0004',
         description: 'Winglet A320neo',
-        gammaId: 'GM004',
-        defaultCuringCycleId: curingCycles[3].id,
-        // standardLength: 1200,
-        // standardWidth: 600,
-        // standardHeight: 40,
-        defaultVacuumLines: 2,
-      },
+        gammaId: 'GM004',      },
     }),
     
     // === BOEING 777 ===
@@ -964,37 +940,19 @@ async function main() {
       data: {
         partNumber: '9B7750C0005',
         description: 'Longherone principale B777',
-        gammaId: 'GM005',
-        defaultCuringCycleId: curingCycles[2].id,
-        // standardLength: 3000,
-        // standardWidth: 400,
-        // standardHeight: 80,
-        defaultVacuumLines: 3,
-      },
+        gammaId: 'GM005',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '9B7750D0006',
         description: 'Pannello fusoliera B777 - Sezione 43',
-        gammaId: 'GM006',
-        defaultCuringCycleId: curingCycles[2].id,
-        // standardLength: 3500,
-        // standardWidth: 1000,
-        // standardHeight: 15,
-        defaultVacuumLines: 4,
-      },
+        gammaId: 'GM006',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '9B7750E0007',
         description: 'Stabilizzatore orizzontale B777',
-        gammaId: 'GM007',
-        defaultCuringCycleId: curingCycles[0].id,
-        // standardLength: 2800,
-        // standardWidth: 900,
-        // standardHeight: 35,
-        defaultVacuumLines: 3,
-      },
+        gammaId: 'GM007',      },
     }),
     
     // === AIRBUS A330 ===
@@ -1002,25 +960,13 @@ async function main() {
       data: {
         partNumber: '5A3300D0008',
         description: 'Stabilizzatore verticale A330',
-        gammaId: 'GM008',
-        defaultCuringCycleId: curingCycles[1].id,
-        // standardLength: 1800,
-        // standardWidth: 600,
-        // standardHeight: 30,
-        defaultVacuumLines: 2,
-      },
+        gammaId: 'GM008',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '5A3300E0009',
         description: 'Pannello deriva A330',
-        gammaId: 'GM009',
-        defaultCuringCycleId: curingCycles[1].id,
-        // standardLength: 2000,
-        // standardWidth: 800,
-        // standardHeight: 25,
-        defaultVacuumLines: 2,
-      },
+        gammaId: 'GM009',      },
     }),
     
     // === BOEING 787 DREAMLINER ===
@@ -1028,25 +974,13 @@ async function main() {
       data: {
         partNumber: '7E7800E0010',
         description: 'Pannello fusoliera B787 - Sezione 41',
-        gammaId: 'GM010',
-        defaultCuringCycleId: curingCycles[3].id,
-        // standardLength: 2800,
-        // standardWidth: 1200,
-        // standardHeight: 15,
-        defaultVacuumLines: 4,
-      },
+        gammaId: 'GM010',      },
     }),
     prisma.part.create({
       data: {
         partNumber: '7E7800F0011',
         description: 'Ala centrale B787',
-        gammaId: 'GM011',
-        defaultCuringCycleId: curingCycles[2].id,
-        // standardLength: 4200,
-        // standardWidth: 1500,
-        // standardHeight: 50,
-        defaultVacuumLines: 6,
-      },
+        gammaId: 'GM011',      },
     }),
     
     // === COMPONENTI SPECIALI ===
@@ -1054,49 +988,25 @@ async function main() {
       data: {
         partNumber: 'SP001-RADAR-DOME',
         description: 'Radome in fibra di carbonio',
-        gammaId: 'GM012',
-        defaultCuringCycleId: curingCycles[4].id,
-        // standardLength: 800,
-        // standardWidth: 800,
-        // standardHeight: 200,
-        defaultVacuumLines: 1,
-      },
+        gammaId: 'GM012',      },
     }),
     prisma.part.create({
       data: {
         partNumber: 'SP002-ENGINE-COWL',
         description: 'Cofano motore',
-        gammaId: 'GM013',
-        defaultCuringCycleId: curingCycles[1].id,
-        // standardLength: 1500,
-        // standardWidth: 1200,
-        // standardHeight: 100,
-        defaultVacuumLines: 3,
-      },
+        gammaId: 'GM013',      },
     }),
     prisma.part.create({
       data: {
         partNumber: 'SP003-CARGO-DOOR',
         description: 'Porta cargo in composito',
-        gammaId: 'GM014',
-        defaultCuringCycleId: curingCycles[0].id,
-        // standardLength: 2000,
-        // standardWidth: 1800,
-        // standardHeight: 40,
-        defaultVacuumLines: 4,
-      },
+        gammaId: 'GM014',      },
     }),
     prisma.part.create({
       data: {
         partNumber: 'SP004-INTERIOR-PANEL',
         description: 'Pannello interno cabina',
-        gammaId: 'GM015',
-        defaultCuringCycleId: curingCycles[4].id,
-        // standardLength: 1200,
-        // standardWidth: 600,
-        // standardHeight: 10,
-        defaultVacuumLines: 1,
-      },
+        gammaId: 'GM015',      },
     }),
     
     // === PARTI AGGIUNTIVE PER AMPLIAMENTO ===
@@ -1106,8 +1016,6 @@ async function main() {
         partNumber: 'EMB190-WING-001',
         description: 'Pannello alare Embraer E190',
         gammaId: 'GM016',
-        defaultCuringCycleId: curingCycles[0].id,
-        defaultVacuumLines: 2,
       },
     }),
     prisma.part.create({
@@ -1115,8 +1023,6 @@ async function main() {
         partNumber: 'EMB170-FUSE-002',
         description: 'Sezione fusoliera Embraer E170',
         gammaId: 'GM017',
-        defaultCuringCycleId: curingCycles[1].id,
-        defaultVacuumLines: 3,
       },
     }),
     
@@ -1126,8 +1032,6 @@ async function main() {
         partNumber: 'CRJ900-HSTAB-001',
         description: 'Stabilizzatore CRJ900',
         gammaId: 'GM018',
-        defaultCuringCycleId: curingCycles[2].id,
-        defaultVacuumLines: 2,
       },
     }),
     prisma.part.create({
@@ -1135,8 +1039,6 @@ async function main() {
         partNumber: 'CRJ700-VSTAB-001',
         description: 'Deriva CRJ700',
         gammaId: 'GM019',
-        defaultCuringCycleId: curingCycles[1].id,
-        defaultVacuumLines: 1,
       },
     }),
     
@@ -1146,8 +1048,6 @@ async function main() {
         partNumber: 'A350-WINGBOX-001',
         description: 'Cassone alare A350',
         gammaId: 'GM020',
-        defaultCuringCycleId: curingCycles[3].id,
-        defaultVacuumLines: 6,
       },
     }),
     prisma.part.create({
@@ -1155,8 +1055,6 @@ async function main() {
         partNumber: 'A350-SHARKLET-001',
         description: 'Sharklet A350',
         gammaId: 'GM021',
-        defaultCuringCycleId: curingCycles[0].id,
-        defaultVacuumLines: 2,
       },
     }),
     
@@ -1166,8 +1064,6 @@ async function main() {
         partNumber: 'EFA-CANARD-001',
         description: 'Canard Eurofighter',
         gammaId: 'GM022',
-        defaultCuringCycleId: curingCycles[2].id,
-        defaultVacuumLines: 2,
       },
     }),
     prisma.part.create({
@@ -1175,8 +1071,6 @@ async function main() {
         partNumber: 'F35-INTAKE-001',
         description: 'Presa d\'aria F-35',
         gammaId: 'GM023',
-        defaultCuringCycleId: curingCycles[3].id,
-        defaultVacuumLines: 4,
       },
     }),
     
@@ -1186,8 +1080,6 @@ async function main() {
         partNumber: 'AW139-BLADE-001',
         description: 'Pala rotore AW139',
         gammaId: 'GM024',
-        defaultCuringCycleId: curingCycles[1].id,
-        defaultVacuumLines: 1,
       },
     }),
     prisma.part.create({
@@ -1195,8 +1087,6 @@ async function main() {
         partNumber: 'NH90-TAIL-001',
         description: 'Coda NH90',
         gammaId: 'GM025',
-        defaultCuringCycleId: curingCycles[0].id,
-        defaultVacuumLines: 3,
       },
     }),
     
@@ -1206,8 +1096,6 @@ async function main() {
         partNumber: 'PREDATOR-WING-001',
         description: 'Ala drone Predator',
         gammaId: 'GM026',
-        defaultCuringCycleId: curingCycles[4].id,
-        defaultVacuumLines: 2,
       },
     }),
     prisma.part.create({
@@ -1215,8 +1103,6 @@ async function main() {
         partNumber: 'GLOBAL-HAWK-NOSE',
         description: 'Muso Global Hawk',
         gammaId: 'GM027',
-        defaultCuringCycleId: curingCycles[1].id,
-        defaultVacuumLines: 1,
       },
     }),
     
@@ -1226,8 +1112,6 @@ async function main() {
         partNumber: 'VEGA-FAIRING-001',
         description: 'Carenatura Vega',
         gammaId: 'GM028',
-        defaultCuringCycleId: curingCycles[2].id,
-        defaultVacuumLines: 4,
       },
     }),
     prisma.part.create({
@@ -1235,8 +1119,6 @@ async function main() {
         partNumber: 'ARIANE-TANK-001',
         description: 'Serbatoio Ariane',
         gammaId: 'GM029',
-        defaultCuringCycleId: curingCycles[3].id,
-        defaultVacuumLines: 6,
       },
     }),
     
@@ -1246,8 +1128,6 @@ async function main() {
         partNumber: 'F1-FRONT-WING-001',
         description: 'Ala anteriore F1',
         gammaId: 'GM030',
-        defaultCuringCycleId: curingCycles[4].id,
-        defaultVacuumLines: 1,
       },
     }),
     prisma.part.create({
@@ -1255,8 +1135,6 @@ async function main() {
         partNumber: 'F1-FLOOR-001',
         description: 'Fondo F1',
         gammaId: 'GM031',
-        defaultCuringCycleId: curingCycles[1].id,
-        defaultVacuumLines: 2,
       },
     }),
   ])
