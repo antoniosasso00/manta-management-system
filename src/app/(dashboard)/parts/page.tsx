@@ -54,8 +54,8 @@ export default function PartsPage() {
     defaultValues: {
       partNumber: '',
       description: '',
-      defaultCuringCycleId: '',
-      defaultVacuumLines: undefined,
+      curingCycleId: '',
+      vacuumLines: undefined,
       autoclaveSetupTime: undefined,
       autoclaveLoadPosition: '',
       resinType: '',
@@ -72,8 +72,8 @@ export default function PartsPage() {
     defaultValues: {
       partNumber: '',
       description: '',
-      defaultCuringCycleId: '',
-      defaultVacuumLines: undefined,
+      curingCycleId: '',
+      vacuumLines: undefined,
       autoclaveSetupTime: undefined,
       autoclaveLoadPosition: '',
       resinType: '',
@@ -162,8 +162,8 @@ export default function PartsPage() {
     createForm.reset({
       partNumber: '',
       description: '',
-      defaultCuringCycleId: '',
-      defaultVacuumLines: undefined,
+      curingCycleId: '',
+      vacuumLines: undefined,
       autoclaveSetupTime: undefined,
       autoclaveLoadPosition: '',
       resinType: '',
@@ -307,18 +307,18 @@ export default function PartsPage() {
 
   const autoclaveFields: FieldConfig[] = [
     {
-      name: 'defaultCuringCycleId',
-      label: 'Ciclo di Cura Predefinito',
+      name: 'curingCycleId',
+      label: 'Ciclo di Cura',
       type: 'select',
-      placeholder: 'Seleziona ciclo...',
+      placeholder: 'Seleziona ciclo di cura...',
       gridSize: 6,
       options: curingCycles
     },
     {
-      name: 'defaultVacuumLines',
-      label: 'Linee Vacuum Predefinite',
+      name: 'vacuumLines',
+      label: 'Linee Vacuum',
       type: 'number',
-      placeholder: '1-10',
+      placeholder: '1-10 linee',
       gridSize: 6
     },
     {

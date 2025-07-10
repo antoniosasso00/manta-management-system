@@ -25,17 +25,17 @@ export class PartService {
       })
 
       // Create PartAutoclave configuration if provided
-      if (input.defaultCuringCycleId || input.defaultVacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
+      if (input.curingCycleId || input.vacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
         // curingCycleId è obbligatorio per PartAutoclave
-        if (!input.defaultCuringCycleId) {
+        if (!input.curingCycleId) {
           throw new Error('curingCycleId è richiesto per la configurazione autoclave')
         }
         
         await tx.partAutoclave.create({
           data: {
             partId: part.id,
-            curingCycleId: input.defaultCuringCycleId,
-            vacuumLines: input.defaultVacuumLines || 1,
+            curingCycleId: input.curingCycleId,
+            vacuumLines: input.vacuumLines || 1,
             setupTime: input.autoclaveSetupTime || null,
             loadPosition: input.autoclaveLoadPosition || null,
             notes: null,
@@ -193,22 +193,22 @@ export class PartService {
       })
 
       // Update or create PartAutoclave configuration
-      if (input.defaultCuringCycleId || input.defaultVacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
+      if (input.curingCycleId || input.vacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
         await tx.partAutoclave.upsert({
           where: { partId: id },
           update: {
-            curingCycleId: input.defaultCuringCycleId || '',
-            vacuumLines: input.defaultVacuumLines || 1,
+            curingCycleId: input.curingCycleId || '',
+            vacuumLines: input.vacuumLines || 1,
             setupTime: input.autoclaveSetupTime,
             loadPosition: input.autoclaveLoadPosition,
           },
           create: {
             partId: id,
-            curingCycleId: input.defaultCuringCycleId || '',
-            vacuumLines: input.defaultVacuumLines || 1,
+            curingCycleId: input.curingCycleId || '',
+            vacuumLines: input.vacuumLines || 1,
             setupTime: input.autoclaveSetupTime,
             loadPosition: input.autoclaveLoadPosition,
-            notes: null as any,
+            notes: null,
           }
         })
       }

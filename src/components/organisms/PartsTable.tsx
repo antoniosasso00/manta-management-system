@@ -113,7 +113,7 @@ export function PartsTable({
       },
     },
     {
-      id: 'defaultVacuumLines',
+      id: 'partTools',
       label: 'Vacuum Lines',
       minWidth: 100,
       align: 'center',

@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            defaultParts: true,
+            partAutoclaves: true,
             autoclaveLoads: true,
           }
         }
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       include: {
         _count: {
           select: {
-            defaultParts: true,
+            partAutoclaves: true,
             autoclaveLoads: true,
           }
         }
