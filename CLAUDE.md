@@ -246,6 +246,157 @@ src/
 - **Pattern**: `export class ServiceName { static async methodName() {} }`
 - **Common Error**: Using instance methods breaks API routes with "is not a function" errors
 
+## Standardizzazione e Centralizzazione Gestione Dati
+
+### API Response Format Standard (OBBLIGATORIO)
+Tutti gli endpoint API devono utilizzare il formato di risposta unificato tramite `ResponseHelper`:
+
+```typescript
+// GET /api/entity - Lista paginata
+return ResponseHelper.paginated(
+  data,
+  total,
+  page,
+  limit
+)
+
+// POST /api/entity - Risorsa creata
+return ResponseHelper.created(data)
+
+// GET /api/entity/[id] - Risorsa singola
+return ResponseHelper.success(data)
+
+// Errori standardizzati
+return ResponseHelper.unauthorized()
+return ResponseHelper.forbidden()
+return ResponseHelper.notFound()
+return ResponseHelper.conflict()
+return ResponseHelper.validationError(message, details)
+```
+
+### Service Layer Pattern (OBBLIGATORIO)
+Tutti gli endpoint API devono utilizzare il Service Layer, mai accesso diretto a Prisma:
+
+```typescript
+// ✅ CORRETTO - Usa Service Layer
+export const GET = ErrorHelper.withErrorHandling(async (request: NextRequest) => {
+  const session = await auth()
+  if (!session?.user) {
+    return ResponseHelper.unauthorized()
+  }
+
+  const queryParams = QueryHelper.parseSearchParams(request.url)
+  const validatedQuery = entityQuerySchema.parse(queryParams)
+  const result = await EntityService.findMany(validatedQuery)
+
+  return ResponseHelper.paginated(
+    result.entities,
+    result.total,
+    result.page,
+    result.limit
+  )
+})
+
+// ❌ SBAGLIATO - Accesso diretto Prisma
+const entities = await prisma.entity.findMany({...})
+```
+
+### Error Handling Centralizzato (OBBLIGATORIO)
+```typescript
+// Wrap tutti gli handler con ErrorHelper
+export const GET = ErrorHelper.withErrorHandling(async (request: NextRequest) => {
+  // Logica endpoint
+})
+
+// Custom error types
+throw new ConflictError('Risorsa già esistente')
+throw new NotFoundError('Risorsa non trovata')
+throw new ValidationError('Dati non validi', zodErrors)
+```
+
+### Auth Pattern Standard (OBBLIGATORIO)
+```typescript
+// Verifica autenticazione
+const session = await auth()
+if (!session?.user) {
+  return ResponseHelper.unauthorized()
+}
+
+// Verifica permessi
+if (!AuthHelper.canModify(session.user.role)) {
+  return ResponseHelper.forbidden()
+}
+
+// Verifica admin
+if (!AuthHelper.isAdmin(session.user.role)) {
+  return ResponseHelper.forbidden()
+}
+```
+
+### Race Condition Protection (CRITICO)
+Per operazioni concorrenti, utilizzare sempre il pattern retry con lock ottimistico:
+
+```typescript
+// WorkflowService pattern per operazioni atomiche
+const result = await this.executeWithRetry(async () => {
+  return await prisma.$transaction(async (tx) => {
+    // Operazione atomica con verifica stato
+    const updated = await tx.entity.update({
+      where: { 
+        id: entityId,
+        status: expectedStatus // Lock ottimistico
+      },
+      data: { status: newStatus }
+    })
+    
+    if (!updated) {
+      throw new Error('Stato modificato durante operazione')
+    }
+    
+    // Altre operazioni correlate
+    return updated
+  }, {
+    maxWait: 10000,
+    timeout: 30000,
+    isolationLevel: Prisma.TransactionIsolationLevel.Serializable
+  })
+})
+```
+
+### Service Layer Standard Pattern (OBBLIGATORIO)
+```typescript
+// Tutti i servizi devono implementare questo pattern
+export class EntityService {
+  static async findMany(input: EntityQueryInput) {
+    // Validazione input
+    // Query ottimizzata con paginazione
+    // Trasformazione dati
+    return { entities, total, page, limit, totalPages }
+  }
+  
+  static async create(input: CreateEntityInput) {
+    // Validazione business rules
+    // Operazioni atomiche in transazione
+    // Gestione associazioni
+    return entity
+  }
+  
+  static async update(id: string, input: UpdateEntityInput) {
+    // Verifica esistenza
+    // Validazione unicità
+    // Operazioni atomiche
+    return entity
+  }
+  
+  static async delete(id: string) {
+    // Verifica esistenza
+    // Controllo dipendenze
+    // Eliminazione sicura
+    return void
+  }
+}
+```
+
 ### Material-UI Grid v7 Breaking Changes (IMPORTANT)
 - **DEPRECATO**: `<Grid item xs={12} sm={6} md={4}>` sintassi NON supportata
 - **CORRETTO**: `<Grid size={{ xs: 12, sm: 6, md: 4 }}>` nuova sintassi obbligatoria

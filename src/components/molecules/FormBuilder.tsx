@@ -86,6 +86,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                 {!field.hideLabel && <InputLabel>{field.label}</InputLabel>}
                 <Select
                   {...controllerField}
+                  value={controllerField.value || ''}
                   label={!field.hideLabel ? field.label : undefined}
                 >
                   {field.options?.map(option => (
@@ -115,6 +116,10 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                   multiple
                   label={!field.hideLabel ? field.label : undefined}
                   value={controllerField.value || []}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    controllerField.onChange(Array.isArray(value) ? value : [value])
+                  }}
                 >
                   {field.options?.map(option => (
                     <MenuItem key={option.value} value={option.value}>
@@ -141,7 +146,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                   control={
                     <Checkbox
                       {...controllerField}
-                      checked={controllerField.value || false}
+                      checked={Boolean(controllerField.value)}
+                      onChange={(e) => controllerField.onChange(e.target.checked)}
                     />
                   }
                   label={field.label}
@@ -165,7 +171,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                   control={
                     <Switch
                       {...controllerField}
-                      checked={controllerField.value || false}
+                      checked={Boolean(controllerField.value)}
+                      onChange={(e) => controllerField.onChange(e.target.checked)}
                     />
                   }
                   label={field.label}
@@ -190,7 +197,11 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                     {field.label}
                   </InputLabel>
                 )}
-                <RadioGroup {...controllerField}>
+                <RadioGroup 
+                  {...controllerField}
+                  value={controllerField.value || ''}
+                  onChange={(e) => controllerField.onChange(e.target.value)}
+                >
                   {field.options?.map(option => (
                     <FormControlLabel
                       key={option.value}
@@ -216,6 +227,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             render={({ field: controllerField }) => (
               <DatePicker
                 {...controllerField}
+                value={controllerField.value || null}
+                onChange={(newValue) => controllerField.onChange(newValue)}
                 label={!field.hideLabel ? field.label : undefined}
                 disabled={field.disabled}
                 slotProps={{
@@ -239,6 +252,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             render={({ field: controllerField }) => (
               <TimePicker
                 {...controllerField}
+                value={controllerField.value || null}
+                onChange={(newValue) => controllerField.onChange(newValue)}
                 label={!field.hideLabel ? field.label : undefined}
                 disabled={field.disabled}
                 slotProps={{
@@ -262,6 +277,8 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             render={({ field: controllerField }) => (
               <DateTimePicker
                 {...controllerField}
+                value={controllerField.value || null}
+                onChange={(newValue) => controllerField.onChange(newValue)}
                 label={!field.hideLabel ? field.label : undefined}
                 disabled={field.disabled}
                 slotProps={{
@@ -358,6 +375,16 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                 required={field.required}
                 multiline={field.multiline}
                 rows={field.rows}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (field.type === 'number') {
+                    // Convert to number for numeric fields, preserve empty string for clearing
+                    const numValue = value === '' ? undefined : Number(value)
+                    controllerField.onChange(numValue)
+                  } else {
+                    controllerField.onChange(value)
+                  }
+                }}
                 InputProps={{
                   startAdornment: field.startAdornment,
                   endAdornment: field.endAdornment,

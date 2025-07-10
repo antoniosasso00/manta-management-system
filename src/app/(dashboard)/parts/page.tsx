@@ -53,7 +53,17 @@ export default function PartsPage() {
     resolver: zodResolver(createPartSchema),
     defaultValues: {
       partNumber: '',
-      description: ''
+      description: '',
+      defaultCuringCycleId: '',
+      defaultVacuumLines: undefined,
+      autoclaveSetupTime: undefined,
+      autoclaveLoadPosition: '',
+      resinType: '',
+      prepregCode: '',
+      cycleTime: undefined,
+      roomTemperature: undefined,
+      inspectionTime: undefined,
+      calibrationReq: ''
     }
   })
 
@@ -61,7 +71,17 @@ export default function PartsPage() {
     resolver: zodResolver(updatePartInputSchema),
     defaultValues: {
       partNumber: '',
-      description: ''
+      description: '',
+      defaultCuringCycleId: '',
+      defaultVacuumLines: undefined,
+      autoclaveSetupTime: undefined,
+      autoclaveLoadPosition: '',
+      resinType: '',
+      prepregCode: '',
+      cycleTime: undefined,
+      roomTemperature: undefined,
+      inspectionTime: undefined,
+      calibrationReq: ''
     }
   })
 
@@ -139,7 +159,20 @@ export default function PartsPage() {
   const handleAdd = () => {
     setSelectedPart(null)
     setIsEditing(false)
-    createForm.reset({})
+    createForm.reset({
+      partNumber: '',
+      description: '',
+      defaultCuringCycleId: '',
+      defaultVacuumLines: undefined,
+      autoclaveSetupTime: undefined,
+      autoclaveLoadPosition: '',
+      resinType: '',
+      prepregCode: '',
+      cycleTime: undefined,
+      roomTemperature: undefined,
+      inspectionTime: undefined,
+      calibrationReq: ''
+    })
     setFormOpen(true)
   }
 
@@ -148,7 +181,17 @@ export default function PartsPage() {
     setIsEditing(true)
     updateForm.reset({
       partNumber: part.partNumber,
-      description: part.description
+      description: part.description,
+      // defaultCuringCycleId: part.defaultCuringCycleId || '',
+      // defaultVacuumLines: part.defaultVacuumLines || 1,
+      // autoclaveSetupTime: part.autoclaveSetupTime,
+      // autoclaveLoadPosition: part.autoclaveLoadPosition || '',
+      // resinType: part.resinType || '',
+      // prepregCode: part.prepregCode || '',
+      // cycleTime: part.cycleTime,
+      // roomTemperature: part.roomTemperature,
+      // inspectionTime: part.inspectionTime,
+      // calibrationReq: part.calibrationReq || ''
     })
     setFormOpen(true)
   }

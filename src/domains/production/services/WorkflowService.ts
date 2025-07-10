@@ -297,30 +297,27 @@ export class WorkflowService {
         };
       }
 
-      // Esegui trasferimento in transazione atomica con timeout e retry
-      const result = await prisma.$transaction(async (tx) => {
+      // Esegui trasferimento in transazione atomica con retry automatico
+      const result = await this.executeWithRetry(async () => {
+        return await prisma.$transaction(async (tx) => {
         try {
-          // 1. Verifica nuovamente lo stato ODL (potrebbero esserci stati cambiamenti)
-          const currentODL = await tx.oDL.findUnique({
-            where: { id: validatedInput.odlId },
-            select: { status: true } // Version field removed
-          });
-
-          if (!currentODL || currentODL.status !== originalODL.status) {
-            throw new Error('Stato ODL modificato durante il trasferimento');
-          }
-
-          // 2. Aggiorna stato ODL con lock ottimistico
+          // 1. Aggiorna stato ODL con lock ottimistico atomico
+          // Questa operazione fallirà se un'altra transazione ha modificato lo stato
           const updatedODL = await tx.oDL.update({
             where: { 
               id: validatedInput.odlId,
-              status: originalODL.status // Verifica che lo stato non sia cambiato
+              status: originalODL.status // Verifica atomica che lo stato non sia cambiato
             },
             data: { 
               status: targetStatus,
               updatedAt: new Date()
             }
           });
+
+          // Se l'update ha successo, significa che avevamo il lock corretto
+          if (!updatedODL) {
+            throw new Error('Stato ODL modificato durante il trasferimento - operazione annullata');
+          }
 
           // 3. Crea evento EXIT dal reparto corrente
           await tx.productionEvent.create({
@@ -363,6 +360,7 @@ export class WorkflowService {
         timeout: 30000, // 30 secondi timeout
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable
       });
+      }); // Chiusura executeWithRetry
 
       return {
         success: true,
@@ -607,6 +605,46 @@ export class WorkflowService {
         message: 'Errore durante rollback - intervento manuale richiesto'
       };
     }
+  }
+
+  /**
+   * Esegue operazione con retry automatico per gestire race conditions
+   */
+  static async executeWithRetry<T>(
+    operation: () => Promise<T>,
+    maxRetries: number = 3,
+    baseDelay: number = 100
+  ): Promise<T> {
+    let lastError: Error;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error as Error;
+        
+        // Ritenta solo per errori di concorrenza
+        if (
+          error instanceof Error &&
+          (error.message.includes('Stato ODL modificato') ||
+           error.message.includes('P2034') || // Prisma transaction conflict
+           error.message.includes('Transaction'))
+        ) {
+          if (attempt < maxRetries) {
+            // Exponential backoff con jitter
+            const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 100;
+            console.log(`Retry attempt ${attempt}/${maxRetries} after ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+        }
+        
+        // Se non è un errore di concorrenza o abbiamo esaurito i tentativi
+        throw error;
+      }
+    }
+    
+    throw lastError!;
   }
 
   /**

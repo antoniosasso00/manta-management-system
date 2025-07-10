@@ -109,6 +109,7 @@ export class PartService {
     parts: Part[]
     total: number
     page: number
+    limit: number
     totalPages: number
   }> {
     const { search, page, limit, sortBy, sortOrder, includeTools } = query
@@ -154,6 +155,7 @@ export class PartService {
       parts,
       total,
       page,
+      limit,
       totalPages
     }
   }
