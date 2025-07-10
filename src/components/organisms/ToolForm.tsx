@@ -133,9 +133,9 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
       const response = await fetch('/api/parts?limit=100&isActive=true')
       if (response.ok) {
         const data = await response.json()
-        // PartService.findMany returns {parts: Part[], total, page, totalPages}
-        if (data && Array.isArray(data.parts)) {
-          setParts(data.parts)
+        // New API response format: {data: Part[], meta: {...}, success: boolean}
+        if (data && data.success && Array.isArray(data.data)) {
+          setParts(data.data)
         } else {
           console.error('Unexpected API response structure:', data)
           setParts([])
