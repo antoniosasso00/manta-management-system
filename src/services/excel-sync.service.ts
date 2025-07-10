@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx'
 import { readFileSync, existsSync, readdirSync } from 'fs'
 import { join } from 'path'
 import { PartService } from '@/domains/core/services/PartService'
-import { CreatePartInput } from '@/domains/core/schemas/part.schema'
+import { CreatePartInput } from '@/domains/core/schemas/part'
 
 export interface SyncResult {
   success: boolean

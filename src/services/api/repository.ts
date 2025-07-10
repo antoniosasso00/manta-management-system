@@ -190,20 +190,9 @@ export abstract class ValidatedRepository<
   }
 
   async create(data: CreateDTO): Promise<T> {
-    try {
-      const validatedData = this.schemas.create.parse(data)
-      const response = await super.create(validatedData)
-      return this.schemas.entity.parse(response)
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error('Validation error in create:', {
-          data,
-          errors: error.errors,
-          formattedErrors: error.flatten()
-        })
-      }
-      throw error
-    }
+    const validatedData = this.schemas.create.parse(data)
+    const response = await super.create(validatedData)
+    return this.schemas.entity.parse(response)
   }
 
   async update(id: string | number, data: UpdateDTO): Promise<T> {

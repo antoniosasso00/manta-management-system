@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/atoms/Input'
 import { Button } from '@/components/atoms/Button'
 import { LoadingButton } from '@/components/atoms/LoadingButton'
-import { createPartSchema, updatePartSchema, type CreatePartInput, type UpdatePartInput } from '@/domains/core/schemas/part.schema'
+import { createPartSchema, updatePartInputSchema, type CreatePartInput, type UpdatePartInput } from '@/domains/core/schemas/part'
 import { usePermissions } from '@/hooks/usePermissions'
 
 interface PartFormProps {
@@ -37,7 +37,7 @@ export function PartForm({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const permissions = usePermissions()
   
-  const schema = mode === 'create' ? createPartSchema : updatePartSchema
+  const schema = mode === 'create' ? createPartSchema : updatePartInputSchema
   const canSubmit = mode === 'create' ? permissions.parts.canCreate : permissions.parts.canUpdate
 
   const {
@@ -46,7 +46,6 @@ export function PartForm({
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
-    // @ts-expect-error - Complex union type resolver issue
     resolver: zodResolver(schema),
     defaultValues: initialData || {
       partNumber: '',

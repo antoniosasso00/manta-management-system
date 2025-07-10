@@ -22,7 +22,7 @@ import { SearchInput } from '@/components/atoms/SearchInput'
 import { Button } from '@/components/atoms/Button'
 import { PartForm } from '@/components/molecules/PartForm'
 import { usePermissions } from '@/hooks/usePermissions'
-import type { CreatePartInput, UpdatePartInput, PartQueryInput } from '@/domains/core/schemas/part.schema'
+import type { CreatePartInput, UpdatePartInput, PartQueryInput } from '@/domains/core/schemas/part'
 import { format } from 'date-fns'
 import type { Prisma } from '@prisma/client'
 

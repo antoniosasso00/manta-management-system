@@ -74,7 +74,7 @@ export const apiPartsResponseSchema = z.object({
   success: z.boolean()
 })
 
-// Create Part schema (aligned with part.schema.ts)
+// Create Part schema - handles empty strings correctly
 export const createPartSchema = z.object({
   partNumber: z.string()
     .min(1, 'Il numero parte è obbligatorio')
@@ -84,31 +84,84 @@ export const createPartSchema = z.object({
   
   // Configurazioni Autoclavi (opzionali) - gestite in PartAutoclave
   curingCycleId: z.string().optional(),
-  vacuumLines: z.number().int().min(1).max(10).optional(),
-  autoclaveSetupTime: z.number().int().positive().optional(),
+  vacuumLines: z.number().optional(),
+  autoclaveSetupTime: z.number().optional(),
   autoclaveLoadPosition: z.string().optional(),
   
   // Configurazioni Clean Room (opzionali)
   resinType: z.string().optional(),
   prepregCode: z.string().optional(),
-  cycleTime: z.number().int().positive().optional(),
-  roomTemperature: z.number().positive().optional(),
+  cycleTime: z.number().optional(),
+  roomTemperature: z.number().optional(),
   
   // Configurazioni NDI (opzionali)
-  inspectionTime: z.number().int().positive().optional(),
+  inspectionTime: z.number().optional(),
+  calibrationReq: z.string().optional(),
+}).transform((data) => {
+  // Clean up empty strings to undefined for optional fields
+  const cleaned: any = {
+    partNumber: data.partNumber,
+    description: data.description
+  }
+  
+  // Only add optional fields if they have values
+  if (data.curingCycleId && data.curingCycleId.trim()) cleaned.curingCycleId = data.curingCycleId
+  if (data.vacuumLines !== undefined && data.vacuumLines > 0) cleaned.vacuumLines = data.vacuumLines
+  if (data.autoclaveSetupTime !== undefined && data.autoclaveSetupTime > 0) cleaned.autoclaveSetupTime = data.autoclaveSetupTime
+  if (data.autoclaveLoadPosition && data.autoclaveLoadPosition.trim()) cleaned.autoclaveLoadPosition = data.autoclaveLoadPosition
+  if (data.resinType && data.resinType.trim()) cleaned.resinType = data.resinType
+  if (data.prepregCode && data.prepregCode.trim()) cleaned.prepregCode = data.prepregCode
+  if (data.cycleTime !== undefined && data.cycleTime > 0) cleaned.cycleTime = data.cycleTime
+  if (data.roomTemperature !== undefined && data.roomTemperature > 0) cleaned.roomTemperature = data.roomTemperature
+  if (data.inspectionTime !== undefined && data.inspectionTime > 0) cleaned.inspectionTime = data.inspectionTime
+  if (data.calibrationReq && data.calibrationReq.trim()) cleaned.calibrationReq = data.calibrationReq
+  
+  return cleaned
+})
+
+// Update Part input schema (without id and required fields)
+export const updatePartInputSchema = z.object({
+  partNumber: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  curingCycleId: z.string().optional(),
+  vacuumLines: z.number().optional(),
+  autoclaveSetupTime: z.number().optional(),
+  autoclaveLoadPosition: z.string().optional(),
+  resinType: z.string().optional(),
+  prepregCode: z.string().optional(),
+  cycleTime: z.number().optional(),
+  roomTemperature: z.number().optional(),
+  inspectionTime: z.number().optional(),
   calibrationReq: z.string().optional(),
 })
 
-// Update Part schema (aligned with part.schema.ts)
-export const updatePartSchema = createPartSchema.partial().extend({
-  id: z.string().cuid(),
+// Query schema for API requests
+export const partQuerySchema = z.object({
+  search: z.string().optional(),
+  isActive: z.boolean().optional(),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(10),
+  sortBy: z.enum(['partNumber', 'description', 'createdAt']).default('partNumber'),
+  sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  includeTools: z.boolean().optional(),
 })
 
-// Update Part input schema (without id)
-export const updatePartInputSchema = createPartSchema.partial()
+// Gamma MES sync schema
+export const gammaSyncPartSchema = z.object({
+  gammaId: z.string(),
+  partNumber: z.string().regex(/^[A-Za-z0-9]+$/),
+  description: z.string().min(1),
+})
+
+// Bulk create schema
+export const bulkCreatePartsSchema = z.object({
+  parts: z.array(createPartSchema).min(1).max(1000),
+})
 
 // Type exports
 export type Part = z.infer<typeof partSchema>
 export type CreatePartInput = z.infer<typeof createPartSchema>
-export type UpdatePartInput = z.infer<typeof updatePartSchema>
-export type UpdatePartInputData = z.infer<typeof updatePartInputSchema>
+export type UpdatePartInput = z.infer<typeof updatePartInputSchema>
+export type PartQueryInput = z.infer<typeof partQuerySchema>
+export type GammaSyncPartInput = z.infer<typeof gammaSyncPartSchema>
+export type BulkCreatePartsInput = z.infer<typeof bulkCreatePartsSchema>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-node'
 import { PartService } from '@/domains/core/services/PartService'
-import { updatePartSchema } from '@/domains/core/schemas/part.schema'
+import { updatePartInputSchema } from '@/domains/core/schemas/part'
 import { ZodError } from 'zod'
 
 export const runtime = 'nodejs'
@@ -53,10 +53,9 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const validatedData = updatePartSchema.parse({ ...body, id: (await params).id })
+    const validatedData = updatePartInputSchema.parse(body)
     
-    const { id, ...updateData } = validatedData
-    const part = await PartService.update(id, updateData)
+    const part = await PartService.update((await params).id, validatedData)
 
     return NextResponse.json(part)
   } catch (error) {

@@ -26,7 +26,7 @@ import { partRepository } from '@/services/api/repositories/part.repository'
 import { createPartSchema, updatePartInputSchema } from '@/domains/core/schemas/part'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { CreatePartInput, UpdatePartInputData } from '@/domains/core/schemas/part'
+import type { CreatePartInput, UpdatePartInput } from '@/domains/core/schemas/part'
 import type { Part } from '@/domains/core/schemas/part'
 import type { Column } from '@/components/atoms/DataTable'
 
@@ -67,7 +67,7 @@ export default function PartsPage() {
     }
   })
 
-  const updateForm = useForm<UpdatePartInputData>({
+  const updateForm = useForm<UpdatePartInput>({
     resolver: zodResolver(updatePartInputSchema),
     defaultValues: {
       partNumber: '',
@@ -216,13 +216,15 @@ export default function PartsPage() {
     }
   }
 
-  const handleFormSubmit = async (data: CreatePartInput | UpdatePartInputData) => {
+  const handleFormSubmit = async (data: CreatePartInput | UpdatePartInput) => {
     if (!data) {
       setError('Dati del form non validi')
       return
     }
     
     try {
+      setError(null) // Clear any previous errors
+      
       if (isEditing && selectedPart?.id) {
         // For update, add id to data for validation
         const updateData = { ...data, id: selectedPart.id }
@@ -231,10 +233,15 @@ export default function PartsPage() {
         // For create, cast data to CreatePartInput
         await partRepository.create(data as CreatePartInput)
       }
+      
+      // If we get here, the operation was successful
       setFormOpen(false)
       reset()
+      setSelectedPart(null)
+      setIsEditing(false)
       setPage(0) // Reset alla prima pagina dopo create/update
-      await fetchParts()
+      await fetchParts() // Refresh the table
+      
     } catch (error) {
       console.error('Error saving part:', error)
       
@@ -345,14 +352,19 @@ export default function PartsPage() {
       label: 'Linee Vacuum',
       type: 'number',
       placeholder: '1-10 linee',
-      gridSize: 6
+      gridSize: 6,
+      min: 1,
+      max: 10,
+      step: 1
     },
     {
       name: 'autoclaveSetupTime',
       label: 'Tempo Setup (min)',
       type: 'number',
       placeholder: 'Minuti',
-      gridSize: 6
+      gridSize: 6,
+      min: 0,
+      step: 1
     },
     {
       name: 'autoclaveLoadPosition',
@@ -383,14 +395,19 @@ export default function PartsPage() {
       label: 'Tempo Ciclo (min)',
       type: 'number',
       placeholder: 'Minuti laminazione',
-      gridSize: 6
+      gridSize: 6,
+      min: 0,
+      step: 1
     },
     {
       name: 'roomTemperature',
       label: 'Temperatura Stanza (°C)',
       type: 'number',
       placeholder: '20-25°C',
-      gridSize: 6
+      gridSize: 6,
+      min: 0,
+      max: 50,
+      step: 0.1
     }
   ]
 
@@ -400,7 +417,9 @@ export default function PartsPage() {
       label: 'Tempo Ispezione (min)',
       type: 'number',
       placeholder: 'Minuti controllo',
-      gridSize: 6
+      gridSize: 6,
+      min: 0,
+      step: 1
     },
     {
       name: 'calibrationReq',

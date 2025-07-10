@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Part } from '../entities/Part'
-import { CreatePartInput, UpdatePartInput, PartQueryInput, GammaSyncPartInput, BulkCreatePartsInput } from '../schemas/part.schema'
+import { CreatePartInput, UpdatePartInput, PartQueryInput, GammaSyncPartInput, BulkCreatePartsInput } from '../schemas/part'
 import { SyncStatus, Prisma } from '@prisma/client'
 
 export class PartService {

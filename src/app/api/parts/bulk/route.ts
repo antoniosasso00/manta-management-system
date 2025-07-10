@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-node'
 import { PartService } from '@/domains/core/services/PartService'
-import { bulkCreatePartsSchema } from '@/domains/core/schemas/part.schema'
+import { bulkCreatePartsSchema } from '@/domains/core/schemas/part'
 import { ZodError } from 'zod'
 
 export const runtime = 'nodejs'

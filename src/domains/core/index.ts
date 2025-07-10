@@ -9,5 +9,5 @@ export { PartService } from './services/PartService'
 export { ODLService } from './services/ODLService'
 
 // Schemas and Types
-export * from './schemas/part.schema'
+export * from './schemas/part'
 export * from './schemas/odl.schema'
