@@ -55,8 +55,11 @@ const createODLFormSchema = z.object({
 })
 
 const createPartFormSchema = z.object({
-  partNumber: z.string().regex(/^[A-Z0-9]{8,12}$/, 'Part number deve essere 8-12 caratteri alfanumerici'),
-  description: z.string().min(1, 'Descrizione è obbligatoria').max(255, 'Descrizione troppo lunga'),
+  partNumber: z.string()
+    .min(1, 'Il numero parte è obbligatorio')
+    .regex(/^[A-Za-z0-9]+$/, 'Il numero parte deve contenere solo lettere e numeri'),
+  description: z.string()
+    .min(1, 'La descrizione è obbligatoria'),
 })
 
 type CreateODLForm = z.infer<typeof createODLFormSchema>
@@ -178,7 +181,7 @@ export default function CreateODLPage() {
 
       setPartsLoading(true)
       try {
-        const response = await fetch(`/api/parts?search=${encodeURIComponent(searchTerm)}&limit=20&include=partTools`)
+        const response = await fetch(`/api/parts?search=${encodeURIComponent(searchTerm)}&limit=20&includeTools=true`)
         
         if (!response.ok) {
           if (response.status === 401) {
@@ -193,7 +196,18 @@ export default function CreateODLPage() {
         }
         
         const data = await response.json()
-        setParts(data.parts || [])
+        
+        // Handle both paginated response formats
+        if (data.success && Array.isArray(data.data)) {
+          // New standardized format
+          setParts(data.data || [])
+        } else if (Array.isArray(data.parts)) {
+          // Legacy format
+          setParts(data.parts || [])
+        } else {
+          console.error('Formato risposta API non valido:', data)
+          setParts([])
+        }
       } catch (error) {
         console.error('Error searching parts:', error)
         setError('Errore durante la ricerca delle parti.')
@@ -251,15 +265,39 @@ export default function CreateODLPage() {
       }
 
       const newPart = await response.json()
-      setSuccess(`Parte ${newPart.partNumber} creata con successo!`)
-      setCreatePartDialog(false)
-      resetPartForm()
       
-      // Auto-select the newly created part
-      handlePartSelection(newPart)
+      // Fetch the complete part with relations for ODL form
+      try {
+        const completePartResponse = await fetch(`/api/parts/${newPart.id}?include=partTools`)
+        if (completePartResponse.ok) {
+          const completePart = await completePartResponse.json()
+          setSuccess(`Parte ${newPart.partNumber} creata con successo!`)
+          setCreatePartDialog(false)
+          resetPartForm()
+          
+          // Auto-select the complete part with relations
+          handlePartSelection(completePart)
+        } else {
+          // Fallback to basic part if fetch fails
+          handlePartSelection(newPart)
+        }
+      } catch (fetchError) {
+        // Fallback to basic part if fetch fails
+        console.warn('Could not fetch complete part data, using basic part:', fetchError)
+        handlePartSelection(newPart)
+      }
       
     } catch (error: any) {
-      setError(error.message)
+      console.error('Errore creazione parte:', error)
+      
+      // Gestione errori specifici
+      if (error.message.includes('already exists') || error.message.includes('unique constraint')) {
+        setError('Part Number già esistente. Utilizzare un codice diverso.')
+      } else if (error.message.includes('validation')) {
+        setError('Dati non validi. Verificare il formato del Part Number.')
+      } else {
+        setError(error.message || 'Errore durante la creazione della parte.')
+      }
     }
   }
 
