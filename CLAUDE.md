@@ -679,6 +679,138 @@ defaultValues: {
    })
    ```
 
+## Defensive Programming Standards (CRITICO)
+
+### Null/Undefined Safety Pattern (OBBLIGATORIO)
+**Sempre applicare defensive programming per evitare errori runtime**
+
+#### Array e Object Props - Pattern Sicuro
+```typescript
+// ✅ CORRETTO - Defensive checks for array/object props
+{breadcrumbs && breadcrumbs.length > 0 && (
+  <Breadcrumbs>
+    {breadcrumbs.map((crumb, index) => (
+      <Link key={index}>
+        {crumb.label}
+      </Link>
+    ))}
+  </Breadcrumbs>
+)}
+
+// ✅ CORRETTO - Safe length access
+const currentTotalCount = enableServerPagination ? 
+  (totalCount ?? (data?.length ?? 0)) : 
+  (data?.length ?? 0)
+
+// ✅ CORRETTO - Safe data prop passing
+<DataTable
+  data={data ?? []}
+  columns={enhancedColumns}
+  // ... altri props
+/>
+
+// ✅ CORRETTO - Safe empty state check
+{!loading && (data?.length ?? 0) === 0 && (
+  <EmptyState />
+)}
+```
+
+#### Foreign Key Constraint Management (CRITICO)
+**Sempre gestire le constraint di foreign key prima delle operazioni di delete**
+
+```typescript
+// ✅ PATTERN CORRETTO - Delete con cascade handling
+static async delete(id: string): Promise<void> {
+  // 1. Verificare dipendenze che impediscono la cancellazione
+  const dependencyCount = await prisma.dependency.count({
+    where: { parentId: id }
+  })
+  
+  if (dependencyCount > 0) {
+    throw new Error(`Cannot delete record with ${dependencyCount} dependencies`)
+  }
+  
+  // 2. Eliminare in transazione le relazioni cascade
+  await prisma.$transaction(async (tx) => {
+    // Prima eliminare le relazioni
+    await tx.relatedTable.deleteMany({ where: { parentId: id } })
+    
+    // Poi eliminare il record principale
+    await tx.mainTable.delete({ where: { id } })
+  })
+}
+```
+
+#### Service Layer - Error Handling Pattern (OBBLIGATORIO)
+```typescript
+// ✅ PATTERN CORRETTO - Controllo completo dipendenze
+static async delete(id: string): Promise<void> {
+  // Verificare TUTTE le foreign key constraints
+  const [dep1Count, dep2Count, dep3Count] = await Promise.all([
+    prisma.dependency1.count({ where: { parentId: id } }),
+    prisma.dependency2.count({ where: { parentId: id } }),
+    prisma.dependency3.count({ where: { parentId: id } })
+  ])
+  
+  if (dep1Count > 0) {
+    throw new Error(`Cannot delete: ${dep1Count} related records exist`)
+  }
+  
+  // Eliminazione sicura in transazione
+  await prisma.$transaction(async (tx) => {
+    // Eliminare tutte le configurazioni correlate
+    await tx.extensionTable1.deleteMany({ where: { parentId: id } })
+    await tx.extensionTable2.deleteMany({ where: { parentId: id } })
+    
+    // Eliminare il record principale
+    await tx.mainTable.delete({ where: { id } })
+  })
+}
+```
+
+#### Common Error Patterns da Evitare
+1. **❌ Non verificare mai null/undefined**:
+   ```typescript
+   // SBAGLIATO
+   {breadcrumbs.length > 0 && ...}
+   const total = data.length
+   
+   // CORRETTO
+   {breadcrumbs && breadcrumbs.length > 0 && ...}
+   const total = data?.length ?? 0
+   ```
+
+2. **❌ Delete senza controllo constraint**:
+   ```typescript
+   // SBAGLIATO
+   await prisma.entity.delete({ where: { id } })
+   
+   // CORRETTO
+   await prisma.$transaction(async (tx) => {
+     await tx.relatedConfigs.deleteMany({ where: { entityId: id } })
+     await tx.entity.delete({ where: { id } })
+   })
+   ```
+
+3. **❌ Assumere che i props siano sempre definiti**:
+   ```typescript
+   // SBAGLIATO
+   data.map(item => ...)
+   
+   // CORRETTO
+   (data ?? []).map(item => ...)
+   ```
+
+### Checklist Pre-Commit (AGGIORNATA)
+```bash
+# Verifica defensive programming
+grep -r "\.length" src/components/ | grep -v "?\.length"  # Trova accessi non sicuri
+grep -r "\.delete(" src/domains/ | grep -v "transaction"  # Trova delete senza transazione
+
+# Test dei controlli
+npm run lint && npm run type-check
+```
+
 ## Memories
 - **Rispondi in italiano**: Indicates a preference for Italian language interactions when possible
 - **Project Documentation**: Aggiorna i requisiti e i documenti quando vengono definite nuove funzionalità

@@ -272,8 +272,25 @@ export class PartService {
       throw new Error(`Cannot delete part with ${odlCount} associated ODLs`)
     }
 
-    await prisma.part.delete({
-      where: { id }
+    // Delete in transaction to handle cascade deletion
+    await prisma.$transaction(async (tx) => {
+      // Delete all related configuration records first
+      await tx.partAutoclave.deleteMany({ where: { partId: id } })
+      await tx.partCleanroom.deleteMany({ where: { partId: id } })
+      await tx.partNDI.deleteMany({ where: { partId: id } })
+      await tx.partHoneycomb.deleteMany({ where: { partId: id } })
+      await tx.partControlloNumerico.deleteMany({ where: { partId: id } })
+      await tx.partMontaggio.deleteMany({ where: { partId: id } })
+      await tx.partMotori.deleteMany({ where: { partId: id } })
+      await tx.partVerniciatura.deleteMany({ where: { partId: id } })
+      await tx.partTool.deleteMany({ where: { partId: id } })
+      await tx.partTimeStatistics.deleteMany({ where: { partId: id } })
+      await tx.qualityControlPlan.deleteMany({ where: { partId: id } })
+      
+      // Finally delete the part
+      await tx.part.delete({
+        where: { id }
+      })
     })
   }
 

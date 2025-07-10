@@ -321,13 +321,17 @@ export class ToolService {
       throw new NotFoundError('Tool non trovato');
     }
 
-    // Verifica se ci sono associazioni
-    const associationsCount = await prisma.partTool.count({
-      where: { toolId: id }
-    });
+    // Check ALL foreign key constraints that prevent deletion
+    const [associationsCount, odlCount] = await Promise.all([
+      prisma.partTool.count({ where: { toolId: id } }),
+      prisma.oDL.count({ where: { toolId: id } })
+    ]);
     
     if (associationsCount > 0) {
       throw new ConflictError(`Tool in uso da ${associationsCount} part numbers`);
+    }
+    if (odlCount > 0) {
+      throw new ConflictError(`Tool in uso da ${odlCount} ODLs`);
     }
     
     return prisma.tool.delete({

@@ -117,6 +117,15 @@ export class QualityControlService {
   }
 
   static async deletePlan(id: string) {
+    // Check ALL foreign key constraints that prevent deletion
+    const inspectionCount = await prisma.qualityInspection.count({
+      where: { planId: id }
+    })
+    
+    if (inspectionCount > 0) {
+      throw new Error(`Cannot delete plan with ${inspectionCount} quality inspections`)
+    }
+    
     return await prisma.qualityControlPlan.delete({
       where: { id },
     })

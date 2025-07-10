@@ -163,7 +163,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
   
   const currentPage = enableServerPagination ? (propPage ?? 0) : localPage
   const currentRowsPerPage = enableServerPagination ? (propRowsPerPage ?? 10) : localRowsPerPage
-  const currentTotalCount = enableServerPagination ? (totalCount ?? data.length) : data.length
+  const currentTotalCount = enableServerPagination ? (totalCount ?? (data?.length ?? 0)) : (data?.length ?? 0)
   
   const handleFilterOpen = useCallback(() => {
     setFilterOpen(true)
@@ -219,7 +219,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
   return (
     <Box>
       {/* Breadcrumbs */}
-      {breadcrumbs.length > 0 && (
+      {breadcrumbs && breadcrumbs.length > 0 && (
         <Breadcrumbs 
           separator={<NavigateNextIcon fontSize="small" />}
           sx={{ mb: 2 }}
@@ -257,7 +257,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
           onAdd={showAdd ? onAdd : undefined}
           onSearch={showSearch ? onSearch : undefined}
           onExport={showExport ? onExport : undefined}
-          onFilter={showFilter && filters.length > 0 ? handleFilterOpen : undefined}
+          onFilter={showFilter && filters && filters.length > 0 ? handleFilterOpen : undefined}
           onRefresh={showRefresh ? onRefresh : undefined}
           searchPlaceholder={searchPlaceholder}
           searchValue={searchValue}
@@ -274,7 +274,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
         ) : (
           /* Data Table */
           <DataTable
-            data={data}
+            data={data ?? []}
             columns={enhancedColumns}
             totalCount={currentTotalCount}
             page={currentPage}
@@ -289,7 +289,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
         )}
         
         {/* Empty State */}
-        {!loading && data.length === 0 && (
+        {!loading && (data?.length ?? 0) === 0 && (
           <Box
             sx={{
               display: 'flex',
@@ -309,7 +309,7 @@ export function DataManagementTemplate<T extends { id: string | number }>({
       </Paper>
       
       {/* Filter Panel */}
-      {filters.length > 0 && (
+      {filters && filters.length > 0 && (
         <FilterPanel
           open={filterOpen}
           onClose={handleFilterClose}

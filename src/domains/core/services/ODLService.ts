@@ -254,15 +254,33 @@ export class ODLService {
   }
 
   static async delete(id: string): Promise<void> {
-    // Check if ODL has production events
-    const eventCount = await prisma.productionEvent.count({
-      where: { odlId: id }
-    })
+    // Check ALL foreign key constraints that prevent deletion
+    const [
+      eventCount,
+      nonConformityCount,
+      certificateCount,
+      inspectionCount
+    ] = await Promise.all([
+      prisma.productionEvent.count({ where: { odlId: id } }),
+      prisma.nonConformity.count({ where: { odlId: id } }),
+      prisma.qualityCertificate.count({ where: { odlId: id } }),
+      prisma.qualityInspection.count({ where: { odlId: id } })
+    ])
 
     if (eventCount > 0) {
       throw new Error(`Cannot delete ODL with ${eventCount} production events`)
     }
+    if (nonConformityCount > 0) {
+      throw new Error(`Cannot delete ODL with ${nonConformityCount} non-conformities`)
+    }
+    if (certificateCount > 0) {
+      throw new Error(`Cannot delete ODL with ${certificateCount} quality certificates`)
+    }
+    if (inspectionCount > 0) {
+      throw new Error(`Cannot delete ODL with ${inspectionCount} quality inspections`)
+    }
 
+    // Safe to delete - cascade relations (AutoclaveLoadItem, TimeMetrics) are handled automatically
     await prisma.oDL.delete({
       where: { id }
     })

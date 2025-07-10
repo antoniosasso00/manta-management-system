@@ -76,9 +76,9 @@ export default function ToolsPage() {
       const response = await fetch(`/api/tools${queryString ? `?${queryString}` : ''}`)
       
       if (response.ok) {
-        const data = await response.json()
-        setTools(data.tools)
-        setTotalCount(data.total)
+        const result = await response.json()
+        setTools(result.data)
+        setTotalCount(result.meta.total)
       } else {
         throw new Error('Errore nel caricamento degli strumenti')
       }

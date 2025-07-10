@@ -179,6 +179,15 @@ export class QualityInspectionService {
   }
 
   static async deleteInspection(id: string) {
+    // Check ALL foreign key constraints that prevent deletion
+    const nonConformityCount = await prisma.nonConformity.count({
+      where: { inspectionId: id }
+    })
+    
+    if (nonConformityCount > 0) {
+      throw new Error(`Cannot delete inspection with ${nonConformityCount} non-conformities`)
+    }
+    
     return await prisma.qualityInspection.delete({
       where: { id },
     })
