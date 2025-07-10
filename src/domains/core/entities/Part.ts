@@ -21,6 +21,9 @@ export interface PartEntity {
   
   // Relations
   partTools?: PartToolRelation[]
+  _count?: {
+    odls: number
+  }
 }
 
 interface PartToolRelation {
@@ -57,6 +60,9 @@ export class Part implements PartEntity {
   
   // Relations
   public partTools?: PartToolRelation[]
+  public _count?: {
+    odls: number
+  }
 
   constructor(data: PartEntity) {
     this.id = data.id
@@ -73,6 +79,7 @@ export class Part implements PartEntity {
     this.standardHeight = data.standardHeight
     this.defaultVacuumLines = data.defaultVacuumLines
     this.partTools = data.partTools
+    this._count = data._count
   }
 
   // Business methods

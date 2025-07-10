@@ -122,7 +122,13 @@ export default function ODLPage() {
       const response = await fetch('/api/odl?limit=100')
       if (response.ok) {
         const data = await response.json()
-        setOdls(data.odls || [])
+        // Mappa i dati per compatibilità con interfaccia ODL
+        const mappedOdls = (data.odls || []).map((odl: any) => ({
+          ...odl,
+          partNumber: odl.part?.partNumber || 'N/A',
+          description: odl.part?.description || 'N/A'
+        }))
+        setOdls(mappedOdls)
         
         // Calcola statistiche
         const total = data.odls?.length || 0
