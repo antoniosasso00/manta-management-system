@@ -142,6 +142,13 @@ export class ODL implements ODLEntity {
   }
 
   // Getters for effective values (considering part defaults)
+  public get partNumber(): string {
+    return this.part?.partNumber || ''
+  }
+
+  public get description(): string {
+    return this.part?.description || ''
+  }
 
   public isInProduction(): boolean {
     return [

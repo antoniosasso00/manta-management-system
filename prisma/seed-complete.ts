@@ -1438,227 +1438,284 @@ async function main() {
   const remainingOdls = await Promise.all([
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-021',
-        partId: parts[1].id, // A320 ala inferiore
+        partId: parts[1].id,
+        toolId: tools[0].id, // A320 ala inferiore
         quantity: 4,
         priority: 'NORMAL' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-021',
         gammaId: 'GM-ODL-002',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-022',
-        partId: parts[11].id, // Radome
+        partId: parts[11].id,
+        toolId: tools[7].id, // Radome
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.IN_CLEANROOM,
         qrCode: 'QR-ODL-24-022',
         gammaId: 'GM-ODL-003',
+      
       },
     }),
     
     // === ODL CLEANROOM COMPLETED (pronti per autoclave) ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-004',
-        partId: parts[1].id, // A320 ala inferiore
+        partId: parts[1].id,
+        toolId: tools[0].id, // A320 ala inferiore
         quantity: 2,
         priority: 'HIGH' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-004',
         gammaId: 'GM-ODL-004',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-005',
-        partId: parts[4].id, // B777 longherone
+        partId: parts[4].id,
+        toolId: tools[2].id, // B777 longherone
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-005',
         gammaId: 'GM-ODL-005',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-006',
-        partId: parts[7].id, // A330 stabilizzatore
+        partId: parts[7].id,
+        toolId: tools[5].id, // A330 stabilizzatore
         quantity: 1,
         priority: 'NORMAL' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-006',
         gammaId: 'GM-ODL-006',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-007',
-        partId: parts[14].id, // Pannello interno
+        partId: parts[14].id,
+        toolId: tools[7].id, // Pannello interno
         quantity: 8,
         priority: 'LOW' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-007',
         gammaId: 'GM-ODL-007',
+      
       },
     }),
     
     // === ODL IN AUTOCLAVE (in cura) ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-008',
-        partId: parts[9].id, // B787 fusoliera
+        partId: parts[9].id,
+        toolId: tools[6].id, // B787 fusoliera
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.IN_AUTOCLAVE,
         qrCode: 'QR-ODL-24-008',
         gammaId: 'GM-ODL-008',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-009',
-        partId: parts[12].id, // Cofano motore
+        partId: parts[12].id,
+        toolId: tools[6].id, // Cofano motore
         quantity: 2,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_AUTOCLAVE,
         qrCode: 'QR-ODL-24-009',
         gammaId: 'GM-ODL-009',
+      
       },
     }),
     
     // === ODL AUTOCLAVE COMPLETED (pronti per NDI) ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-010',
-        partId: parts[5].id, // B777 fusoliera
+        partId: parts[5].id,
+        toolId: tools[1].id, // B777 fusoliera
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.AUTOCLAVE_COMPLETED,
         qrCode: 'QR-ODL-24-010',
         gammaId: 'GM-ODL-010',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-011',
-        partId: parts[3].id, // A320 winglet
+        partId: parts[3].id,
+        toolId: tools[5].id, // A320 winglet
         quantity: 4,
         priority: 'NORMAL' as const,
         status: ODLStatus.AUTOCLAVE_COMPLETED,
         qrCode: 'QR-ODL-24-011',
         gammaId: 'GM-ODL-011',
+      
       },
     }),
     
     // === ODL IN NDI (in controllo) ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-012',
-        partId: parts[6].id, // B777 stabilizzatore
+        partId: parts[6].id,
+        toolId: tools[3].id, // B777 stabilizzatore
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.IN_NDI,
         qrCode: 'QR-ODL-24-012',
         gammaId: 'GM-ODL-012',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-013',
-        partId: parts[13].id, // Porta cargo
+        partId: parts[13].id,
+        toolId: tools[4].id, // Porta cargo
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.IN_NDI,
         qrCode: 'QR-ODL-24-013',
         gammaId: 'GM-ODL-013',
+      
       },
     }),
     
     // === ODL IN CONTROLLO QUALITA ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-014',
-        partId: parts[8].id, // A330 deriva
+        partId: parts[8].id,
+        toolId: tools[5].id, // A330 deriva
         quantity: 2,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_CONTROLLO_QUALITA,
         qrCode: 'QR-ODL-24-014',
         gammaId: 'GM-ODL-014',
+      
       },
     }),
     
     // === ODL COMPLETED ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-015',
-        partId: parts[10].id, // B787 ala centrale
+        partId: parts[10].id,
+        toolId: tools[2].id, // B787 ala centrale
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.COMPLETED,
         qrCode: 'QR-ODL-24-015',
         gammaId: 'GM-ODL-015',
+      
       },
     }),
     
     // === ODL ON HOLD ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-016',
-        partId: parts[0].id, // A320 ala superiore
+        partId: parts[0].id,
+        toolId: tools[0].id, // A320 ala superiore
         quantity: 1,
         priority: 'LOW' as const,
         status: ODLStatus.ON_HOLD,
         qrCode: 'QR-ODL-24-016',
         gammaId: 'GM-ODL-016',
+      
       },
     }),
     
     // === ODL CREATED (nuovi) ===
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-017',
-        partId: parts[1].id, // A320 ala inferiore
+        partId: parts[1].id,
+        toolId: tools[0].id, // A320 ala inferiore
         quantity: 3,
         priority: 'NORMAL' as const,
         status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-017',
         gammaId: 'GM-ODL-017',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-018',
-        partId: parts[9].id, // B787 fusoliera
+        partId: parts[9].id,
+        toolId: tools[6].id, // B787 fusoliera
         quantity: 2,
         priority: 'HIGH' as const,
         status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-018',
         gammaId: 'GM-ODL-018',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-019',
-        partId: parts[4].id, // B777 longherone
+        partId: parts[4].id,
+        toolId: tools[2].id, // B777 longherone
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-019',
         gammaId: 'GM-ODL-019',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-020',
-        partId: parts[14].id, // Pannello interno
+        partId: parts[14].id,
+        toolId: tools[7].id, // Pannello interno
         quantity: 12,
         priority: 'LOW' as const,
         status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-020',
         gammaId: 'GM-ODL-020',
+      
       },
     }),
   ])
@@ -1672,192 +1729,240 @@ async function main() {
     // Embraer ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-030',
-        partId: parts[15].id, // Embraer wing
+        partId: parts[15].id,
+        toolId: tools[8].id, // Embraer wing
         quantity: 2,
         priority: 'HIGH' as const,
         status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-030',
         gammaId: 'GM-ODL-030',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-031',
-        partId: parts[16].id, // Embraer fuselage
+        partId: parts[16].id,
+        toolId: tools[9].id, // Embraer fuselage
         quantity: 1,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_CLEANROOM,
         qrCode: 'QR-ODL-24-031',
         gammaId: 'GM-ODL-031',
+      
       },
     }),
     
     // CRJ ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-032',
-        partId: parts[17].id, // CRJ stabilizer
+        partId: parts[17].id,
+        toolId: tools[10].id, // CRJ stabilizer
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-032',
         gammaId: 'GM-ODL-032',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-033',
-        partId: parts[18].id, // CRJ vertical stabilizer
+        partId: parts[18].id,
+        toolId: tools[11].id, // CRJ vertical stabilizer
         quantity: 1,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_AUTOCLAVE,
         qrCode: 'QR-ODL-24-033',
         gammaId: 'GM-ODL-033',
+      
       },
     }),
     
     // A350 ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-034',
-        partId: parts[19].id, // A350 wingbox
+        partId: parts[19].id,
+        toolId: tools[12].id, // A350 wingbox
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.AUTOCLAVE_COMPLETED,
         qrCode: 'QR-ODL-24-034',
         gammaId: 'GM-ODL-034',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-035',
-        partId: parts[20].id, // A350 sharklet
+        partId: parts[20].id,
+        toolId: tools[13].id, // A350 sharklet
         quantity: 4,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_NDI,
         qrCode: 'QR-ODL-24-035',
         gammaId: 'GM-ODL-035',
+      
       },
     }),
     
     // Military ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-036',
-        partId: parts[21].id, // Eurofighter canard
+        partId: parts[21].id,
+        toolId: tools[14].id, // Eurofighter canard
         quantity: 2,
         priority: 'URGENT' as const,
         status: ODLStatus.COMPLETED,
         qrCode: 'QR-ODL-24-036',
         gammaId: 'GM-ODL-036',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-037',
-        partId: parts[22].id, // F-35 intake
+        partId: parts[22].id,
+        toolId: tools[15].id, // F-35 intake
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.ON_HOLD,
         qrCode: 'QR-ODL-24-037',
         gammaId: 'GM-ODL-037',
+      
       },
     }),
     
     // Helicopter ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-038',
-        partId: parts[23].id, // AW139 blade
+        partId: parts[23].id,
+        toolId: tools[16].id, // AW139 blade
         quantity: 8,
         priority: 'HIGH' as const,
         status: ODLStatus.CREATED,
         qrCode: 'QR-ODL-24-038',
         gammaId: 'GM-ODL-038',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-039',
-        partId: parts[24].id, // NH90 tail
+        partId: parts[24].id,
+        toolId: tools[17].id, // NH90 tail
         quantity: 1,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_CLEANROOM,
         qrCode: 'QR-ODL-24-039',
         gammaId: 'GM-ODL-039',
+      
       },
     }),
     
     // UAV ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-040',
-        partId: parts[25].id, // Predator wing
+        partId: parts[25].id,
+        toolId: tools[18].id, // Predator wing
         quantity: 2,
         priority: 'NORMAL' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-040',
         gammaId: 'GM-ODL-040',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-041',
-        partId: parts[26].id, // Global Hawk nose
+        partId: parts[26].id,
+        toolId: tools[19].id, // Global Hawk nose
         quantity: 1,
         priority: 'LOW' as const,
         status: ODLStatus.IN_AUTOCLAVE,
         qrCode: 'QR-ODL-24-041',
         gammaId: 'GM-ODL-041',
+      
       },
     }),
     
     // Space ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-042',
-        partId: parts[27].id, // Vega fairing
+        partId: parts[27].id,
+        toolId: tools[20].id, // Vega fairing
         quantity: 1,
         priority: 'URGENT' as const,
         status: ODLStatus.AUTOCLAVE_COMPLETED,
         qrCode: 'QR-ODL-24-042',
         gammaId: 'GM-ODL-042',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-043',
-        partId: parts[28].id, // Ariane tank
+        partId: parts[28].id,
+        toolId: tools[21].id, // Ariane tank
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.IN_NDI,
         qrCode: 'QR-ODL-24-043',
         gammaId: 'GM-ODL-043',
+      
       },
     }),
     
     // F1 ODLs
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-044',
-        partId: parts[29].id, // F1 front wing
+        partId: parts[29].id,
+        toolId: tools[22].id, // F1 front wing
         quantity: 6,
         priority: 'URGENT' as const,
         status: ODLStatus.COMPLETED,
         qrCode: 'QR-ODL-24-044',
         gammaId: 'GM-ODL-044',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-045',
-        partId: parts[30].id, // F1 floor
+        partId: parts[30].id,
+        toolId: tools[23].id, // F1 floor
         quantity: 2,
         priority: 'HIGH' as const,
         status: ODLStatus.IN_CONTROLLO_QUALITA,
         qrCode: 'QR-ODL-24-045',
         gammaId: 'GM-ODL-045',
+      
       },
     }),
   ])
@@ -2274,81 +2379,102 @@ async function main() {
     // More ODLs with CLEANROOM_COMPLETED status (ready for Autoclave)
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-050',
-        partId: parts[8].id, // A330 deriva
+        partId: parts[8].id,
+        toolId: tools[5].id, // A330 deriva
         quantity: 2,
         priority: 'HIGH' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-050',
         gammaId: 'GM-ODL-050',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-051',
-        partId: parts[9].id, // B787 fusoliera
+        partId: parts[9].id,
+        toolId: tools[6].id, // B787 fusoliera
         quantity: 1,
         priority: 'NORMAL' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-051',
         gammaId: 'GM-ODL-051',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-052',
-        partId: parts[6].id, // B777 stabilizzatore
+        partId: parts[6].id,
+        toolId: tools[3].id, // B777 stabilizzatore
         quantity: 2,
         priority: 'URGENT' as const,
         status: ODLStatus.CLEANROOM_COMPLETED,
         qrCode: 'QR-ODL-24-052',
         gammaId: 'GM-ODL-052',
+      
       },
     }),
     // ODLs with IN_CONTROLLO_NUMERICO status
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-053',
-        partId: parts[10].id, // B787 ala centrale
+        partId: parts[10].id,
+        toolId: tools[2].id, // B787 ala centrale
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.IN_CONTROLLO_NUMERICO,
         qrCode: 'QR-ODL-24-053',
         gammaId: 'GM-ODL-053',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-054',
-        partId: parts[7].id, // A320 slat
+        partId: parts[7].id,
+        toolId: tools[5].id, // A320 slat
         quantity: 4,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_CONTROLLO_NUMERICO,
         qrCode: 'QR-ODL-24-054',
         gammaId: 'GM-ODL-054',
+      
       },
     }),
     // More ODLs with IN_CLEANROOM status for active work
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-055',
-        partId: parts[12].id, // A330 fusoliera
+        partId: parts[12].id,
+        toolId: tools[6].id, // A330 fusoliera
         quantity: 1,
         priority: 'HIGH' as const,
         status: ODLStatus.IN_CLEANROOM,
         qrCode: 'QR-ODL-24-055',
         gammaId: 'GM-ODL-055',
+      
       },
     }),
     prisma.oDL.create({
       data: {
+
         odlNumber: 'ODL-24-056',
-        partId: parts[13].id, // A350 verticale
+        partId: parts[13].id,
+        toolId: tools[4].id, // A350 verticale
         quantity: 2,
         priority: 'NORMAL' as const,
         status: ODLStatus.IN_CLEANROOM,
         qrCode: 'QR-ODL-24-056',
         gammaId: 'GM-ODL-056',
+      
       },
     }),
   ])
