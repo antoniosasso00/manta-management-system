@@ -45,6 +45,12 @@ export const DEPARTMENT_NOMENCLATURE = {
       entry: 'Ingresso in Clean Room',
       exit: 'Uscita da Clean Room',
       process: 'Processo di Laminazione'
+    },
+    actions: {
+      start: 'Inizia Laminazione',
+      complete: 'Completa Laminazione',
+      pause: 'Pausa',
+      resume: 'Riprendi'
     }
   },
 
@@ -81,6 +87,12 @@ export const DEPARTMENT_NOMENCLATURE = {
       entry: 'Carico in Autoclave',
       exit: 'Scarico da Autoclave',
       process: 'Ciclo di Cura'
+    },
+    actions: {
+      start: 'Inizia Cura',
+      complete: 'Completa Cura',
+      pause: 'Pausa',
+      resume: 'Riprendi'
     }
   },
 
@@ -117,6 +129,12 @@ export const DEPARTMENT_NOMENCLATURE = {
       entry: 'Ingresso in NDI',
       exit: 'Uscita da NDI',
       process: 'Controlli NDI'
+    },
+    actions: {
+      start: 'Inizia Controllo',
+      complete: 'Completa Controllo',
+      pause: 'Pausa',
+      resume: 'Riprendi'
     }
   },
 
@@ -153,6 +171,12 @@ export const DEPARTMENT_NOMENCLATURE = {
       entry: 'Ingresso in CNC',
       exit: 'Uscita da CNC',
       process: 'Lavorazione CNC'
+    },
+    actions: {
+      start: 'Inizia Lavorazione',
+      complete: 'Completa Lavorazione',
+      pause: 'Pausa',
+      resume: 'Riprendi'
     }
   },
 
@@ -189,6 +213,12 @@ export const DEPARTMENT_NOMENCLATURE = {
       entry: 'Ingresso in Montaggio',
       exit: 'Uscita da Montaggio',
       process: 'Processo di Montaggio'
+    },
+    actions: {
+      start: 'Inizia Montaggio',
+      complete: 'Completa Montaggio',
+      pause: 'Pausa',
+      resume: 'Riprendi'
     }
   },
 
