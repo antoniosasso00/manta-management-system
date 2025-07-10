@@ -26,6 +26,7 @@ export const partQuerySchema = z.object({
   limit: z.number().int().min(1).max(100).default(10),
   sortBy: z.enum(['partNumber', 'description', 'createdAt']).default('partNumber'),
   sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  includeTools: z.boolean().optional(),
 })
 
 // Gamma MES sync schema

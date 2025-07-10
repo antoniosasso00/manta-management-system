@@ -18,6 +18,22 @@ export interface PartEntity {
   standardWidth?: number | null
   standardHeight?: number | null
   defaultVacuumLines?: number | null
+  
+  // Relations
+  partTools?: PartToolRelation[]
+}
+
+interface PartToolRelation {
+  id: string
+  toolId: string
+  tool: {
+    id: string
+    toolPartNumber: string
+    description?: string
+    base: number
+    height: number
+    weight?: number
+  }
 }
 
 export class Part implements PartEntity {
@@ -38,6 +54,9 @@ export class Part implements PartEntity {
   public standardWidth?: number | null
   public standardHeight?: number | null
   public defaultVacuumLines?: number | null
+  
+  // Relations
+  public partTools?: PartToolRelation[]
 
   constructor(data: PartEntity) {
     this.id = data.id
@@ -53,6 +72,7 @@ export class Part implements PartEntity {
     this.standardWidth = data.standardWidth
     this.standardHeight = data.standardHeight
     this.defaultVacuumLines = data.defaultVacuumLines
+    this.partTools = data.partTools
   }
 
   // Business methods

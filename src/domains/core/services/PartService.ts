@@ -55,7 +55,7 @@ export class PartService {
     return data ? Part.fromPrisma(data) : null
   }
 
-  static async findMany(query: PartQueryInput & { includeTools?: boolean }): Promise<{
+  static async findMany(query: PartQueryInput): Promise<{
     parts: Part[]
     total: number
     page: number
