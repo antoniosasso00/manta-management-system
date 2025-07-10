@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-node'
 import { prisma } from '@/lib/prisma'
 import { WorkflowService } from '@/domains/production/services/WorkflowService'
 import { ResponseHelper, ErrorHelper } from '@/lib/api-helpers'

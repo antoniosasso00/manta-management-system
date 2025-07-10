@@ -529,7 +529,7 @@ const CanvasViewer: React.FC<CanvasViewerProps> = memo(({
       {hoveredPlacement && (
         <Paper sx={{ p: 2, mt: 1 }} elevation={3}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="subtitle2" color="primary">
                 Part Number: {hoveredPlacement.part_number}
               </Typography>
@@ -542,7 +542,7 @@ const CanvasViewer: React.FC<CanvasViewerProps> = memo(({
                 </Typography>
               )}
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 <Chip
                   label={hoveredPlacement.tool_name || `Tool ${hoveredPlacement.tool_id}`}
@@ -567,8 +567,8 @@ const CanvasViewer: React.FC<CanvasViewerProps> = memo(({
         </Paper>
       )}
     </Box>
-  )
-}
+  );
+});
 
 export function EnhancedBatchLayoutViewer({ batch }: EnhancedBatchLayoutViewerProps) {
   const theme = useTheme();
@@ -660,7 +660,7 @@ export function EnhancedBatchLayoutViewer({ batch }: EnhancedBatchLayoutViewerPr
         <Collapse in={expandedInfo}>
           <Divider sx={{ my: 2 }} />
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle2" gutterBottom>
                 Metriche Batch
               </Typography>
@@ -693,7 +693,7 @@ export function EnhancedBatchLayoutViewer({ batch }: EnhancedBatchLayoutViewerPr
                 </Table>
               </TableContainer>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle2" gutterBottom>
                 Part Numbers nel Batch
               </Typography>
