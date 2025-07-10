@@ -44,7 +44,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useSnackbar } from 'notistack';
-import { BatchLayoutViewer } from './BatchLayoutViewer';
+import { EnhancedBatchLayoutViewer } from './EnhancedBatchLayoutViewer';
 import type { OptimizationResult, BatchLayout } from '@/services/optimization-service';
 
 interface OptimizationResultsStepProps {
@@ -473,7 +473,7 @@ export function OptimizationResultsStep({
         </DialogTitle>
         <DialogContent>
           {selectedBatch && (
-            <BatchLayoutViewer batch={selectedBatch} />
+            <EnhancedBatchLayoutViewer batch={selectedBatch} />
           )}
         </DialogContent>
         <DialogActions>

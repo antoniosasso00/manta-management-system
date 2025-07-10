@@ -99,13 +99,35 @@ export class TrackingService {
       // Attiva trasferimento automatico se EXIT
       if (data.eventType === EventType.EXIT) {
         try {
-          await WorkflowService.executeAutoTransfer({
+          const transferResult = await WorkflowService.executeAutoTransfer({
             odlId: data.odlId,
             currentDepartmentId: data.departmentId,
-            userId: data.userId
+            userId: data.userId,
+            notes: 'Trasferimento automatico dopo completamento operazioni'
           })
+          
+          if (transferResult.success) {
+            // Aggiungi info trasferimento all'evento per feedback UI
+            (event as any).autoTransfer = {
+              success: true,
+              message: transferResult.message,
+              nextDepartment: transferResult.nextDepartment
+            }
+          } else {
+            // Log errore ma non bloccare il flusso
+            console.warn('Auto transfer not completed:', transferResult.message);
+            (event as any).autoTransfer = {
+              success: false,
+              message: transferResult.message
+            }
+          }
         } catch (error) {
-          console.error('Auto transfer failed:', error)
+          console.error('Auto transfer error:', error)
+          // Aggiungi info errore per feedback UI
+          (event as any).autoTransfer = {
+            success: false,
+            message: 'Trasferimento automatico fallito. Procedere manualmente.'
+          }
         }
       }
 

@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 from core.config import settings
-from api.routes import batch_optimization, health
+from api.routes import batch_optimization, health, batch_confirmation
 
 # Crea app FastAPI
 app = FastAPI(
@@ -27,6 +27,7 @@ app.add_middleware(
 # Include routers
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(batch_optimization.router, prefix="/api/v1")
+app.include_router(batch_confirmation.router, prefix="/api/v1")
 
 # Root endpoint
 @app.get("/")

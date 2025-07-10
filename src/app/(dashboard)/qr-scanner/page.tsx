@@ -268,15 +268,18 @@ export default function QRScannerPage() {
 
         // Sync in batch per migliorare performance
         const syncPromises = unsyncedScans.map(async (scan) => {
-          const response = await fetchWithRetry('/api/production/events', {
+          const response = await fetchWithRetry('/api/workflow/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               odlId: scan.odlId,
               departmentId: user?.departmentId,
-              eventType: scan.eventType,
-              timestamp: scan.timestamp,
-              userId: user?.id
+              actionType: scan.eventType,
+              confirmationRequired: false,
+              metadata: {
+                source: 'qr-scanner-offline-sync',
+                originalTimestamp: scan.timestamp
+              }
             })
           }, {
             maxRetries: 2, // Retry meno aggressivo per singoli eventi
@@ -435,29 +438,41 @@ export default function QRScannerPage() {
       // Prova sync online con retry logic
       if (isEffectivelyOnline) {
         try {
-          const response = await fetchWithRetry('/api/production/events', {
+          // Usa la nuova API workflow unificata
+          const response = await fetchWithRetry('/api/workflow/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               odlId: scanResult.id,
               departmentId: user.departmentId,
-              eventType,
-              userId: user.id,
-              duration: newScan.duration
+              actionType: eventType,
+              confirmationRequired: false,
+              metadata: {
+                source: 'qr-scanner',
+                duration: newScan.duration
+              }
             })
           }, {
             maxRetries: 2,
             baseDelay: 1000
           });
 
-          newScan.synced = true;
-          
-          // Gestione speciale per reparto AUTOCLAVI
-          if (eventType === 'EXIT' && user.departmentId === 'AUTOCLAVI') {
-            await handleAutoclaveExit(scanResult.id);
-          } else if (eventType === 'EXIT') {
-            // Attiva trasferimento automatico per altri reparti
-            await triggerAutoTransfer(scanResult.id);
+          const result = await response.json();
+
+          if (response.ok) {
+            newScan.synced = true;
+            
+            // Gestione trasferimento automatico dal risultato API
+            if (result.autoTransfer?.success) {
+              console.log(`[QR Scanner] ODL trasferito automaticamente a ${result.autoTransfer.nextDepartment?.name}`);
+            }
+            
+            // Gestione speciale per reparto AUTOCLAVI ancora necessaria
+            if (eventType === 'EXIT' && user.departmentId === 'AUTOCLAVI' && result.autoTransfer?.targetDepartmentType === 'AUTOCLAVE') {
+              await handleAutoclaveExit(scanResult.id);
+            }
+          } else {
+            throw new Error(result.message || 'Errore durante la registrazione');
           }
         } catch (syncError) {
           console.error('[QR Scanner] Sync immediato fallito, verrà riprovato automaticamente:', syncError);
@@ -474,20 +489,7 @@ export default function QRScannerPage() {
     }
   };
 
-  const triggerAutoTransfer = async (odlId: string) => {
-    try {
-      await fetchWithRetry('/api/workflow/transfer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ odlId })
-      }, {
-        maxRetries: 2,
-        baseDelay: 1000
-      });
-    } catch (error) {
-      console.error('[QR Scanner] Auto transfer error:', error);
-    }
-  };
+  // Funzione triggerAutoTransfer non più necessaria - gestita automaticamente dalla nuova API
 
   const handleAutoclaveExit = async (odlId: string) => {
     try {
@@ -501,12 +503,11 @@ export default function QRScannerPage() {
 
       if (batch && ['IN_CURE', 'COMPLETED'].includes(batch.status)) {
         setAutoclaveDialog({ open: true, batch, odlId });
-      } else {
-        await triggerAutoTransfer(odlId);
       }
+      // Il trasferimento automatico \u00e8 gestito dalla API workflow
     } catch (error) {
       console.error('[QR Scanner] Autoclave exit handling error:', error);
-      await triggerAutoTransfer(odlId);
+      // Il trasferimento automatico \u00e8 gestito dalla API workflow
     }
   };
 

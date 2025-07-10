@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Box, Typography, Stack, IconButton, Tooltip, useTheme, useMediaQuery } from '@mui/material'
 import { QrCode, Timer, Engineering } from '@mui/icons-material'
-import { Card, StatusChip, ActionButton } from '@/components/atoms'
+import { Card, StatusChip, ActionButton, WorkflowProgress } from '@/components/atoms'
 import { QRDisplayModal } from './QRDisplayModal'
 import { ODLTrackingStatus } from '@/domains/production'
 import { EventType } from '@prisma/client'
@@ -122,6 +122,9 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
             </Typography>
           </Box>
         )}
+        
+        {/* Workflow Progress */}
+        <WorkflowProgress currentStatus={odl.status} compact />
 
         {/* Actions - Mobile optimized */}
         <Box sx={{ 

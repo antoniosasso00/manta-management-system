@@ -24,7 +24,8 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
+  Snackbar
 } from '@mui/material';
 import {
   Edit,
@@ -111,6 +112,7 @@ export default function ManualStatusChanger({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string>('');
 
   // Verifica permessi
   const canChangeStatus = user?.role === 'ADMIN' || 
@@ -120,6 +122,14 @@ export default function ManualStatusChanger({
 
   const isAdmin = user?.role === 'ADMIN';
   const isSupervisor = user?.role === 'SUPERVISOR';
+  
+  // Verifica se l'ODL è in uno stato completato per il reparto corrente
+  const isODLCompleted = odl.status.includes('_COMPLETED') || odl.status === 'COMPLETED';
+  
+  // Non mostrare il componente se l'ODL è completato (a meno che non sia admin)
+  if (!canChangeStatus || (isODLCompleted && !isAdmin)) {
+    return null;
+  }
 
   const handleOpen = () => {
     setOpen(true);
@@ -170,13 +180,9 @@ export default function ManualStatusChanger({
       }
 
       // Successo
-      onStatusChanged?.(selectedStatus);
+      setSuccessMessage(data.message || 'Stato aggiornato con successo');
       handleClose();
-      
-      // Notifica successo
-      setTimeout(() => {
-        alert(`✅ ${data.message}`);
-      }, 100);
+      onStatusChanged?.(selectedStatus);
 
     } catch (error) {
       console.error('Status change error:', error);
@@ -214,19 +220,23 @@ export default function ManualStatusChanger({
     return [...recommended, 'ON_HOLD'];
   };
 
-  if (!canChangeStatus) {
-    return null;
-  }
-
   return (
     <>
-      <Card sx={{ mt: 2 }}>
+      <Card sx={{ mt: 2, bgcolor: isODLCompleted && !isAdmin ? 'action.disabledBackground' : 'background.paper' }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box>
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Build color="primary" />
+                <Build color={isODLCompleted && !isAdmin ? 'disabled' : 'primary'} />
                 Cambio Stato Manuale
+                {isODLCompleted && isAdmin && (
+                  <Chip 
+                    label="Solo Admin" 
+                    size="small" 
+                    color="warning"
+                    icon={<AdminPanelSettings />}
+                  />
+                )}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 <Typography variant="body2" color="text.secondary" component="div">
@@ -246,6 +256,7 @@ export default function ManualStatusChanger({
               startIcon={<Edit />}
               onClick={handleOpen}
               sx={{ minWidth: 140 }}
+              color={isODLCompleted ? 'warning' : 'primary'}
             >
               Cambia Stato
             </Button>
@@ -258,6 +269,12 @@ export default function ManualStatusChanger({
         onClose={handleClose}
         maxWidth="md"
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            m: { xs: 1, sm: 2 },
+            maxHeight: { xs: '90vh', sm: '80vh' }
+          }
+        }}
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -295,7 +312,15 @@ export default function ManualStatusChanger({
               <CheckCircle color="success" fontSize="small" />
               Stati Raccomandati dal Workflow
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              flexWrap: 'wrap',
+              '& .MuiChip-root': { 
+                m: 0.5,
+                minHeight: { xs: 44, sm: 32 } // Touch target mobile
+              }
+            }}>
               {getRecommendedStatuses().map(status => (
                 <Chip
                   key={status}
@@ -417,6 +442,22 @@ export default function ManualStatusChanger({
           </Button>
         </DialogActions>
       </Dialog>
+      
+      {/* Snackbar per messaggi di successo */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={6000}
+        onClose={() => setSuccessMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSuccessMessage('')} 
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

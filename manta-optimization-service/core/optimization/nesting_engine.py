@@ -25,6 +25,14 @@ class NestingEngine:
         if not odls:
             return None
         
+        # Validazione: tutti gli ODL devono avere lo stesso ciclo di cura
+        curing_cycles = set(odl.curing_cycle for odl in odls)
+        if len(curing_cycles) > 1:
+            raise ValueError(
+                f"Impossibile creare batch con cicli di cura diversi: {curing_cycles}. "
+                f"Tutti gli ODL in un batch devono avere lo stesso ciclo."
+            )
+        
         elevated_tools = elevated_tools or {}
         
         # Prepara items da posizionare

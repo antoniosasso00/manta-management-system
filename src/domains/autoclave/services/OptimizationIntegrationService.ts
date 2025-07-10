@@ -50,10 +50,10 @@ export class OptimizationIntegrationService {
         part_number: odl.part.partNumber,
         quantity: odl.quantity,
         
-        // Dimensioni (usa le dimensioni del tooling principale)
-        length: tools[0]?.tool.base || 0,
-        width: tools[0]?.tool.height || 0,
-        height: 0.1, // Default minimo
+        // Dimensioni tool corrette (base = larghezza, height = lunghezza)
+        width: tools[0]?.tool.base || 0,     // base del tool = larghezza (X)
+        height: tools[0]?.tool.height || 0,  // height del tool = lunghezza (Y) 
+        thickness: 0.1, // Spessore minimo per calcoli volume
         
         // Parametri ciclo di cura
         curing_cycle_id: config.curingCycleId,

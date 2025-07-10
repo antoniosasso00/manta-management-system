@@ -42,7 +42,10 @@ class ElevatedToolsAnalysisResponse(BaseModel):
 class PlacementResponse(BaseModel):
     odl_id: str
     odl_number: str
+    part_number: str
+    part_description: Optional[str] = None
     tool_id: str
+    tool_name: Optional[str] = None
     x: float
     y: float
     width: float
@@ -63,7 +66,13 @@ class BatchLayoutResponse(BaseModel):
     batch_id: str
     autoclave_id: str
     autoclave_code: str
+    autoclave_dimensions: Optional[Dict[str, float]] = Field(
+        None, 
+        description="Dimensioni autoclave {width, height}"
+    )
     curing_cycle: str
+    curing_cycle_description: Optional[str] = None
+    curing_time_minutes: Optional[int] = None
     placements: List[PlacementResponse]
     metrics: BatchMetrics
     status: LoadStatus = LoadStatus.DRAFT

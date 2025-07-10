@@ -65,7 +65,10 @@ export interface ElevatedTool {
 export interface Placement {
   odl_id: string;
   odl_number: string;
+  part_number: string;
+  part_description?: string;
   tool_id: string;
+  tool_name?: string;
   x: number;
   y: number;
   width: number;
@@ -88,7 +91,13 @@ export interface BatchLayout {
   batch_id: string;
   autoclave_id: string;
   autoclave_code: string;
+  autoclave_dimensions?: {
+    width: number;
+    height: number;
+  };
   curing_cycle: string;
+  curing_cycle_description?: string;
+  curing_time_minutes?: number;
   placements: Placement[];
   metrics: BatchMetrics;
   status: 'DRAFT' | 'READY' | 'IN_CURE' | 'COMPLETED' | 'RELEASED' | 'CANCELLED';
@@ -238,8 +247,9 @@ export function convertODLToOptimizationData(odl: any): ODLData {
     vacuum_lines: autoclaveConfig.vacuumLines,
     tools: odl.part.partTools.map((pt: any) => ({
       id: pt.tool.id,
-      width: pt.tool.base,
-      height: pt.tool.height,
+      // MAPPING CORRETTO: base = larghezza (X), height = lunghezza (Y)
+      width: pt.tool.base || 0,      // base del tool = larghezza
+      height: pt.tool.height || 0,   // height del tool = lunghezza  
       weight: pt.tool.weight || 0,
     })),
   };

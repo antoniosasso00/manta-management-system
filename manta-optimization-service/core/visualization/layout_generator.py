@@ -27,7 +27,8 @@ class LayoutGenerator:
         batch: BatchLayout,
         autoclave: Autoclave,
         show_coordinates: bool = True,
-        show_metrics: bool = True
+        show_metrics: bool = True,
+        odl_mapping: Optional[Dict[str, Dict[str, str]]] = None
     ) -> str:
         """
         Genera immagine del layout e ritorna come base64.
@@ -98,12 +99,27 @@ class LayoutGenerator:
             center_x = placement.x + placement.width / 2
             center_y = placement.y + placement.height / 2
             
-            # ID tool
+            # Mostra part number o ODL number
+            if odl_mapping and placement.odl_id in odl_mapping:
+                display_text = odl_mapping[placement.odl_id]['part_number']
+            else:
+                display_text = f"ODL {placement.odl_id[:8]}"
+            
+            # Part number
             ax.text(
-                center_x, center_y,
-                f"{placement.tool_id}",
+                center_x, center_y - 5,
+                display_text,
                 ha='center', va='center',
-                fontsize=8, fontweight='bold',
+                fontsize=7, fontweight='bold',
+                color='white' if placement.level == 0 else 'black'
+            )
+            
+            # Tool ID
+            ax.text(
+                center_x, center_y + 5,
+                f"Tool {placement.tool_id}",
+                ha='center', va='center',
+                fontsize=6,
                 color='white' if placement.level == 0 else 'black'
             )
             
@@ -135,7 +151,14 @@ class LayoutGenerator:
         # Etichette assi
         ax.set_xlabel('Larghezza (mm)', fontsize=10)
         ax.set_ylabel('Lunghezza (mm)', fontsize=10)
-        ax.set_title(f'Layout Autoclave {autoclave.code} - Ciclo {batch.placements[0].odl_id[:8]}...', 
+        # Trova ciclo di cura dal mapping
+        curing_cycle = "N/A"
+        if odl_mapping and batch.placements:
+            first_odl = batch.placements[0].odl_id
+            if first_odl in odl_mapping:
+                curing_cycle = odl_mapping[first_odl]['curing_cycle']
+        
+        ax.set_title(f'Layout Autoclave {autoclave.code} - Ciclo {curing_cycle}', 
                     fontsize=12, fontweight='bold', pad=20)
         
         # Aggiungi metriche
@@ -146,12 +169,15 @@ class LayoutGenerator:
                     fontsize=10,
                     bbox=dict(boxstyle="round,pad=0.5", facecolor='lightgray', alpha=0.8))
         
-        # Legenda ODL
+        # Legenda ODL con part number
         if len(odl_colors) > 1:
-            legend_elements = [
-                patches.Patch(color=color, label=f'ODL {odl_id[:8]}...')
-                for odl_id, color in list(odl_colors.items())[:5]
-            ]
+            legend_elements = []
+            for odl_id, color in list(odl_colors.items())[:5]:
+                if odl_mapping and odl_id in odl_mapping:
+                    label = f"{odl_mapping[odl_id]['part_number']} ({odl_mapping[odl_id]['odl_number'][:8]})"
+                else:
+                    label = f'ODL {odl_id[:8]}...'
+                legend_elements.append(patches.Patch(color=color, label=label))
             ax.legend(handles=legend_elements, loc='upper right', 
                      bbox_to_anchor=(1.15, 1), fontsize=8)
         

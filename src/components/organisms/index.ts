@@ -1,4 +1,5 @@
 export { PartsTable } from './PartsTable'
 export { DepartmentODLList } from './DepartmentODLList'
+export { ODLDataTable } from './ODLDataTable'
 export { ProductionDashboard } from './ProductionDashboard'
 export { default as ToolForm } from './ToolForm'

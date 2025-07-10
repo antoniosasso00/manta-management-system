@@ -8,7 +8,8 @@ import {
   Tab, 
   Paper,
   Skeleton,
-  Alert
+  Alert,
+  Snackbar
 } from '@mui/material'
 import { ODLCard } from '@/components/molecules'
 import { ConfirmActionDialog } from '@/components/atoms'
@@ -16,6 +17,7 @@ import ManualStatusChanger from './ManualStatusChanger'
 import { DepartmentODLList as DepartmentODLListType, CreateManualEvent } from '@/domains/production'
 import { EventType } from '@prisma/client'
 import { getDepartmentNomenclature } from '@/config/departmentNomenclature'
+import { useOptimisticODLAction } from '@/hooks/useOptimisticODLAction'
 
 interface DepartmentODLListProps {
   departmentId: string
@@ -40,6 +42,48 @@ export function DepartmentODLList({
 }: DepartmentODLListProps) {
   const [tabValue, setTabValue] = useState(0)
   const [pendingAction, setPendingAction] = useState<{ odlId: string; action: EventType } | null>(null)
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ 
+    open: false, 
+    message: '', 
+    severity: 'info' 
+  })
+  
+  // Hook per gestire optimistic updates
+  const { executeAction, hasActionsInProgress, getActionStatus } = useOptimisticODLAction({
+    onSuccess: (response) => {
+      // Gestisci feedback trasferimento automatico
+      if (pendingAction?.action === 'EXIT' && response?.autoTransfer) {
+        const transfer = response.autoTransfer
+        if (transfer.success) {
+          setSnackbar({
+            open: true,
+            message: transfer.message || 'ODL trasferito automaticamente al reparto successivo',
+            severity: 'success'
+          })
+        } else {
+          setSnackbar({
+            open: true,
+            message: transfer.message || 'Trasferimento automatico non riuscito. Procedere manualmente.',
+            severity: 'warning'
+          })
+        }
+      } else {
+        setSnackbar({
+          open: true,
+          message: `Azione ${pendingAction?.action} completata con successo`,
+          severity: 'success'
+        })
+      }
+    },
+    onError: (error) => {
+      setSnackbar({
+        open: true,
+        message: error.message || 'Errore durante l\'operazione. Riprovare.',
+        severity: 'error'
+      })
+    },
+    onRefresh
+  })
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
@@ -53,7 +97,8 @@ export function DepartmentODLList({
     if (!pendingAction) return
 
     try {
-      await onTrackingEvent({
+      // Usa l'hook optimistic per eseguire l'azione
+      await executeAction({
         odlId: pendingAction.odlId,
         departmentId,
         eventType: pendingAction.action,
@@ -61,8 +106,8 @@ export function DepartmentODLList({
       })
       
       setPendingAction(null)
-      if (onRefresh) onRefresh()
     } catch (err) {
+      // Errore già gestito dall'hook
       console.error('Errore durante l\'azione:', err)
     }
   }
@@ -172,7 +217,7 @@ export function DepartmentODLList({
               <ODLCard
                 odl={odl}
                 onAction={handleAction}
-                loading={loading}
+                loading={loading || hasActionsInProgress(odl.id)}
               />
               <ManualStatusChanger
                 odl={odl}
@@ -193,6 +238,22 @@ export function DepartmentODLList({
         onCancel={() => setPendingAction(null)}
         severity="warning"
       />
+      
+      {/* Snackbar per notifiche */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

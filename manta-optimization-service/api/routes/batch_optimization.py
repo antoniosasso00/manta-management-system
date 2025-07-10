@@ -268,9 +268,22 @@ async def execute_optimization(request: ExecuteOptimizationRequest):
             batch_id = str(uuid.uuid4())
             autoclave = autoclave_map[batch.autoclave_id]
             
-            # Genera immagine
+            # Crea mapping ODL per passare informazioni complete
+            odl_mapping = {
+                odl.id: {
+                    'odl_number': odl.odl_number,
+                    'part_number': odl.part_number,
+                    'curing_cycle': odl.curing_cycle
+                }
+                for odl in odls
+            }
+            
+            # Genera immagine con mapping ODL
             layout_image = layout_generator.generate_layout_image(
-                batch, autoclave, show_coordinates=True, show_metrics=True
+                batch, autoclave, 
+                show_coordinates=True, 
+                show_metrics=True,
+                odl_mapping=odl_mapping
             )
             
             # Genera lista coordinate
@@ -284,10 +297,17 @@ async def execute_optimization(request: ExecuteOptimizationRequest):
                     if p.tool_id == coord['tool_id']
                 )
                 
+                # Trova ODL e informazioni correlate
+                odl = next(o for o in odls if o.id == placement.odl_id)
+                tool = next((t for t in odl.tools if t.id == placement.tool_id), None)
+                
                 placements_response.append(PlacementResponse(
                     odl_id=placement.odl_id,
-                    odl_number=next(o.odl_number for o in odls if o.id == placement.odl_id),
+                    odl_number=odl.odl_number,
+                    part_number=odl.part_number,
+                    part_description=None,  # Può essere aggiunto se disponibile
                     tool_id=placement.tool_id,
+                    tool_name=f"Tool {placement.tool_id}" if tool else None,
                     x=placement.x,
                     y=placement.y,
                     width=placement.width,
@@ -317,7 +337,13 @@ async def execute_optimization(request: ExecuteOptimizationRequest):
                 batch_id=batch_id,
                 autoclave_id=autoclave.id,
                 autoclave_code=autoclave.code,
+                autoclave_dimensions={
+                    'width': autoclave.width,
+                    'height': autoclave.height
+                },
                 curing_cycle=curing_cycle,
+                curing_cycle_description=None,  # Può essere aggiunto se disponibile
+                curing_time_minutes=None,  # Può essere aggiunto se disponibile
                 placements=placements_response,
                 metrics=batch_metrics,
                 status=LoadStatus.DRAFT,

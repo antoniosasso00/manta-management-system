@@ -232,16 +232,18 @@ export default function MyDepartmentPage() {
 
   const getStatusColor = (status: ODLStatus) => {
     switch (status) {
+      // Stati "IN_" - in lavorazione (blu)
       case 'IN_HONEYCOMB':
       case 'IN_CLEANROOM':
       case 'IN_AUTOCLAVE':
-      case 'IN_NDI':
       case 'IN_CONTROLLO_NUMERICO':
+      case 'IN_NDI':
       case 'IN_MONTAGGIO':
       case 'IN_VERNICIATURA':
       case 'IN_MOTORI':
       case 'IN_CONTROLLO_QUALITA':
         return 'primary';
+      // Stati "COMPLETED" - completato per reparto (verde)  
       case 'HONEYCOMB_COMPLETED':
       case 'CLEANROOM_COMPLETED':
       case 'AUTOCLAVE_COMPLETED':
@@ -251,11 +253,14 @@ export default function MyDepartmentPage() {
       case 'VERNICIATURA_COMPLETED':
       case 'MOTORI_COMPLETED':
       case 'CONTROLLO_QUALITA_COMPLETED':
-        return 'success';
       case 'COMPLETED':
         return 'success';
+      // Stati speciali
       case 'ON_HOLD':
         return 'warning';
+      case 'CANCELLED':
+        return 'error';
+      case 'CREATED':
       default:
         return 'default';
     }

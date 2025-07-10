@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from domain.entities import ODL, Autoclave, BatchLayout
 from core.optimization.nesting_engine import NestingEngine
 from core.optimization.constraints import NestingConstraints
+from core.validators.odl_state_validator import odl_validator, ODLStateValidationError
 
 @dataclass
 class CycleStats:
@@ -58,13 +59,40 @@ class MultiAutoclaveOptimizer:
         Returns:
             - Lista di BatchLayout ottimizzati ordinati per efficienza
             - Metriche di performance con suggerimenti
+        
+        Raises:
+            ValueError: Se ODL hanno stati incompatibili o conflitti
         """
         start_time = time.time()
         elevated_tools = elevated_tools or {}
         autoclave_assignments = autoclave_assignments or {}
         
-        # Analizza cicli e calcola statistiche
-        cycle_stats = self._analyze_cycle_areas(odls)
+        # VALIDAZIONE STATI ODL - Prevenzione duplicazioni cross-batch
+        validation_result = odl_validator.validate_odls_for_optimization(odls)
+        
+        if validation_result.has_blocking_errors:
+            error_messages = [
+                f"{error.error_type}: {error.message}"
+                for error in validation_result.errors
+            ]
+            raise ValueError(
+                f"Validazione ODL fallita. Errori bloccanti: {'; '.join(error_messages)}"
+            )
+        
+        # Filtra solo ODL validi se ci sono warning non bloccanti
+        if validation_result.warnings:
+            print(f"Warning validazione ODL: {len(validation_result.warnings)} avvisi")
+            for warning in validation_result.warnings:
+                print(f"  - {warning.message}")
+        
+        # Usa solo ODL validati
+        valid_odls = [odl for odl in odls if odl.id in validation_result.valid_odls]
+        
+        if len(valid_odls) != len(odls):
+            print(f"Filtrati {len(odls) - len(valid_odls)} ODL non validi. Procedo con {len(valid_odls)} ODL.")
+        
+        # Analizza cicli e calcola statistiche usando ODL validati
+        cycle_stats = self._analyze_cycle_areas(valid_odls)
         
         # Genera assegnazioni autoclavi (automatiche o manuali)
         if not autoclave_assignments:
@@ -77,11 +105,14 @@ class MultiAutoclaveOptimizer:
         all_batches = []
         metrics = {
             'total_odls_input': len(odls),
+            'total_odls_valid': len(valid_odls),
             'total_odls_placed': 0,
             'cycles_processed': len(cycle_stats),
             'batches_created': 0,
             'autoclave_suggestions': suggestions,
-            'batches_by_efficiency': []
+            'batches_by_efficiency': [],
+            'validation_warnings': len(validation_result.warnings),
+            'validation_errors': len(validation_result.errors)
         }
         
         # Processa ogni ciclo con la sua autoclave assegnata
@@ -110,16 +141,35 @@ class MultiAutoclaveOptimizer:
         # Ordina batch per efficienza decrescente
         all_batches = self._rank_batches_by_efficiency(all_batches)
         
+        # Registra batch ottimizzati come temporaneamente attivi per prevenire conflitti
+        batch_ids = []
+        for batch in all_batches:
+            batch_id = str(uuid.uuid4())
+            batch.batch_id = batch_id  # Assegna ID al batch
+            batch_ids.append(batch_id)
+            
+            # Registra batch nel validator per lock temporaneo
+            odl_ids = list(set(p.odl_id for p in batch.placements))
+            odl_validator.register_active_batch(
+                batch_id=batch_id,
+                odl_ids=odl_ids,
+                autoclave_id=batch.autoclave_id,
+                status='OPTIMIZATION_PENDING'
+            )
+        
         # Popola metriche di efficienza
         metrics['batches_by_efficiency'] = [
             {
-                'batch_id': str(uuid.uuid4()),
+                'batch_id': batch.batch_id,
                 'efficiency': batch.efficiency,
                 'odl_count': len(set(p.odl_id for p in batch.placements)),
                 'is_recommended': batch.efficiency >= 0.7  # Soglia 70%
             }
             for batch in all_batches
         ]
+        
+        # Aggiungi info sui batch registrati
+        metrics['registered_batch_ids'] = batch_ids
         
         metrics['batches_created'] = len(all_batches)
         metrics['execution_time'] = round(time.time() - start_time, 2)
@@ -276,6 +326,15 @@ class MultiAutoclaveOptimizer:
         Crea batch multipli per una combinazione ciclo-autoclave.
         Continua a creare batch finché ci sono ODL da processare.
         """
+        # Validazione: verifica che tutti gli ODL abbiano lo stesso ciclo di cura
+        if odls:
+            first_cycle = odls[0].curing_cycle
+            if not all(odl.curing_cycle == first_cycle for odl in odls):
+                raise ValueError(
+                    f"Tutti gli ODL in un batch devono avere lo stesso ciclo di cura. "
+                    f"Trovati cicli diversi: {set(odl.curing_cycle for odl in odls)}"
+                )
+        
         # Ordina ODL per area decrescente per ottimizzare il packing
         sorted_odls = sorted(odls, key=lambda x: x.total_area, reverse=True)
         remaining_odls = sorted_odls.copy()

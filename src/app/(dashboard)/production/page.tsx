@@ -159,16 +159,35 @@ export default function ProductionPage() {
 
   const getStatusColor = (status: ODLStatus) => {
     switch (status) {
+      // Stati "IN_" - in lavorazione (blu)
+      case 'IN_HONEYCOMB':
       case 'IN_CLEANROOM':
       case 'IN_AUTOCLAVE':
+      case 'IN_CONTROLLO_NUMERICO':
       case 'IN_NDI':
+      case 'IN_MONTAGGIO':
+      case 'IN_VERNICIATURA':
+      case 'IN_MOTORI':
+      case 'IN_CONTROLLO_QUALITA':
+        return 'info';
+      // Stati "COMPLETED" - completato per reparto (verde)  
+      case 'HONEYCOMB_COMPLETED':
       case 'CLEANROOM_COMPLETED':
       case 'AUTOCLAVE_COMPLETED':
-        return 'success';
+      case 'CONTROLLO_NUMERICO_COMPLETED':
+      case 'NDI_COMPLETED':
+      case 'MONTAGGIO_COMPLETED':
+      case 'VERNICIATURA_COMPLETED':
+      case 'MOTORI_COMPLETED':
+      case 'CONTROLLO_QUALITA_COMPLETED':
       case 'COMPLETED':
         return 'success';
+      // Stati speciali
       case 'ON_HOLD':
         return 'warning';
+      case 'CANCELLED':
+        return 'error';
+      case 'CREATED':
       default:
         return 'default';
     }
@@ -303,10 +322,13 @@ export default function ProductionPage() {
               <Box className="flex items-center justify-between">
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    Tempo Medio
+                    Tempo Medio Trasf.
                   </Typography>
                   <Typography variant="h4">
-                    {formatTime(stats.averageCycleTime)}
+                    {stats.averageCycleTime > 0 ? formatTime(stats.averageCycleTime) : '--'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Minuti per trasferimento
                   </Typography>
                 </Box>
                 <Schedule color="info" sx={{ fontSize: 40 }} />
@@ -320,10 +342,17 @@ export default function ProductionPage() {
         <CardContent>
           <Box className="flex items-center gap-2 mb-4">
             <FilterList />
-            <Typography variant="h6">Filtri</Typography>
-            <Button size="small" onClick={clearFilters}>
-              Cancella tutti
-            </Button>
+            <Typography variant="h6">Filtri Avanzati</Typography>
+            <Box className="flex items-center gap-2">
+              <Chip 
+                label={`${filteredODL.length} risultati`} 
+                color="primary" 
+                size="small" 
+              />
+              <Button size="small" onClick={clearFilters}>
+                Cancella tutti
+              </Button>
+            </Box>
           </Box>
           
           <Box className="grid grid-cols-1 md:grid-cols-4 gap-4">
