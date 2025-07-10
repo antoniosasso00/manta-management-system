@@ -169,15 +169,13 @@ export function DepartmentODLListRefactored({
       }}>
         {/* ODL Attivi */}
         <Card sx={{
-          borderRadius: 4,
+          borderRadius: 2,
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(63, 81, 181, 0.05) 100%)',
-          border: '1px solid rgba(25, 118, 210, 0.2)',
-          position: 'relative',
-          transition: 'all 0.3s ease-in-out',
+          background: 'rgba(55, 71, 79, 0.04)',
+          border: '1px solid rgba(55, 71, 79, 0.12)',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0 12px 24px rgba(25, 118, 210, 0.15)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }
         }}>
           <Box sx={{
@@ -185,29 +183,29 @@ export function DepartmentODLListRefactored({
             top: 0,
             left: 0,
             right: 0,
-            height: 4,
-            background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)'
+            height: 3,
+            bgcolor: '#37474f'
           }} />
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
               <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                📊 ODL Attivi
+                ODL Attivi
               </Typography>
               <Box sx={{
                 width: 48,
                 height: 48,
                 borderRadius: '50%',
-                bgcolor: 'rgba(25, 118, 210, 0.1)',
+                bgcolor: 'rgba(55, 71, 79, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Typography variant="h6" color="primary.main" fontWeight={700}>
-                  📈
+                <Typography variant="h6" sx={{ color: '#37474f' }} fontWeight={700}>
+                  #
                 </Typography>
               </Box>
             </Box>
-            <Typography variant="h2" fontWeight={900} color="primary.main" sx={{ lineHeight: 1 }}>
+            <Typography variant="h2" fontWeight={900} sx={{ color: '#37474f', lineHeight: 1 }}>
               {data.statistics.totalActive}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mt: 1 }}>
@@ -218,15 +216,13 @@ export function DepartmentODLListRefactored({
 
         {/* Tempo Medio Ciclo */}
         <Card sx={{
-          borderRadius: 4,
+          borderRadius: 2,
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(129, 199, 132, 0.05) 100%)',
-          border: '1px solid rgba(76, 175, 80, 0.2)',
-          position: 'relative',
-          transition: 'all 0.3s ease-in-out',
+          background: 'rgba(55, 71, 79, 0.04)',
+          border: '1px solid rgba(55, 71, 79, 0.12)',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0 12px 24px rgba(76, 175, 80, 0.15)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }
         }}>
           <Box sx={{
@@ -234,30 +230,30 @@ export function DepartmentODLListRefactored({
             top: 0,
             left: 0,
             right: 0,
-            height: 4,
-            background: 'linear-gradient(90deg, #388e3c 0%, #66bb6a 100%)'
+            height: 3,
+            bgcolor: '#546e7a'
           }} />
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
               <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                ⏱️ Tempo Medio
+                Tempo Medio
               </Typography>
               <Box sx={{
                 width: 48,
                 height: 48,
                 borderRadius: '50%',
-                bgcolor: 'rgba(76, 175, 80, 0.1)',
+                bgcolor: 'rgba(84, 110, 122, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Typography variant="h6" color="success.main" fontWeight={700}>
-                  ⚡
+                <Typography variant="h6" sx={{ color: '#546e7a' }} fontWeight={700}>
+                  T
                 </Typography>
               </Box>
             </Box>
             <Box display="flex" alignItems="baseline" gap={0.5}>
-              <Typography variant="h2" fontWeight={900} color="success.main" sx={{ lineHeight: 1 }}>
+              <Typography variant="h2" fontWeight={900} sx={{ color: '#546e7a', lineHeight: 1 }}>
                 {data.statistics.avgCycleTime}
               </Typography>
               <Typography variant="h5" color="text.secondary" fontWeight={600}>
@@ -272,27 +268,13 @@ export function DepartmentODLListRefactored({
 
         {/* Efficienza */}
         <Card sx={{
-          borderRadius: 4,
+          borderRadius: 2,
           overflow: 'hidden',
-          background: data.statistics.efficiency >= 90 
-            ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(129, 199, 132, 0.05) 100%)'
-            : data.statistics.efficiency >= 70
-            ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 183, 77, 0.05) 100%)'
-            : 'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 154, 154, 0.05) 100%)',
-          border: `1px solid ${
-            data.statistics.efficiency >= 90 ? 'rgba(76, 175, 80, 0.2)' :
-            data.statistics.efficiency >= 70 ? 'rgba(255, 152, 0, 0.2)' :
-            'rgba(244, 67, 54, 0.2)'
-          }`,
-          position: 'relative',
-          transition: 'all 0.3s ease-in-out',
+          background: 'rgba(55, 71, 79, 0.04)',
+          border: '1px solid rgba(55, 71, 79, 0.12)',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: data.statistics.efficiency >= 90 
-              ? '0 12px 24px rgba(76, 175, 80, 0.15)'
-              : data.statistics.efficiency >= 70
-              ? '0 12px 24px rgba(255, 152, 0, 0.15)'
-              : '0 12px 24px rgba(244, 67, 54, 0.15)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }
         }}>
           <Box sx={{
@@ -300,46 +282,35 @@ export function DepartmentODLListRefactored({
             top: 0,
             left: 0,
             right: 0,
-            height: 4,
-            background: data.statistics.efficiency >= 90 
-              ? 'linear-gradient(90deg, #388e3c 0%, #66bb6a 100%)'
-              : data.statistics.efficiency >= 70
-              ? 'linear-gradient(90deg, #f57c00 0%, #ffb74d 100%)'
-              : 'linear-gradient(90deg, #d32f2f 0%, #ef5350 100%)'
+            height: 3,
+            bgcolor: data.statistics.efficiency >= 90 ? '#4caf50' :
+                     data.statistics.efficiency >= 70 ? '#f57c00' : '#f44336'
           }} />
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
               <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                🎯 Efficienza
+                Efficienza
               </Typography>
               <Box sx={{
                 width: 48,
                 height: 48,
                 borderRadius: '50%',
-                bgcolor: data.statistics.efficiency >= 90 
-                  ? 'rgba(76, 175, 80, 0.1)'
-                  : data.statistics.efficiency >= 70
-                  ? 'rgba(255, 152, 0, 0.1)'
-                  : 'rgba(244, 67, 54, 0.1)',
+                bgcolor: 'rgba(55, 71, 79, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Typography variant="h6" fontWeight={700} color={
-                  data.statistics.efficiency >= 90 ? 'success.main' :
-                  data.statistics.efficiency >= 70 ? 'warning.main' :
-                  'error.main'
-                }>
-                  {data.statistics.efficiency >= 90 ? '🟢' : data.statistics.efficiency >= 70 ? '🟡' : '🔴'}
+                <Typography variant="h6" sx={{ color: '#37474f' }} fontWeight={700}>
+                  %
                 </Typography>
               </Box>
             </Box>
             <Box display="flex" alignItems="baseline" gap={0.5}>
-              <Typography variant="h2" fontWeight={900} sx={{ lineHeight: 1 }} color={
-                data.statistics.efficiency >= 90 ? 'success.main' :
-                data.statistics.efficiency >= 70 ? 'warning.main' :
-                'error.main'
-              }>
+              <Typography variant="h2" fontWeight={900} sx={{ 
+                lineHeight: 1,
+                color: data.statistics.efficiency >= 90 ? '#4caf50' :
+                       data.statistics.efficiency >= 70 ? '#f57c00' : '#f44336'
+              }}>
                 {data.statistics.efficiency}
               </Typography>
               <Typography variant="h5" color="text.secondary" fontWeight={600}>
@@ -354,15 +325,13 @@ export function DepartmentODLListRefactored({
 
         {/* Completati Oggi */}
         <Card sx={{
-          borderRadius: 4,
+          borderRadius: 2,
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(186, 104, 200, 0.05) 100%)',
-          border: '1px solid rgba(156, 39, 176, 0.2)',
-          position: 'relative',
-          transition: 'all 0.3s ease-in-out',
+          background: 'rgba(55, 71, 79, 0.04)',
+          border: '1px solid rgba(55, 71, 79, 0.12)',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0 12px 24px rgba(156, 39, 176, 0.15)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }
         }}>
           <Box sx={{
@@ -370,29 +339,29 @@ export function DepartmentODLListRefactored({
             top: 0,
             left: 0,
             right: 0,
-            height: 4,
-            background: 'linear-gradient(90deg, #7b1fa2 0%, #ab47bc 100%)'
+            height: 3,
+            bgcolor: '#4caf50'
           }} />
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
               <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                ✅ Completati
+                Completati
               </Typography>
               <Box sx={{
                 width: 48,
                 height: 48,
                 borderRadius: '50%',
-                bgcolor: 'rgba(156, 39, 176, 0.1)',
+                bgcolor: 'rgba(76, 175, 80, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Typography variant="h6" sx={{ color: '#7b1fa2' }} fontWeight={700}>
-                  🎉
+                <Typography variant="h6" sx={{ color: '#4caf50' }} fontWeight={700}>
+                  ✓
                 </Typography>
               </Box>
             </Box>
-            <Typography variant="h2" fontWeight={900} sx={{ color: '#7b1fa2', lineHeight: 1 }}>
+            <Typography variant="h2" fontWeight={900} sx={{ color: '#4caf50', lineHeight: 1 }}>
               {data.odlCompleted.length}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mt: 1 }}>
@@ -402,10 +371,10 @@ export function DepartmentODLListRefactored({
         </Card>
       </Box>
 
-      {/* Tabs per stato ODL con badge - Enhanced Design */}
+      {/* Tabs per stato ODL - Professional Design */}
       <Card elevation={0} sx={{ 
         mb: 3, 
-        borderRadius: 3,
+        borderRadius: 2,
         overflow: 'hidden',
         border: '1px solid',
         borderColor: 'divider'
@@ -416,30 +385,27 @@ export function DepartmentODLListRefactored({
           variant="scrollable" 
           scrollButtons="auto"
           sx={{ 
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            bgcolor: '#fafafa',
             '& .MuiTab-root': {
-              minHeight: 72,
+              minHeight: 64,
               py: 2,
               px: 3,
               textTransform: 'none',
               fontWeight: 600,
               fontSize: '0.875rem',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              color: '#666',
               '&:hover': {
-                bgcolor: 'rgba(63, 81, 181, 0.04)',
-                transform: 'translateY(-2px)'
+                bgcolor: 'rgba(55, 71, 79, 0.04)',
+                color: '#37474f'
               },
               '&.Mui-selected': {
-                bgcolor: 'rgba(63, 81, 181, 0.08)',
-                color: 'primary.main',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(63, 81, 181, 0.15)'
+                bgcolor: 'white',
+                color: '#37474f'
               }
             },
             '& .MuiTabs-indicator': {
-              height: 4,
-              borderRadius: '4px 4px 0 0',
-              background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
+              height: 3,
+              bgcolor: '#37474f'
             }
           }}
         >
@@ -447,105 +413,37 @@ export function DepartmentODLListRefactored({
             <Tab 
               key={index}
               label={
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body2" fontWeight={600}>
-                      {tab.label}
-                    </Typography>
-                    <Chip
-                      label={tab.count}
-                      size="small"
-                      sx={{
-                        height: 24,
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        minWidth: 32,
-                        ...(tab.color === 'info' && {
-                          bgcolor: 'rgba(25, 118, 210, 0.1)',
-                          color: '#1976d2',
-                          border: '1px solid rgba(25, 118, 210, 0.3)'
-                        }),
-                        ...(tab.color === 'warning' && {
-                          bgcolor: 'rgba(255, 152, 0, 0.1)',
-                          color: '#f57c00',
-                          border: '1px solid rgba(255, 152, 0, 0.3)'
-                        }),
-                        ...(tab.color === 'success' && {
-                          bgcolor: 'rgba(76, 175, 80, 0.1)',
-                          color: '#388e3c',
-                          border: '1px solid rgba(76, 175, 80, 0.3)'
-                        }),
-                        ...(tab.color === 'default' && {
-                          bgcolor: 'rgba(158, 158, 158, 0.1)',
-                          color: '#616161',
-                          border: '1px solid rgba(158, 158, 158, 0.3)'
-                        })
-                      }}
-                    />
-                  </Box>
-                  <Typography 
-                    variant="caption" 
-                    color="text.secondary"
-                    sx={{ 
-                      fontSize: '0.6875rem',
-                      textAlign: 'center',
-                      lineHeight: 1.2,
-                      maxWidth: 120,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {tab.description}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" fontWeight={600}>
+                    {tab.label}
                   </Typography>
+                  <Chip
+                    label={tab.count}
+                    size="small"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      minWidth: 28,
+                      bgcolor: 'rgba(55, 71, 79, 0.08)',
+                      color: '#37474f'
+                    }}
+                  />
                 </Box>
               }
             />
           ))}
         </Tabs>
         
-        {/* Enhanced description panel */}
+        {/* Simple description panel */}
         <Box sx={{ 
-          p: 3, 
-          background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.02) 0%, rgba(25, 118, 210, 0.01) 100%)',
-          borderTop: '1px solid rgba(224, 224, 224, 0.3)'
+          p: 2, 
+          bgcolor: '#f5f5f5',
+          borderTop: '1px solid #e0e0e0'
         }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Box display="flex" alignItems="center" gap={2}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="h6" fontWeight={700}>
-                  {currentTab.label}
-                </Typography>
-                <Chip
-                  label={`${currentTab.count} ODL`}
-                  size="small"
-                  sx={{
-                    fontWeight: 600,
-                    ...(currentTab.color === 'info' && {
-                      bgcolor: 'rgba(25, 118, 210, 0.1)',
-                      color: '#1976d2'
-                    }),
-                    ...(currentTab.color === 'warning' && {
-                      bgcolor: 'rgba(255, 152, 0, 0.1)',
-                      color: '#f57c00'
-                    }),
-                    ...(currentTab.color === 'success' && {
-                      bgcolor: 'rgba(76, 175, 80, 0.1)',
-                      color: '#388e3c'
-                    }),
-                    ...(currentTab.color === 'default' && {
-                      bgcolor: 'rgba(158, 158, 158, 0.1)',
-                      color: '#616161'
-                    })
-                  }}
-                />
-              </Box>
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-              {currentTab.description}
-            </Typography>
-          </Box>
+          <Typography variant="body2" color="text.secondary">
+            {currentTab.description}
+          </Typography>
         </Box>
       </Card>
 

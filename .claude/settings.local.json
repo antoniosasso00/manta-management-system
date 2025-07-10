@@ -68,7 +68,8 @@
       "Bash(NODE_ENV=production NETLIFY=true npx tsx -e \"\nconst config = require(''./next.config.ts'');\nconsole.log(''NODE_ENV:'', process.env.NODE_ENV);\nconsole.log(''NETLIFY:'', process.env.NETLIFY);\nconsole.log(''Output setting:'', config.default?.output);\nconsole.log(''Condition result:'', process.env.NODE_ENV === ''production'' && !process.env.NETLIFY);\n\")",
       "Bash(fuser:*)",
       "Bash(docker volume rm:*)",
-      "Bash(./scripts/dev/start-dev.sh:*)"
+      "Bash(./scripts/dev/start-dev.sh:*)",
+      "Bash(npx:*)"
     ],
     "deny": []
   }

@@ -209,36 +209,34 @@ export function ODLDataTable({
             const isCompleted = availableActions.length === 0
             
             return (
-              <Fade in timeout={200 + (index * 50)} key={odl.id}>
-                <Card
-                  sx={{
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-                    },
-                    ...(isCompleted && {
-                      background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%)',
-                      borderLeft: '4px solid #2e7d32'
-                    })
-                  }}
-                >
+              <Card
+                key={odl.id}
+                sx={{
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  },
+                  ...(isCompleted && {
+                    bgcolor: 'rgba(46, 125, 50, 0.04)',
+                    borderLeft: '4px solid #37474f'
+                  })
+                }}
+              >
                   {/* Priority indicator band */}
                   <Box
                     sx={{
-                      height: 4,
+                      height: 3,
                       width: '100%',
-                      background: 
-                        odl.priority === 'URGENT' ? 'linear-gradient(90deg, #d32f2f 0%, #f44336 100%)' :
-                        odl.priority === 'HIGH' ? 'linear-gradient(90deg, #f57c00 0%, #ff9800 100%)' :
-                        odl.priority === 'NORMAL' ? 'linear-gradient(90deg, #3f51b5 0%, #5c6bc0 100%)' :
-                        'linear-gradient(90deg, #388e3c 0%, #4caf50 100%)'
+                      bgcolor: 
+                        odl.priority === 'URGENT' ? '#d32f2f' :
+                        odl.priority === 'HIGH' ? '#f57c00' :
+                        odl.priority === 'NORMAL' ? '#37474f' :
+                        '#546e7a'
                     }}
                   />
                   
@@ -347,7 +345,7 @@ export function ODLDataTable({
                     {isCompleted ? (
                       <Box display="flex" justifyContent="center">
                         <Chip 
-                          label="✅ Completato" 
+                          label="Completato" 
                           sx={{
                             bgcolor: 'rgba(46, 125, 50, 0.1)',
                             color: '#2e7d32',
@@ -437,7 +435,6 @@ export function ODLDataTable({
                     )}
                   </CardContent>
                 </Card>
-              </Fade>
             )
           })}
         </Box>
@@ -478,7 +475,7 @@ export function ODLDataTable({
           <Table sx={{ minWidth: 650 }} size="medium">
           <TableHead>
             <TableRow sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #37474f 0%, #546e7a 100%)',
               '& .MuiTableCell-head': {
                 color: 'white',
                 fontWeight: 600,
@@ -499,7 +496,7 @@ export function ODLDataTable({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={1}>
-                    📋 Numero ODL
+                    Numero ODL
                   </Box>
                 </TableSortLabel>
               </TableCell>
@@ -514,13 +511,13 @@ export function ODLDataTable({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={1}>
-                    🔧 Part Number
+                    Part Number
                   </Box>
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <Box display="flex" alignItems="center" gap={1}>
-                  📊 Quantità
+                  Quantità
                 </Box>
               </TableCell>
               <TableCell>
@@ -534,7 +531,7 @@ export function ODLDataTable({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={1}>
-                    🎯 Priorità
+                    Priorità
                   </Box>
                 </TableSortLabel>
               </TableCell>
@@ -549,7 +546,7 @@ export function ODLDataTable({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={1}>
-                    🔄 Stato
+                    Stato
                   </Box>
                 </TableSortLabel>
               </TableCell>
@@ -564,13 +561,13 @@ export function ODLDataTable({
                   }}
                 >
                   <Box display="flex" alignItems="center" gap={1}>
-                    ⏱️ Tempo nel Reparto
+                    Tempo nel Reparto
                   </Box>
                 </TableSortLabel>
               </TableCell>
               <TableCell align="center">
                 <Box display="flex" alignItems="center" gap={1} justifyContent="center">
-                  ⚡ Azioni
+                  Azioni
                 </Box>
               </TableCell>
               <TableCell width={40} />
@@ -592,9 +589,8 @@ export function ODLDataTable({
                 const isCompleted = availableActions.length === 0
 
                 return (
-                  <Fade in timeout={200} key={odl.id}>
-                    <React.Fragment>
-                      <TableRow 
+                  <React.Fragment key={odl.id}>
+                    <TableRow 
                         hover
                         sx={{ 
                           '& > *': { borderBottom: isExpanded ? 'unset' : undefined },
@@ -730,7 +726,7 @@ export function ODLDataTable({
                       <TableCell align="center">
                         {isCompleted ? (
                           <Chip 
-                            label="✅ Completato" 
+                            label="Completato" 
                             size="small"
                             sx={{
                               bgcolor: 'rgba(46, 125, 50, 0.1)',
@@ -842,8 +838,7 @@ export function ODLDataTable({
                         </Collapse>
                       </TableCell>
                     </TableRow>
-                    </React.Fragment>
-                  </Fade>
+                  </React.Fragment>
                 )
               })
             )}
