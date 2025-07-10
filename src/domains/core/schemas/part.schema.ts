@@ -8,7 +8,23 @@ export const createPartSchema = z.object({
     .min(1, 'Il numero parte è obbligatorio')
     .regex(partNumberRegex, 'Il numero parte deve contenere solo lettere e numeri'),
   description: z.string()
-    .min(1, 'La descrizione è obbligatoria')
+    .min(1, 'La descrizione è obbligatoria'),
+  
+  // Configurazioni Autoclavi (opzionali)
+  defaultCuringCycleId: z.string().cuid().optional(),
+  defaultVacuumLines: z.number().int().min(1).max(10).optional(),
+  autoclaveSetupTime: z.number().int().positive().optional(),
+  autoclaveLoadPosition: z.string().optional(),
+  
+  // Configurazioni Clean Room (opzionali)
+  resinType: z.string().optional(),
+  prepregCode: z.string().optional(),
+  cycleTime: z.number().int().positive().optional(),
+  roomTemperature: z.number().positive().optional(),
+  
+  // Configurazioni NDI (opzionali)
+  inspectionTime: z.number().int().positive().optional(),
+  calibrationReq: z.string().optional(),
 })
 
 // Schema per validazione route (con id)

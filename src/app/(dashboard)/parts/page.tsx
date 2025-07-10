@@ -233,6 +233,83 @@ export default function PartsPage() {
       required: true,
       placeholder: 'Descrizione della parte',
       gridSize: 6
+    },
+    
+    // Configurazione Autoclavi
+    {
+      name: 'defaultCuringCycleId',
+      label: 'Ciclo di Cura Predefinito',
+      type: 'select',
+      placeholder: 'Seleziona ciclo...',
+      gridSize: 6,
+      options: [] // Sarà popolato dinamicamente
+    },
+    {
+      name: 'defaultVacuumLines',
+      label: 'Linee Vacuum Predefinite',
+      type: 'number',
+      placeholder: '1-10',
+      gridSize: 6
+    },
+    {
+      name: 'autoclaveSetupTime',
+      label: 'Tempo Setup (min)',
+      type: 'number',
+      placeholder: 'Minuti',
+      gridSize: 6
+    },
+    {
+      name: 'autoclaveLoadPosition',
+      label: 'Posizione Carico Preferita',
+      type: 'text',
+      placeholder: 'Es. Centro, Sinistra...',
+      gridSize: 6
+    },
+    
+    // Configurazione Clean Room
+    {
+      name: 'resinType',
+      label: 'Tipo Resina',
+      type: 'text',
+      placeholder: 'Es. RTM6, CYCOM977-2...',
+      gridSize: 6
+    },
+    {
+      name: 'prepregCode',
+      label: 'Codice Prepreg',
+      type: 'text',
+      placeholder: 'Codice materiale prepreg',
+      gridSize: 6
+    },
+    {
+      name: 'cycleTime',
+      label: 'Tempo Ciclo (min)',
+      type: 'number',
+      placeholder: 'Minuti laminazione',
+      gridSize: 6
+    },
+    {
+      name: 'roomTemperature',
+      label: 'Temperatura Stanza (°C)',
+      type: 'number',
+      placeholder: '20-25°C',
+      gridSize: 6
+    },
+    
+    // Configurazione NDI
+    {
+      name: 'inspectionTime',
+      label: 'Tempo Ispezione (min)',
+      type: 'number',
+      placeholder: 'Minuti controllo',
+      gridSize: 6
+    },
+    {
+      name: 'calibrationReq',
+      label: 'Requisiti Calibrazione',
+      type: 'text',
+      placeholder: 'Specifiche calibrazione strumenti',
+      gridSize: 6
     }
   ]
 
