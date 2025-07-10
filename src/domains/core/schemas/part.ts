@@ -27,12 +27,24 @@ export const partSchema = z.object({
   }).optional()
 })
 
-// Paginated response schema for getAll
+// Paginated response schema for getAll (backward compatibility)
 export const paginatedPartsSchema = z.object({
   parts: z.array(partSchema),
   total: z.number(),
   page: z.number(),
   totalPages: z.number()
+})
+
+// New standardized API response schema
+export const apiPartsResponseSchema = z.object({
+  data: z.array(partSchema),
+  meta: z.object({
+    total: z.number(),
+    page: z.number(),
+    limit: z.number(),
+    totalPages: z.number()
+  }),
+  success: z.boolean()
 })
 
 // Create Part schema

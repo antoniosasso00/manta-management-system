@@ -2,6 +2,7 @@ import { ValidatedRepository } from '../repository'
 import { 
   partSchema, 
   paginatedPartsSchema,
+  apiPartsResponseSchema,
   type Part
 } from '@/domains/core/schemas/part'
 import {
@@ -29,17 +30,39 @@ export class PartRepository extends ValidatedRepository<Part, CreatePartInput, U
   async getAll(params?: Record<string, string | number | boolean | string[]>): Promise<Part[]> {
     const queryString = this.buildQueryString(params)
     const response = await this.fetchWithTimeout(`${this.baseUrl}${queryString}`)
-    const data = await this.handleResponse(response)
-    const validatedData = paginatedPartsSchema.parse(data)
-    return validatedData.parts
+    const rawData = await this.handleResponse(response)
+    
+    // Try new API format first, fallback to old format
+    try {
+      const newFormatData = apiPartsResponseSchema.parse(rawData)
+      return newFormatData.data
+    } catch {
+      // Fallback to old format
+      const validatedData = paginatedPartsSchema.parse(rawData)
+      return validatedData.parts
+    }
   }
 
   // Get paginated response with metadata
   async getPaginated(params?: Record<string, string | number | boolean | string[]>) {
     const queryString = this.buildQueryString(params)
     const response = await this.fetchWithTimeout(`${this.baseUrl}${queryString}`)
-    const data = await this.handleResponse(response)
-    return paginatedPartsSchema.parse(data)
+    const rawData = await this.handleResponse(response)
+    
+    // Try new API format first, fallback to old format
+    try {
+      const newFormatData = apiPartsResponseSchema.parse(rawData)
+      // Transform to old format for backward compatibility
+      return {
+        parts: newFormatData.data,
+        total: newFormatData.meta.total,
+        page: newFormatData.meta.page,
+        totalPages: newFormatData.meta.totalPages
+      }
+    } catch {
+      // Fallback to old format
+      return paginatedPartsSchema.parse(rawData)
+    }
   }
 
   // Part-specific methods

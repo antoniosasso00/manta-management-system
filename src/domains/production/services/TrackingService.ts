@@ -2,6 +2,7 @@ import { EventType, ODLStatus, Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { WorkflowService } from './WorkflowService'
 import { TimeMetricsService } from './TimeMetricsService'
+import { isValidDepartmentEntry, isValidDepartmentExit, getTransitionErrorMessage } from '@/utils/status-transitions'
 import type { 
   CreateManualEvent, 
   ProductionEventFilter, 
@@ -13,66 +14,165 @@ import type {
 export class TrackingService {
   // Crea un nuovo evento di produzione (manuale o QR)
   static async createProductionEvent(data: CreateManualEvent & { userId: string }): Promise<ProductionEventResponse> {
-    // Verifica che l'ODL esista
-    const odl = await prisma.oDL.findUnique({
-      where: { id: data.odlId },
-      include: { part: true }
-    })
-    
-    if (!odl) {
-      throw new Error('ODL non trovato')
-    }
+    return await prisma.$transaction(async (tx) => {
+      // Verifica che l'ODL esista con lock ottimistico
+      const odl = await tx.oDL.findUnique({
+        where: { id: data.odlId },
+        include: { part: true }
+      })
+      
+      if (!odl) {
+        throw new Error('ODL non trovato')
+      }
 
-    // Crea l'evento
-    const event = await prisma.productionEvent.create({
-      data: {
-        odlId: data.odlId,
-        departmentId: data.departmentId,
-        eventType: data.eventType,
-        userId: data.userId,
-        notes: data.notes,
-        duration: data.duration, // Supporto per durata timer
-      },
-      include: {
-        user: true,
-        department: true,
-        odl: {
-          include: { part: true }
+      // Verifica che il reparto esista
+      const department = await tx.department.findUnique({
+        where: { id: data.departmentId }
+      })
+      
+      if (!department) {
+        throw new Error('Reparto non trovato')
+      }
+
+      // Validazione transizione di stato
+      const isValidTransition = data.eventType === EventType.ENTRY
+        ? isValidDepartmentEntry(odl.status, department.type)
+        : isValidDepartmentExit(odl.status, department.type)
+      
+      if (!isValidTransition) {
+        const errorMessage = data.eventType === EventType.ENTRY
+          ? getTransitionErrorMessage(odl.status, this.getTargetStatusForEntry(department.type))
+          : getTransitionErrorMessage(odl.status, this.getTargetStatusForExit(department.type))
+        throw new Error(`Transizione di stato non valida: ${errorMessage}`)
+      }
+
+      // Crea l'evento
+      const event = await tx.productionEvent.create({
+        data: {
+          odlId: data.odlId,
+          departmentId: data.departmentId,
+          eventType: data.eventType,
+          userId: data.userId,
+          notes: data.notes,
+          duration: data.duration,
+        },
+        include: {
+          user: true,
+          department: true,
+          odl: {
+            include: { part: true }
+          }
+        }
+      })
+
+      // Aggiorna lo stato dell'ODL atomicamente
+      await this.updateODLStatusWithinTransaction(tx, odl.id, data.departmentId, data.eventType)
+
+      return event as ProductionEventResponse
+    }, {
+      isolationLevel: 'ReadCommitted',
+      timeout: 10000
+    }).then(async (event) => {
+      // Post-processing fuori dalla transazione per evitare timeout
+      try {
+        await TimeMetricsService.processProductionEvent(event)
+      } catch (error) {
+        console.error('Errore calcolo metriche temporali:', error)
+      }
+
+      // Attiva trasferimento automatico se EXIT
+      if (data.eventType === EventType.EXIT) {
+        try {
+          await WorkflowService.executeAutoTransfer({
+            odlId: data.odlId,
+            currentDepartmentId: data.departmentId,
+            userId: data.userId
+          })
+        } catch (error) {
+          console.error('Auto transfer failed:', error)
         }
       }
+
+      return event
+    })
+  }
+
+  // Aggiorna lo stato dell'ODL in base agli eventi (dentro transazione)
+  private static async updateODLStatusWithinTransaction(tx: any, odlId: string, departmentId: string, eventType: EventType) {
+    const department = await tx.department.findUnique({
+      where: { id: departmentId }
     })
 
-    // Aggiorna lo stato dell'ODL in base all'evento
-    await this.updateODLStatus(odl.id, data.departmentId, data.eventType)
+    if (!department) return
 
-    // 🆕 EVENT-DRIVEN HOOK: Calcola metriche temporali
-    try {
-      await TimeMetricsService.processProductionEvent(event as ProductionEventResponse)
-    } catch (error) {
-      console.error('Errore calcolo metriche temporali:', error)
-      // Non bloccare il flusso principale per errori di calcolo metriche
-    }
+    let newStatus: ODLStatus | null = null
 
-    // Attiva trasferimento automatico se EXIT
-    if (data.eventType === EventType.EXIT) {
-      try {
-        const transferResult = await WorkflowService.executeAutoTransfer({
-          odlId: data.odlId,
-          currentDepartmentId: data.departmentId,
-          userId: data.userId
-        });
-        
-        // Transfer result logged internally by WorkflowService
-      } catch (error) {
-        console.error('Auto transfer failed:', error);
-        // Non bloccare l'evento per errori di trasferimento
+    // Logica per determinare il nuovo stato basato su reparto ed evento
+    if (eventType === EventType.ENTRY) {
+      switch (department.type) {
+        case 'HONEYCOMB':
+          newStatus = ODLStatus.IN_HONEYCOMB
+          break
+        case 'CLEANROOM':
+          newStatus = ODLStatus.IN_CLEANROOM
+          break
+        case 'AUTOCLAVE':
+          newStatus = ODLStatus.IN_AUTOCLAVE
+          break
+        case 'CONTROLLO_NUMERICO':
+          newStatus = ODLStatus.IN_CONTROLLO_NUMERICO
+          break
+        case 'NDI':
+          newStatus = ODLStatus.IN_NDI
+          break
+        case 'MONTAGGIO':
+          newStatus = ODLStatus.IN_MONTAGGIO
+          break
+        case 'VERNICIATURA':
+          newStatus = ODLStatus.IN_VERNICIATURA
+          break
+        case 'CONTROLLO_QUALITA':
+          newStatus = ODLStatus.IN_CONTROLLO_QUALITA
+          break
+      }
+    } else if (eventType === EventType.EXIT) {
+      switch (department.type) {
+        case 'HONEYCOMB':
+          newStatus = ODLStatus.HONEYCOMB_COMPLETED
+          break
+        case 'CLEANROOM':
+          newStatus = ODLStatus.CLEANROOM_COMPLETED
+          break
+        case 'AUTOCLAVE':
+          newStatus = ODLStatus.AUTOCLAVE_COMPLETED
+          break
+        case 'CONTROLLO_NUMERICO':
+          newStatus = ODLStatus.CONTROLLO_NUMERICO_COMPLETED
+          break
+        case 'NDI':
+          newStatus = ODLStatus.NDI_COMPLETED
+          break
+        case 'MONTAGGIO':
+          newStatus = ODLStatus.MONTAGGIO_COMPLETED
+          break
+        case 'VERNICIATURA':
+          newStatus = ODLStatus.VERNICIATURA_COMPLETED
+          break
+        case 'CONTROLLO_QUALITA':
+          newStatus = ODLStatus.COMPLETED
+          break
       }
     }
 
-    return event as ProductionEventResponse
+    if (newStatus) {
+      await tx.oDL.update({
+        where: { id: odlId },
+        data: { status: newStatus }
+      })
+    }
   }
 
-  // Aggiorna lo stato dell'ODL in base agli eventi
+  // Aggiorna lo stato dell'ODL in base agli eventi (legacy - per compatibilità)
   private static async updateODLStatus(odlId: string, departmentId: string, eventType: EventType) {
     const department = await prisma.department.findUnique({
       where: { id: departmentId }
@@ -509,6 +609,40 @@ export class TrackingService {
     })
 
     return incomingODLs
+  }
+
+  /**
+   * Ottiene lo stato target per un evento ENTRY in un reparto
+   */
+  private static getTargetStatusForEntry(departmentType: string): ODLStatus {
+    const statusMap: Record<string, ODLStatus> = {
+      'CLEANROOM': ODLStatus.IN_CLEANROOM,
+      'AUTOCLAVE': ODLStatus.IN_AUTOCLAVE,
+      'HONEYCOMB': ODLStatus.IN_HONEYCOMB,
+      'CONTROLLO_NUMERICO': ODLStatus.IN_CONTROLLO_NUMERICO,
+      'NDI': ODLStatus.IN_NDI,
+      'MONTAGGIO': ODLStatus.IN_MONTAGGIO,
+      'VERNICIATURA': ODLStatus.IN_VERNICIATURA,
+      'CONTROLLO_QUALITA': ODLStatus.IN_CONTROLLO_QUALITA
+    }
+    return statusMap[departmentType] || ODLStatus.IN_CLEANROOM
+  }
+
+  /**
+   * Ottiene lo stato target per un evento EXIT in un reparto
+   */
+  private static getTargetStatusForExit(departmentType: string): ODLStatus {
+    const statusMap: Record<string, ODLStatus> = {
+      'CLEANROOM': ODLStatus.CLEANROOM_COMPLETED,
+      'AUTOCLAVE': ODLStatus.AUTOCLAVE_COMPLETED,
+      'HONEYCOMB': ODLStatus.HONEYCOMB_COMPLETED,
+      'CONTROLLO_NUMERICO': ODLStatus.CONTROLLO_NUMERICO_COMPLETED,
+      'NDI': ODLStatus.NDI_COMPLETED,
+      'MONTAGGIO': ODLStatus.MONTAGGIO_COMPLETED,
+      'VERNICIATURA': ODLStatus.VERNICIATURA_COMPLETED,
+      'CONTROLLO_QUALITA': ODLStatus.COMPLETED
+    }
+    return statusMap[departmentType] || ODLStatus.CLEANROOM_COMPLETED
   }
 
   /**

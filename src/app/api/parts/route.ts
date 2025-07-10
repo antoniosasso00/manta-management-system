@@ -15,13 +15,20 @@ export const GET = ErrorHelper.withErrorHandling(async (request: NextRequest) =>
 
   const { searchParams } = new URL(request.url)
   
+  // Parse parameters safely
+  const pageParam = searchParams.get('page')
+  const limitParam = searchParams.get('limit')
+  const sortByParam = searchParams.get('sortBy')
+  const sortOrderParam = searchParams.get('sortOrder')
+  const isActiveParam = searchParams.get('isActive')
+  
   const queryParams = {
     search: searchParams.get('search') || undefined,
-    isActive: searchParams.get('isActive') ? searchParams.get('isActive') === 'true' : undefined,
-    page: Math.max(1, parseInt(searchParams.get('page') || '1')),
-    limit: Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10'))),
-    sortBy: ['partNumber', 'description', 'createdAt'].includes(searchParams.get('sortBy') || '') ? searchParams.get('sortBy') : 'partNumber',
-    sortOrder: ['asc', 'desc'].includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'asc',
+    isActive: isActiveParam ? isActiveParam === 'true' : undefined,
+    page: pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1,
+    limit: limitParam ? Math.min(100, Math.max(1, parseInt(limitParam) || 10)) : 10,
+    sortBy: ['partNumber', 'description', 'createdAt'].includes(sortByParam || '') ? sortByParam as 'partNumber' | 'description' | 'createdAt' : 'partNumber',
+    sortOrder: ['asc', 'desc'].includes(sortOrderParam || '') ? sortOrderParam as 'asc' | 'desc' : 'asc',
     includeTools: searchParams.get('include') === 'partTools',
   }
 

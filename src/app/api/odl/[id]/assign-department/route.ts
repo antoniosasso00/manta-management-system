@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { TrackingService } from '@/domains/production/services/TrackingService'
 import { EventType } from '@prisma/client'
 import { z } from 'zod'
+import { isValidDepartmentEntry, getTransitionErrorMessage, DEPARTMENT_ENTRY_STATUS } from '@/utils/status-transitions'
 
 const assignDepartmentSchema = z.object({
   departmentId: z.string().min(1, 'Department ID richiesto'),
@@ -50,20 +51,13 @@ export async function POST(
       return NextResponse.json({ error: 'Reparto non trovato' }, { status: 404 })
     }
 
-    // Verifica che l'ODL sia in uno stato compatibile per l'assegnazione
-    const compatibleStatuses = [
-      'CREATED',
-      'CLEANROOM_COMPLETED',
-      'AUTOCLAVE_COMPLETED', 
-      'CONTROLLO_NUMERICO_COMPLETED',
-      'NDI_COMPLETED',
-      'MONTAGGIO_COMPLETED',
-      'VERNICIATURA_COMPLETED'
-    ]
-
-    if (!compatibleStatuses.includes(odl.status)) {
+    // Verifica transizione di stato valida
+    const isValidTransition = isValidDepartmentEntry(odl.status, department.type)
+    if (!isValidTransition) {
+      const targetStatus = DEPARTMENT_ENTRY_STATUS[department.type]
+      const errorMessage = getTransitionErrorMessage(odl.status, targetStatus)
       return NextResponse.json({ 
-        error: `ODL in stato ${odl.status} non può essere assegnato manualmente` 
+        error: `Transizione di stato non valida: ${errorMessage}` 
       }, { status: 400 })
     }
 
