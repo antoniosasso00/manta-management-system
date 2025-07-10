@@ -35,13 +35,17 @@ export async function GET(request: NextRequest) {
       include: {
         part: {
           include: {
-            defaultCuringCycle: true,
+            autoclaveConfig: {
+              include: {
+                curingCycle: true
+              }
+            },
             partTools: {
               include: {
                 tool: true
               }
             }
-          },
+          }
         }
       },
       orderBy: [
@@ -55,7 +59,7 @@ export async function GET(request: NextRequest) {
     let filteredOdls = odls;
     if (curingCycleId) {
       filteredOdls = odls.filter(odl => {
-        const odlCycleId = odl.part.defaultCuringCycleId;
+        const odlCycleId = odl.part.autoclaveConfig?.curingCycleId;
         return odlCycleId === curingCycleId;
       });
     }
@@ -65,13 +69,13 @@ export async function GET(request: NextRequest) {
     const cycleNames: Record<string, string> = {};
 
     for (const odl of filteredOdls) {
-      const cycleId = odl.part.defaultCuringCycleId;
-      const cycle = odl.part.defaultCuringCycle;
+      const cycleId = odl.part.autoclaveConfig?.curingCycleId;
+      const cycle = odl.part.autoclaveConfig?.curingCycle;
       
       if (cycleId && cycle) {
         if (!groupedByCycle[cycleId]) {
           groupedByCycle[cycleId] = [];
-          cycleNames[cycleId] = cycle.name;
+          cycleNames[cycleId] = cycle?.name || 'Unknown';
         }
         const tool = odl.part.partTools[0]?.tool;
         const dimensions = tool ? { length: tool.base, width: tool.base, height: tool.height } : null;
@@ -106,8 +110,8 @@ export async function GET(request: NextRequest) {
           quantity: odl.quantity,
           priority: odl.priority,
           createdAt: odl.createdAt,
-          curingCycleId: odl.part.defaultCuringCycleId,
-          curingCycleName: odl.part.defaultCuringCycle?.name,
+          curingCycleId: odl.part.autoclaveConfig?.curingCycleId,
+          curingCycleName: odl.part.autoclaveConfig?.curingCycle?.name,
           dimensions,
           estimatedVolume,
         };

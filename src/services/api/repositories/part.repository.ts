@@ -3,14 +3,12 @@ import {
   partSchema, 
   paginatedPartsSchema,
   apiPartsResponseSchema,
-  type Part
-} from '@/domains/core/schemas/part'
-import {
   createPartSchema,
-  updatePartInputSchema,
+  updatePartSchema,
+  type Part,
   type CreatePartInput,
   type UpdatePartInput
-} from '@/domains/core/schemas/part.schema'
+} from '@/domains/core/schemas/part'
 
 export class PartRepository extends ValidatedRepository<Part, CreatePartInput, UpdatePartInput> {
   constructor() {
@@ -21,7 +19,7 @@ export class PartRepository extends ValidatedRepository<Part, CreatePartInput, U
       {
         entity: partSchema,
         create: createPartSchema,
-        update: updatePartInputSchema
+        update: updatePartSchema
       }
     )
   }

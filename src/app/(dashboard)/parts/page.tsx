@@ -23,10 +23,10 @@ import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
 import { FormBuilder, FieldConfig } from '@/components/molecules/FormBuilder'
 import { DetailDialog, DetailField } from '@/components/molecules/DetailDialog'
 import { partRepository } from '@/services/api/repositories/part.repository'
-import { createPartSchema, updatePartInputSchema } from '@/domains/core/schemas/part.schema'
+import { createPartSchema, updatePartInputSchema } from '@/domains/core/schemas/part'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { CreatePartInput, UpdatePartInput } from '@/domains/core/schemas/part.schema'
+import type { CreatePartInput, UpdatePartInputData } from '@/domains/core/schemas/part'
 import type { Part } from '@/domains/core/schemas/part'
 import type { Column } from '@/components/atoms/DataTable'
 
@@ -67,7 +67,7 @@ export default function PartsPage() {
     }
   })
 
-  const updateForm = useForm<UpdatePartInput>({
+  const updateForm = useForm<UpdatePartInputData>({
     resolver: zodResolver(updatePartInputSchema),
     defaultValues: {
       partNumber: '',
@@ -177,21 +177,26 @@ export default function PartsPage() {
   }
 
   const handleEdit = (part: Part) => {
+    if (!part) {
+      setError('Parte non valida selezionata')
+      return
+    }
+    
     setSelectedPart(part)
     setIsEditing(true)
     updateForm.reset({
-      partNumber: part.partNumber,
-      description: part.description,
-      // defaultCuringCycleId: part.defaultCuringCycleId || '',
-      // defaultVacuumLines: part.defaultVacuumLines || 1,
-      // autoclaveSetupTime: part.autoclaveSetupTime,
-      // autoclaveLoadPosition: part.autoclaveLoadPosition || '',
-      // resinType: part.resinType || '',
-      // prepregCode: part.prepregCode || '',
-      // cycleTime: part.cycleTime,
-      // roomTemperature: part.roomTemperature,
-      // inspectionTime: part.inspectionTime,
-      // calibrationReq: part.calibrationReq || ''
+      partNumber: part.partNumber || '',
+      description: part.description || '',
+      curingCycleId: part.autoclaveConfig?.curingCycleId || '',
+      vacuumLines: part.autoclaveConfig?.vacuumLines || undefined,
+      autoclaveSetupTime: part.autoclaveConfig?.setupTime || undefined,
+      autoclaveLoadPosition: part.autoclaveConfig?.loadPosition || '',
+      resinType: part.cleanroomConfig?.resinType || '',
+      prepregCode: part.cleanroomConfig?.prepregCode || '',
+      cycleTime: part.cleanroomConfig?.cycleTime || undefined,
+      roomTemperature: part.cleanroomConfig?.roomTemperature || undefined,
+      inspectionTime: part.ndiConfig?.inspectionTime || undefined,
+      calibrationReq: part.ndiConfig?.calibrationReq || ''
     })
     setFormOpen(true)
   }
@@ -211,11 +216,19 @@ export default function PartsPage() {
     }
   }
 
-  const handleFormSubmit = async (data: CreatePartInput | UpdatePartInput) => {
+  const handleFormSubmit = async (data: CreatePartInput | UpdatePartInputData) => {
+    if (!data) {
+      setError('Dati del form non validi')
+      return
+    }
+    
     try {
-      if (isEditing && selectedPart) {
-        await partRepository.update(selectedPart.id, data as UpdatePartInput)
+      if (isEditing && selectedPart?.id) {
+        // For update, add id to data for validation
+        const updateData = { ...data, id: selectedPart.id }
+        await partRepository.update(selectedPart.id, updateData)
       } else {
+        // For create, cast data to CreatePartInput
         await partRepository.create(data as CreatePartInput)
       }
       setFormOpen(false)
@@ -224,7 +237,19 @@ export default function PartsPage() {
       await fetchParts()
     } catch (error) {
       console.error('Error saving part:', error)
-      setError(error instanceof Error ? error.message : 'Errore salvataggio parte')
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          setError('Numero parte già esistente. Scegli un numero diverso.')
+        } else if (error.message.includes('validation') || error.message.includes('invalid')) {
+          setError('Dati non validi. Controlla i campi del form.')
+        } else {
+          setError(error.message)
+        }
+      } else {
+        setError('Errore salvataggio parte')
+      }
     }
   }
 
@@ -246,25 +271,26 @@ export default function PartsPage() {
       id: 'partNumber',
       label: 'Numero Parte',
       minWidth: 150,
-      format: (value) => <strong>{String(value)}</strong>
+      format: (value) => <strong>{String(value || '')}</strong>
     },
     {
       id: 'description',
       label: 'Descrizione',
-      minWidth: 200
+      minWidth: 200,
+      format: (value) => String(value || '')
     },
     {
       id: 'odlCount' as keyof Part,
       label: 'ODL',
       minWidth: 100,
-      format: (_value, row) => String(row._count?.odls || 0)
+      format: (_value, row) => String(row?._count?.odls || 0)
     },
     {
       id: 'createdAt',
       label: 'Data Creazione',
       minWidth: 180,
       format: (value) => 
-        value ? new Date(value as string).toLocaleString('it-IT') : ''
+        value ? new Date(value as string).toLocaleString('it-IT') : 'N/A'
     }
   ]
 
@@ -575,7 +601,7 @@ export default function PartsPage() {
             fields: [
               {
                 label: 'Numero Parte',
-                value: viewPart.partNumber,
+                value: viewPart.partNumber || '-',
                 size: { xs: 12, sm: 6 }
               },
               {
@@ -589,16 +615,16 @@ export default function PartsPage() {
                 size: { xs: 12, sm: 6 }
               },
               {
-                label: 'Ciclo di Cura Predefinito',
-                value: viewPart.defaultCuringCycle ? (
-                  <Chip label={viewPart.defaultCuringCycle} size="small" color="primary" />
+                label: 'Ciclo di Cura',
+                value: viewPart.autoclaveConfig?.curingCycle ? (
+                  <Chip label={`${viewPart.autoclaveConfig.curingCycle.code || 'N/A'} - ${viewPart.autoclaveConfig.curingCycle.name || 'N/A'}`} size="small" color="primary" />
                 ) : '-',
                 type: 'custom' as const,
                 size: { xs: 12, sm: 6 }
               },
               {
                 label: 'Linee Vacuum',
-                value: viewPart.defaultVacuumLines || '-',
+                value: viewPart.autoclaveConfig?.vacuumLines || '-',
                 size: { xs: 12, sm: 6 }
               }
             ]
@@ -608,13 +634,13 @@ export default function PartsPage() {
             fields: [
               {
                 label: 'Data Creazione',
-                value: viewPart.createdAt,
+                value: viewPart.createdAt || new Date().toISOString(),
                 type: 'date' as const,
                 size: { xs: 12, sm: 6 }
               },
               {
                 label: 'Ultima Modifica',
-                value: viewPart.updatedAt,
+                value: viewPart.updatedAt || new Date().toISOString(),
                 type: 'date' as const,
                 size: { xs: 12, sm: 6 }
               }

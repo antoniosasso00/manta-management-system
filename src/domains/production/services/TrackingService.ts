@@ -48,6 +48,20 @@ export class TrackingService {
         throw new Error(`Transizione di stato non valida: ${errorMessage}`)
       }
 
+      // Validate user exists in database
+      const userExists = await tx.user.findUnique({
+        where: { id: data.userId },
+        select: { id: true, isActive: true }
+      })
+      
+      if (!userExists) {
+        throw new Error(`Sessione non valida: utente non trovato. Effettua nuovamente il login.`)
+      }
+      
+      if (!userExists.isActive) {
+        throw new Error(`Utente non attivo. Contattare l'amministratore.`)
+      }
+
       // Crea l'evento
       const event = await tx.productionEvent.create({
         data: {

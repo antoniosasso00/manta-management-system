@@ -47,14 +47,13 @@ export default async function OptimizationPage() {
                 tool: true
               }
             },
-            defaultCuringCycle: true,
             autoclaveConfig: {
               include: {
                 curingCycle: true
               }
             }
           }
-        },
+        }
       }
     });
 

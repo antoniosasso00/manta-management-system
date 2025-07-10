@@ -15,6 +15,11 @@ async function postHandler(req: NextRequest) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
     }
 
+    if (!session.user?.id) {
+      return NextResponse.json({ error: 'Session non valida: ID utente mancante' }, { status: 401 })
+    }
+
+
     const body = await req.json()
     const validatedData = createManualEventSchema.parse(body)
 
@@ -30,6 +35,15 @@ async function postHandler(req: NextRequest) {
     }
     
     console.error('Errore creazione evento produzione:', error)
+    
+    // Check if it's a session/user validation error
+    if (error instanceof Error && error.message.includes('Sessione non valida')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Errore durante la creazione dell\'evento' },
       { status: 500 }

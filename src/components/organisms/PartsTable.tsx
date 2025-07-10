@@ -28,11 +28,15 @@ import type { Prisma } from '@prisma/client'
 
 type Part = Prisma.PartGetPayload<{
   include: {
-    defaultCuringCycle: {
-      select: {
-        id: true
-        code: true
-        name: true
+    autoclaveConfig: {
+      include: {
+        curingCycle: {
+          select: {
+            id: true
+            code: true
+            name: true
+          }
+        }
       }
     }
     _count: {
@@ -94,11 +98,11 @@ export function PartsTable({
       sortable: true,
     },
     {
-      id: 'defaultCuringCycle',
-      label: 'Default Curing Cycle',
+      id: 'autoclaveConfig',
+      label: 'Curing Cycle',
       minWidth: 150,
-      format: (value: unknown) => {
-        const curingCycle = value as Part['defaultCuringCycle']
+      format: (value: unknown, row: Part) => {
+        const curingCycle = row.autoclaveConfig?.curingCycle
         return curingCycle ? (
           <Chip 
             label={`${curingCycle.code} - ${curingCycle.name}`} 
@@ -113,11 +117,11 @@ export function PartsTable({
       },
     },
     {
-      id: 'partTools',
+      id: 'autoclaveConfig',
       label: 'Vacuum Lines',
       minWidth: 100,
       align: 'center',
-      format: (value: unknown) => (value as number) || '-',
+      format: (value: unknown, row: Part) => row.autoclaveConfig?.vacuumLines || '-',
     },
     {
       id: '_count',

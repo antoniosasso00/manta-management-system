@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-node'
 import { PartService } from '@/domains/core/services/PartService'
-import { createPartSchema, partQuerySchema } from '@/domains/core/schemas/part.schema'
+import { createPartSchema } from '@/domains/core/schemas/part'
+import { partQuerySchema } from '@/domains/core/schemas/part.schema'
 import { ZodError } from 'zod'
 import { ResponseHelper, ErrorHelper, AuthHelper } from '@/lib/api-helpers'
 
