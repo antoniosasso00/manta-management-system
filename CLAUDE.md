@@ -545,6 +545,140 @@ const odls = await prisma.oDL.findMany({
 - ✅ API Routes: Include configurazioni via relazioni
 - ✅ Frontend: Accesso tramite configurazioni estese
 
+#### Schema Input Part - Nomenclatura Corretta (CRITICO)
+
+⚠️ **ATTENZIONE**: I nomi dei campi input sono stati standardizzati per evitare confusione con i campi rimossi dal database:
+
+```typescript
+// ✅ SCHEMA INPUT CORRETTO (part.schema.ts)
+export const createPartSchema = z.object({
+  partNumber: z.string().min(1),
+  description: z.string().min(1),
+  
+  // Configurazioni Autoclavi - nomi SENZA "default"
+  curingCycleId: z.string().optional(),        // NON defaultCuringCycleId
+  vacuumLines: z.number().optional(),          // NON defaultVacuumLines  
+  autoclaveSetupTime: z.number().optional(),
+  autoclaveLoadPosition: z.string().optional(),
+  
+  // Configurazioni Clean Room
+  resinType: z.string().optional(),
+  prepregCode: z.string().optional(), 
+  cycleTime: z.number().optional(),
+  roomTemperature: z.number().optional(),
+  
+  // Configurazioni NDI
+  inspectionTime: z.number().optional(),
+  calibrationReq: z.string().optional(),
+})
+
+// ❌ NOMI DEPRECATI - NON USARE MAI
+// defaultCuringCycleId → curingCycleId
+// defaultVacuumLines → vacuumLines
+```
+
+#### Pattern Service Layer - Gestione Configurazioni (OBBLIGATORIO)
+
+```typescript
+// ✅ PATTERN CORRETTO - PartService.create()
+static async create(input: CreatePartInput): Promise<Part> {
+  return await prisma.$transaction(async (tx) => {
+    // 1. Crea Part base (solo partNumber + description)
+    const part = await tx.part.create({
+      data: {
+        partNumber: input.partNumber,
+        description: input.description,
+      }
+    })
+
+    // 2. Crea configurazioni estensione se fornite
+    if (input.curingCycleId || input.vacuumLines || ...) {
+      await tx.partAutoclave.create({
+        data: {
+          partId: part.id,
+          curingCycleId: input.curingCycleId,    // Input → Extension Table
+          vacuumLines: input.vacuumLines || 1,   // Input → Extension Table
+          setupTime: input.autoclaveSetupTime,
+          loadPosition: input.autoclaveLoadPosition,
+        }
+      })
+    }
+    
+    // 3. Ripeti per PartCleanroom, PartNDI...
+    return Part.fromPrisma(part)
+  })
+}
+```
+
+#### Regole di Validazione Form (CRITICO)
+
+```typescript
+// ✅ FORM CONFIGURATION CORRETTA
+const autoclaveFields: FieldConfig[] = [
+  {
+    name: 'curingCycleId',           // NON defaultCuringCycleId
+    label: 'Ciclo di Cura',
+    type: 'select',
+    options: curingCycles
+  },
+  {
+    name: 'vacuumLines',             // NON defaultVacuumLines  
+    label: 'Linee Vacuum',
+    type: 'number',
+    placeholder: '1-10 linee'
+  }
+]
+
+// ✅ FORM DEFAULT VALUES CORRETTI
+defaultValues: {
+  partNumber: '',
+  description: '',
+  curingCycleId: '',               // NON defaultCuringCycleId
+  vacuumLines: undefined,          // NON defaultVacuumLines
+  // ... altri campi configurazione
+}
+```
+
+#### Errori Comuni da Evitare (IMPORTANTE)
+
+1. **❌ Non usare mai campi "default*" nell'input**:
+   ```typescript
+   // SBAGLIATO
+   defaultCuringCycleId: z.string().optional()
+   defaultVacuumLines: z.number().optional()
+   
+   // CORRETTO  
+   curingCycleId: z.string().optional()
+   vacuumLines: z.number().optional()
+   ```
+
+2. **❌ Non accedere mai ai campi rimossi**:
+   ```typescript
+   // SBAGLIATO
+   const cycleId = odl.part.defaultCuringCycleId
+   const lines = odl.part.defaultVacuumLines
+   
+   // CORRETTO
+   const cycleId = odl.part.autoclaveConfig?.curingCycleId
+   const lines = odl.part.autoclaveConfig?.vacuumLines
+   ```
+
+3. **❌ Non dimenticare mai gli include per le configurazioni**:
+   ```typescript
+   // SBAGLIATO - Missing configurations
+   const parts = await prisma.part.findMany()
+   
+   // CORRETTO - Include configurations  
+   const parts = await prisma.part.findMany({
+     include: {
+       autoclaveConfig: true,
+       cleanroomConfig: true,
+       ndiConfig: true,
+       partTools: { include: { tool: true } }
+     }
+   })
+   ```
+
 ## Memories
 - **Rispondi in italiano**: Indicates a preference for Italian language interactions when possible
 - **Project Documentation**: Aggiorna i requisiti e i documenti quando vengono definite nuove funzionalità
