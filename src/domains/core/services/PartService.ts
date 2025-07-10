@@ -15,16 +15,66 @@ export class PartService {
       throw new Error(`Part number ${input.partNumber} already exists`)
     }
 
-    const data = await prisma.part.create({
-      data: {
-        partNumber: input.partNumber,
-        description: input.description,
-        // defaultCuringCycleId: input.defaultCuringCycleId,
-        // defaultVacuumLines: input.defaultVacuumLines,
-      }
-    })
+    return await prisma.$transaction(async (tx) => {
+      // Create main part
+      const part = await tx.part.create({
+        data: {
+          partNumber: input.partNumber,
+          description: input.description,
+          defaultCuringCycleId: input.defaultCuringCycleId,
+          defaultVacuumLines: input.defaultVacuumLines,
+        }
+      })
 
-    return Part.fromPrisma(data)
+      // Create PartAutoclave configuration if provided
+      if (input.defaultCuringCycleId || input.defaultVacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
+        await tx.partAutoclave.create({
+          data: {
+            partId: part.id,
+            curingCycleId: input.defaultCuringCycleId || '',
+            vacuumLines: input.defaultVacuumLines || 1,
+            setupTime: input.autoclaveSetupTime,
+            loadPosition: input.autoclaveLoadPosition,
+            notes: null as any,
+          }
+        })
+      }
+
+      // Create PartCleanroom configuration if provided
+      if (input.resinType || input.prepregCode || input.cycleTime || input.roomTemperature) {
+        await tx.partCleanroom.create({
+          data: {
+            partId: part.id,
+            layupSequence: null as any,
+            fiberOrientation: [],
+            resinType: input.resinType,
+            prepregCode: input.prepregCode,
+            roomTemperature: input.roomTemperature,
+            humidity: null as any,
+            shelfLife: null as any,
+            setupTime: null as any,
+            cycleTime: input.cycleTime,
+          }
+        })
+      }
+
+      // Create PartNDI configuration if provided
+      if (input.inspectionTime || input.calibrationReq) {
+        await tx.partNDI.create({
+          data: {
+            partId: part.id,
+            inspectionMethod: [],
+            acceptanceCriteria: null as any,
+            criticalAreas: null as any,
+            inspectionTime: input.inspectionTime,
+            requiredCerts: [],
+            calibrationReq: input.calibrationReq,
+          }
+        })
+      }
+
+      return Part.fromPrisma(part)
+    })
   }
 
   static async findById(id: string): Promise<Part | null> {
@@ -127,17 +177,86 @@ export class PartService {
       }
     }
 
-    const data = await prisma.part.update({
-      where: { id },
-      data: {
-        partNumber: input.partNumber,
-        description: input.description,
-        // defaultCuringCycleId: input.defaultCuringCycleId,
-        // defaultVacuumLines: input.defaultVacuumLines,
-      }
-    })
+    return await prisma.$transaction(async (tx) => {
+      // Update main part
+      const part = await tx.part.update({
+        where: { id },
+        data: {
+          partNumber: input.partNumber,
+          description: input.description,
+          defaultCuringCycleId: input.defaultCuringCycleId,
+          defaultVacuumLines: input.defaultVacuumLines,
+        }
+      })
 
-    return Part.fromPrisma(data)
+      // Update or create PartAutoclave configuration
+      if (input.defaultCuringCycleId || input.defaultVacuumLines || input.autoclaveSetupTime || input.autoclaveLoadPosition) {
+        await tx.partAutoclave.upsert({
+          where: { partId: id },
+          update: {
+            curingCycleId: input.defaultCuringCycleId || '',
+            vacuumLines: input.defaultVacuumLines || 1,
+            setupTime: input.autoclaveSetupTime,
+            loadPosition: input.autoclaveLoadPosition,
+          },
+          create: {
+            partId: id,
+            curingCycleId: input.defaultCuringCycleId || '',
+            vacuumLines: input.defaultVacuumLines || 1,
+            setupTime: input.autoclaveSetupTime,
+            loadPosition: input.autoclaveLoadPosition,
+            notes: null as any,
+          }
+        })
+      }
+
+      // Update or create PartCleanroom configuration
+      if (input.resinType || input.prepregCode || input.cycleTime || input.roomTemperature) {
+        await tx.partCleanroom.upsert({
+          where: { partId: id },
+          update: {
+            resinType: input.resinType,
+            prepregCode: input.prepregCode,
+            roomTemperature: input.roomTemperature,
+            cycleTime: input.cycleTime,
+          },
+          create: {
+            partId: id,
+            layupSequence: null as any,
+            fiberOrientation: [],
+            resinType: input.resinType,
+            prepregCode: input.prepregCode,
+            roomTemperature: input.roomTemperature,
+            humidity: null as any,
+            shelfLife: null as any,
+            setupTime: null as any,
+            cycleTime: input.cycleTime,
+          }
+        })
+      }
+
+      // Update or create PartNDI configuration
+      if (input.inspectionTime || input.calibrationReq) {
+        await tx.partNDI.upsert({
+          where: { partId: id },
+          update: {
+            inspectionTime: input.inspectionTime,
+            calibrationReq: input.calibrationReq,
+          },
+          create: {
+            partId: id,
+            inspectionMethod: [],
+            acceptanceCriteria: null as any,
+            criticalAreas: null as any,
+            inspectionTime: input.inspectionTime,
+            requiredCerts: [],
+            calibrationReq: input.calibrationReq,
+          }
+        })
+      }
+
+      return Part.fromPrisma(part)
+    })
   }
 
   static async delete(id: string): Promise<void> {

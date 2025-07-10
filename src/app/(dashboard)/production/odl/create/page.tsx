@@ -179,10 +179,24 @@ export default function CreateODLPage() {
       setPartsLoading(true)
       try {
         const response = await fetch(`/api/parts?search=${encodeURIComponent(searchTerm)}&limit=20&include=partTools`)
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            setError('Sessione scaduta. Effettua nuovamente il login.')
+            return
+          }
+          if (response.status === 403) {
+            setError('Non hai i permessi per cercare le parti.')
+            return
+          }
+          throw new Error(`Errore HTTP: ${response.status}`)
+        }
+        
         const data = await response.json()
         setParts(data.parts || [])
       } catch (error) {
         console.error('Error searching parts:', error)
+        setError('Errore durante la ricerca delle parti.')
         setParts([])
       } finally {
         setPartsLoading(false)

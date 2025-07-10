@@ -8,8 +8,15 @@ import {
   DialogActions,
   Button,
   Chip,
-  Box
+  Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography
 } from '@mui/material'
+import {
+  ExpandMore as ExpandMoreIcon
+} from '@mui/icons-material'
 import { DataManagementTemplate } from '@/components/templates/DataManagementTemplate'
 import { PermissionGuard } from '@/components/auth/PermissionGuard'
 import { FilterConfig, FilterValues } from '@/components/molecules/FilterPanel'
@@ -39,6 +46,7 @@ export default function PartsPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [viewPart, setViewPart] = useState<Part | null>(null)
+  const [curingCycles, setCuringCycles] = useState<{value: string, label: string}[]>([])
 
   // Form setup - separate create and update forms
   const createForm = useForm<CreatePartInput>({
@@ -105,9 +113,27 @@ export default function PartsPage() {
     }
   }, [searchQuery, filterValues, page, rowsPerPage, sortBy, sortOrder])
 
+  // Fetch curing cycles for dropdown
+  const fetchCuringCycles = useCallback(async () => {
+    try {
+      const response = await fetch('/api/curing-cycles?limit=100&isActive=true')
+      if (response.ok) {
+        const data = await response.json()
+        const cycleOptions = data.cycles.map((cycle: any) => ({
+          value: cycle.id,
+          label: `${cycle.code} - ${cycle.name}`
+        }))
+        setCuringCycles(cycleOptions)
+      }
+    } catch (error) {
+      console.error('Error fetching curing cycles:', error)
+    }
+  }, [])
+
   useEffect(() => {
     fetchParts()
-  }, [fetchParts])
+    fetchCuringCycles()
+  }, [fetchParts, fetchCuringCycles])
 
   // Handlers
   const handleAdd = () => {
@@ -215,8 +241,8 @@ export default function PartsPage() {
     }
   ]
 
-  // Form fields configuration
-  const formFields: FieldConfig[] = [
+  // Form fields configuration - organized by sections
+  const basicFields: FieldConfig[] = [
     {
       name: 'partNumber',
       label: 'Numero Parte',
@@ -233,16 +259,17 @@ export default function PartsPage() {
       required: true,
       placeholder: 'Descrizione della parte',
       gridSize: 6
-    },
-    
-    // Configurazione Autoclavi
+    }
+  ]
+
+  const autoclaveFields: FieldConfig[] = [
     {
       name: 'defaultCuringCycleId',
       label: 'Ciclo di Cura Predefinito',
       type: 'select',
       placeholder: 'Seleziona ciclo...',
       gridSize: 6,
-      options: [] // Sarà popolato dinamicamente
+      options: curingCycles
     },
     {
       name: 'defaultVacuumLines',
@@ -264,9 +291,10 @@ export default function PartsPage() {
       type: 'text',
       placeholder: 'Es. Centro, Sinistra...',
       gridSize: 6
-    },
-    
-    // Configurazione Clean Room
+    }
+  ]
+
+  const cleanroomFields: FieldConfig[] = [
     {
       name: 'resinType',
       label: 'Tipo Resina',
@@ -294,9 +322,10 @@ export default function PartsPage() {
       type: 'number',
       placeholder: '20-25°C',
       gridSize: 6
-    },
-    
-    // Configurazione NDI
+    }
+  ]
+
+  const ndiFields: FieldConfig[] = [
     {
       name: 'inspectionTime',
       label: 'Tempo Ispezione (min)',
@@ -413,13 +442,69 @@ export default function PartsPage() {
             {isEditing ? 'Modifica Parte' : 'Nuova Parte'}
           </DialogTitle>
           <DialogContent>
+            {/* Basic Information */}
             <FormBuilder
-              fields={formFields}
+              fields={basicFields}
               control={control as any}
               errors={errors}
               columns={2}
               spacing={3}
             />
+
+            {/* Advanced Configuration */}
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                Configurazione Avanzata
+              </Typography>
+              
+              {/* Autoclavi Configuration */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="subtitle1">Configurazione Autoclavi</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <FormBuilder
+                    fields={autoclaveFields}
+                    control={control as any}
+                    errors={errors}
+                    columns={2}
+                    spacing={3}
+                  />
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Clean Room Configuration */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="subtitle1">Configurazione Clean Room</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <FormBuilder
+                    fields={cleanroomFields}
+                    control={control as any}
+                    errors={errors}
+                    columns={2}
+                    spacing={3}
+                  />
+                </AccordionDetails>
+              </Accordion>
+
+              {/* NDI Configuration */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="subtitle1">Configurazione NDI</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <FormBuilder
+                    fields={ndiFields}
+                    control={control as any}
+                    errors={errors}
+                    columns={2}
+                    spacing={3}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setFormOpen(false)}>
