@@ -240,32 +240,20 @@ export function DepartmentODLListRefactored({
       {/* Tabella/Card ODL */}
       <ODLDataTable
         odls={currentTab.data}
-        department={{ 
-          id: departmentId, 
-          name: departmentName || '', 
-          code: departmentCode 
-        }}
+        departmentCode={departmentCode}
         onAction={handleWorkflowAction}
         loading={loading}
-        hasActionsInProgress={hasActionsInProgress}
-        showStatusColumn={false} // Lo stato è già determinato dal tab
-        enableAdvancedActions={userRole === 'ADMIN' || userRole === 'SUPERVISOR'}
+        onAdvancedWorkflow={(odl) => {
+          // TODO: Implementare workflow avanzato
+          console.log('Advanced workflow for:', odl.id);
+        }}
       />
 
       {/* Dialog di conferma per azioni critiche */}
       <ConfirmActionDialog
         open={pendingAction !== null}
         title="Conferma Completamento ODL"
-        message={
-          <>
-            <Typography variant="body1" gutterBottom>
-              Stai per completare l'ODL <strong>{pendingAction?.odlNumber}</strong> nel reparto {departmentName}.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              L'ODL verrà automaticamente trasferito al reparto successivo secondo il workflow configurato.
-            </Typography>
-          </>
-        }
+        message={`Stai per completare l'ODL ${pendingAction?.odlNumber} nel reparto ${departmentName}. L'ODL verrà automaticamente trasferito al reparto successivo secondo il workflow configurato.`}
         onConfirm={confirmAction}
         onCancel={() => setPendingAction(null)}
         severity="warning"

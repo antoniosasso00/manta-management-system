@@ -122,7 +122,7 @@ export function useOptimisticODLAction(options: UseOptimisticODLActionOptions = 
       // Refresh dopo breve delay per dare feedback visivo
       if (options.onRefresh) {
         setTimeout(() => {
-          options.onRefresh()
+          options.onRefresh?.()
           // Rimuovi azione completata
           setPendingActions(prev => {
             const updated = new Map(prev)

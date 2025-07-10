@@ -122,7 +122,7 @@ export class TrackingService {
             }
           }
         } catch (error) {
-          console.error('Auto transfer error:', error)
+          console.error('Auto transfer error:', error);
           // Aggiungi info errore per feedback UI
           (event as any).autoTransfer = {
             success: false,

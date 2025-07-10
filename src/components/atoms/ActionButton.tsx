@@ -135,13 +135,13 @@ export function ActionButton({
         return { 
           startIcon: <PlayArrow />, 
           color: 'success', 
-          label: children as string || (nomenclature?.actions?.start || 'Inizia') 
+          label: children as string || (nomenclature && 'actions' in nomenclature && nomenclature.actions?.start || 'Inizia') 
         }
       case 'EXIT':
         return { 
           startIcon: <Stop />, 
           color: 'error', 
-          label: children as string || (nomenclature?.actions?.complete || 'Termina') 
+          label: children as string || (nomenclature && 'actions' in nomenclature && nomenclature.actions?.complete || 'Termina') 
         }
       case 'PAUSE':
         return { 

@@ -715,7 +715,7 @@ export function EnhancedBatchLayoutViewer({ batch }: EnhancedBatchLayoutViewerPr
       {/* Controlli */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Stack direction="row" spacing={1} alignItems="center">
               <IconButton size="small" onClick={handleZoomOut}>
                 <ZoomOut />
@@ -739,7 +739,7 @@ export function EnhancedBatchLayoutViewer({ batch }: EnhancedBatchLayoutViewerPr
             </Stack>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <ToggleButtonGroup size="small" sx={{ width: '100%' }}>
               <ToggleButton
                 value="grid"
@@ -769,7 +769,7 @@ export function EnhancedBatchLayoutViewer({ batch }: EnhancedBatchLayoutViewerPr
             </ToggleButtonGroup>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <ButtonGroup size="small" variant="outlined" fullWidth>
               <Button
                 startIcon={<GetApp />}

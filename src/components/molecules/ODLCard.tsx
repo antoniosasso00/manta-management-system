@@ -124,7 +124,7 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
         )}
         
         {/* Workflow Progress */}
-        <WorkflowProgress currentStatus={odl.status} compact />
+        <WorkflowProgress currentStatus={odl.status as any} compact />
 
         {/* Actions - Mobile optimized */}
         <Box sx={{ 
