@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth-node'
 import { z } from 'zod'
+import QRCode from 'qrcode'
 
 export const runtime = 'nodejs'
 
@@ -60,25 +61,59 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate QR labels HTML
-    const qrLabelsHtml = odls.map(odl => `
-      <div class="qr-label">
-        <div class="qr-header">
-          <div class="odl-number">${odl.odlNumber}</div>
-          <div class="status-badges">
-            <span class="priority-badge priority-${odl.priority.toLowerCase()}">${odl.priority}</span>
-            <span class="status-badge">${odl.status.replace('_', ' ')}</span>
+    // Generate QR labels HTML with real QR codes
+    const qrLabelsHtml = await Promise.all(odls.map(async odl => {
+      let qrCodeImg = '<div class="no-qr">QR non disponibile</div>'
+      
+      try {
+        // Generate QR data consistent with the frontend
+        const qrData = {
+          type: 'ODL',
+          id: odl.id,
+          odlNumber: odl.odlNumber,
+          partNumber: odl.part.partNumber,
+          timestamp: new Date().toISOString(),
+          status: odl.status
+        }
+        
+        // Generate QR code as data URL
+        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
+          width: 350, // High resolution for print
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          errorCorrectionLevel: 'H'
+        })
+        
+        qrCodeImg = `<img src="${qrDataUrl}" alt="QR Code ${odl.odlNumber}" style="width: 35mm; height: 35mm; object-fit: contain;" />`
+      } catch (error) {
+        console.error('Error generating QR for ODL', odl.odlNumber, error)
+        qrCodeImg = '<div class="no-qr">Errore QR</div>'
+      }
+      
+      return `
+        <div class="qr-label">
+          <div class="qr-header">
+            <div class="odl-number">${odl.odlNumber}</div>
+            <div class="status-badges">
+              <span class="priority-badge priority-${odl.priority.toLowerCase()}">${odl.priority}</span>
+              <span class="status-badge">${odl.status.replace('_', ' ')}</span>
+            </div>
+          </div>
+          <div class="qr-code">
+            ${qrCodeImg}
+          </div>
+          <div class="part-info">
+            <div class="part-number">${odl.part.partNumber}</div>
+            <div class="part-description">${odl.part.description}</div>
           </div>
         </div>
-        <div class="qr-code">
-          ${odl.qrCode || '<div class="no-qr">QR non disponibile</div>'}
-        </div>
-        <div class="part-info">
-          <div class="part-number">${odl.part.partNumber}</div>
-          <div class="part-description">${odl.part.description}</div>
-        </div>
-      </div>
-    `).join('')
+      `
+    }))
+    
+    const qrLabelsContent = qrLabelsHtml.join('')
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -156,7 +191,8 @@ export async function POST(request: NextRequest) {
               justify-content: center;
               margin: 2mm 0;
             }
-            .qr-code svg {
+            .qr-code svg,
+            .qr-code img {
               width: 35mm !important;
               height: 35mm !important;
             }
@@ -193,7 +229,8 @@ export async function POST(request: NextRequest) {
               .export-header { margin-bottom: 5mm; }
               .qr-labels-grid { gap: 3mm; }
               .qr-label { min-height: 55mm; width: 55mm; }
-              .qr-code svg { width: 30mm !important; height: 30mm !important; }
+              .qr-code svg,
+              .qr-code img { width: 30mm !important; height: 30mm !important; }
               .no-qr { width: 30mm; height: 30mm; }
             }
             @page {
@@ -213,7 +250,7 @@ export async function POST(request: NextRequest) {
           </div>
           
           <div class="qr-labels-grid">
-            ${qrLabelsHtml}
+            ${qrLabelsContent}
           </div>
           
           <div style="margin-top: 10mm; text-align: center; font-size: 10px; color: #666;">

@@ -453,3 +453,69 @@ export class QRScanCache {
     };
   }
 }
+
+/**
+ * Helper methods for API compatibility
+ */
+export class QRHelper {
+  /**
+   * Valida un QR Code e restituisce l'ODL ID se valido
+   */
+  static validateQRCode(qrCode: string): {
+    isValid: boolean;
+    odlId?: string;
+    error?: string;
+  } {
+    const validation = QRValidator.validateAndParse(qrCode);
+    
+    if (!validation.success) {
+      return {
+        isValid: false,
+        error: validation.error
+      };
+    }
+
+    if (validation.data?.type !== 'ODL') {
+      return {
+        isValid: false,
+        error: 'QR Code non è di tipo ODL'
+      };
+    }
+
+    return {
+      isValid: true,
+      odlId: validation.data.id
+    };
+  }
+
+  /**
+   * Rate limiting per QR scans per utente
+   */
+  static checkRateLimit(qrCode: string, userId: string): {
+    allowed: boolean;
+    retryAfter?: number;
+  } {
+    const validation = QRValidator.validateAndParse(qrCode);
+    
+    if (!validation.success) {
+      return { allowed: false };
+    }
+
+    const cacheResult = QRScanCache.checkAndRecord(validation.data!);
+    
+    if (!cacheResult.allowed) {
+      return {
+        allowed: false,
+        retryAfter: Math.ceil(QRScanCache['CACHE_TTL'] / 1000) // seconds
+      };
+    }
+
+    return { allowed: true };
+  }
+}
+
+// Re-export per backward compatibility
+export const QRValidator_Legacy = {
+  validateQRCode: QRHelper.validateQRCode,
+  checkRateLimit: QRHelper.checkRateLimit
+};

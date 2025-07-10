@@ -211,21 +211,43 @@ export class ODLService {
       }
     }
 
-    const data = await prisma.oDL.update({
-      where: { id },
-      data: {
-        odlNumber: input.odlNumber,
-        partId: input.partId,
-        quantity: input.quantity,
-        priority: input.priority,
-        notes: input.notes,
-        expectedCompletionDate: input.expectedCompletionDate,
-        toolId: input.toolId,
-      },
-      include: {
-        part: true,
-        tool: true
+    // Atomic update con transazione per prevenire race conditions
+    const data = await prisma.$transaction(async (tx) => {
+      // Verifica che l'ODL non sia stato modificato durante l'elaborazione
+      const currentODL = await tx.oDL.findUnique({
+        where: { id },
+        select: { updatedAt: true, status: true }
+      })
+      
+      if (!currentODL) {
+        throw new Error('ODL not found')
       }
+      
+      // Se l'ODL ha un timestamp più recente, significa che è stato modificato da un'altra operazione
+      if (currentODL.updatedAt.getTime() !== existing.updatedAt.getTime()) {
+        throw new Error('ODL has been modified by another operation. Please refresh and try again.')
+      }
+
+      return await tx.oDL.update({
+        where: { id },
+        data: {
+          odlNumber: input.odlNumber,
+          partId: input.partId,
+          quantity: input.quantity,
+          priority: input.priority,
+          notes: input.notes,
+          expectedCompletionDate: input.expectedCompletionDate,
+          toolId: input.toolId,
+          updatedAt: new Date() // Force update timestamp
+        },
+        include: {
+          part: true,
+          tool: true
+        }
+      })
+    }, {
+      isolationLevel: 'ReadCommitted',
+      timeout: 5000
     })
 
     return ODL.fromPrisma(data)

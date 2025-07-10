@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import QRCode from 'qrcode'
 
 export interface ODLForPDF {
   id: string
@@ -216,29 +217,17 @@ export class PDFExportService {
         const qrX = (cardWidth - qrSize) / 2
         const qrY = 30
         
-        // Create temporary canvas for QR
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          // Parse SVG and convert to canvas
-          const qrElement = document.createElement('div')
-          qrElement.innerHTML = odl.qrCode
-          const svgElement = qrElement.querySelector('svg')
-          
-          if (svgElement) {
-            const serializer = new XMLSerializer()
-            const svgString = serializer.serializeToString(svgElement)
-            const img = new Image()
-            img.onload = () => {
-              canvas.width = qrSize * 3
-              canvas.height = qrSize * 3
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-              const imgData = canvas.toDataURL('image/png')
-              pdf.addImage(imgData, 'PNG', qrX, qrY, qrSize, qrSize)
-            }
-            img.src = 'data:image/svg+xml;base64,' + btoa(svgString)
-          }
-        }
+        // Generate QR code as data URL
+        const qrDataUrl = await QRCode.toDataURL(odl.qrCode, {
+          width: qrSize * 8, // High resolution for card printing
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          errorCorrectionLevel: 'H'
+        })
+        pdf.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize)
       } catch (error) {
         console.error('Error adding QR to PDF:', error)
         // Fallback: text placeholder
@@ -363,9 +352,22 @@ export class PDFExportService {
 
     // QR Code (if requested and available)
     if (includeQR && odl.qrCode) {
-      // Note: Per semplicità, aggiungiamo solo un placeholder per il QR
-      // In una implementazione completa, convertiresti l'SVG in immagine
-      pdf.text('QR Code disponibile', margin + 120, startY + 10)
+      try {
+        // Generate QR code as data URL
+        const qrDataUrl = await QRCode.toDataURL(odl.qrCode, {
+          width: 80,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          errorCorrectionLevel: 'H'
+        })
+        pdf.addImage(qrDataUrl, 'PNG', margin + 120, startY, 20, 20)
+      } catch (error) {
+        console.error('Error generating QR for PDF:', error)
+        pdf.text('QR Code disponibile', margin + 120, startY + 10)
+      }
     }
 
     return yPos
@@ -389,13 +391,30 @@ export class PDFExportService {
     pdf.setFont('helvetica', 'bold')
     pdf.text(odl.odlNumber, x + width / 2, y + 8, { align: 'center' })
 
-    // QR placeholder (centro)
+    // QR Code (centro)
     const qrSize = Math.min(width, height) * 0.4
     const qrX = x + (width - qrSize) / 2
     const qrY = y + 15
     
     if (odl.qrCode) {
-      pdf.text('QR', qrX + qrSize / 2, qrY + qrSize / 2, { align: 'center' })
+      try {
+        // Generate QR code as data URL
+        const qrDataUrl = await QRCode.toDataURL(odl.qrCode, {
+          width: Math.floor(qrSize * 10), // Higher resolution for print
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          errorCorrectionLevel: 'H'
+        })
+        pdf.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize)
+      } catch (error) {
+        console.error('Error generating QR for label:', error)
+        pdf.setDrawColor(200)
+        pdf.rect(qrX, qrY, qrSize, qrSize)
+        pdf.text('ERROR', qrX + qrSize / 2, qrY + qrSize / 2, { align: 'center' })
+      }
     } else {
       pdf.setDrawColor(200)
       pdf.rect(qrX, qrY, qrSize, qrSize)

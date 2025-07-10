@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { WorkflowService } from './WorkflowService'
 import { TimeMetricsService } from './TimeMetricsService'
 import { isValidDepartmentEntry, isValidDepartmentExit, getTransitionErrorMessage } from '@/utils/status-transitions'
+import { TransactionRetryHelper } from '@/utils/transaction-retry'
 import type { 
   CreateManualEvent, 
   ProductionEventFilter, 
@@ -14,7 +15,8 @@ import type {
 export class TrackingService {
   // Crea un nuovo evento di produzione (manuale o QR)
   static async createProductionEvent(data: CreateManualEvent & { userId: string }): Promise<ProductionEventResponse> {
-    return await prisma.$transaction(async (tx) => {
+    return TransactionRetryHelper.executePrismaWithRetry(async () => {
+      return await prisma.$transaction(async (tx) => {
       // Verifica che l'ODL esista con lock ottimistico
       const odl = await tx.oDL.findUnique({
         where: { id: data.odlId },
@@ -94,7 +96,8 @@ export class TrackingService {
       }
 
       return event
-    })
+      })
+    }, 'createProductionEvent')
   }
 
   // Aggiorna lo stato dell'ODL in base agli eventi (dentro transazione)
