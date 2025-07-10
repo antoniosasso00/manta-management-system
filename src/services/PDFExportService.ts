@@ -217,8 +217,18 @@ export class PDFExportService {
         const qrX = (cardWidth - qrSize) / 2
         const qrY = 30
         
+        // Generate QR data structure
+        const qrData = {
+          type: 'ODL',
+          id: odl.id,
+          odlNumber: odl.odlNumber,
+          partNumber: odl.part.partNumber,
+          timestamp: new Date().toISOString(),
+          status: odl.status
+        }
+        
         // Generate QR code as data URL
-        const qrDataUrl = await QRCode.toDataURL(odl.qrCode, {
+        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
           width: qrSize * 8, // High resolution for card printing
           margin: 1,
           color: {
@@ -353,8 +363,18 @@ export class PDFExportService {
     // QR Code (if requested and available)
     if (includeQR && odl.qrCode) {
       try {
+        // Generate QR data structure
+        const qrData = {
+          type: 'ODL',
+          id: odl.id,
+          odlNumber: odl.odlNumber,
+          partNumber: odl.part.partNumber,
+          timestamp: new Date().toISOString(),
+          status: odl.status
+        }
+        
         // Generate QR code as data URL
-        const qrDataUrl = await QRCode.toDataURL(odl.qrCode, {
+        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
           width: 80,
           margin: 1,
           color: {
@@ -398,8 +418,18 @@ export class PDFExportService {
     
     if (odl.qrCode) {
       try {
+        // Generate QR data structure
+        const qrData = {
+          type: 'ODL',
+          id: odl.id,
+          odlNumber: odl.odlNumber,
+          partNumber: odl.part.partNumber,
+          timestamp: new Date().toISOString(),
+          status: odl.status
+        }
+        
         // Generate QR code as data URL
-        const qrDataUrl = await QRCode.toDataURL(odl.qrCode, {
+        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
           width: Math.floor(qrSize * 10), // Higher resolution for print
           margin: 1,
           color: {
