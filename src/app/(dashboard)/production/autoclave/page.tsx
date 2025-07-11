@@ -70,39 +70,6 @@ export default function ACPage() {
     }
   }
 
-  const getStatCards = () => {
-    const stats = data?.statistics || { totalActive: 0, avgCycleTime: 0, efficiency: 0 }
-    const nomenclature = getDepartmentNomenclature(departmentCode)
-    const colors = getDepartmentColors(departmentCode)
-    const DepartmentIcon = getDepartmentIcon(departmentCode)
-    
-    return [
-      {
-        icon: <DepartmentIcon sx={{ fontSize: 48 }} />,
-        title: nomenclature.statistics.activeStations,
-        value: `${data?.odlInProduction.length || 0}/${stats.totalActive}`,
-        color: colors.primary
-      },
-      {
-        icon: <Timer sx={{ fontSize: 48 }} />,
-        title: nomenclature.statistics.avgCycleTime,
-        value: `${Math.floor(stats.avgCycleTime / 60)}h ${stats.avgCycleTime % 60}m`,
-        color: 'success.main'
-      },
-      {
-        icon: <Group sx={{ fontSize: 48 }} />,
-        title: nomenclature.statistics.inPreparation,
-        value: data?.odlInPreparation.length || 0,
-        color: 'info.main'
-      },
-      {
-        icon: <Assessment sx={{ fontSize: 48 }} />,
-        title: nomenclature.statistics.efficiency,
-        value: `${stats.efficiency}%`,
-        color: 'warning.main'
-      }
-    ]
-  }
 
   return (
     <RoleBasedAccess 
@@ -135,26 +102,6 @@ export default function ACPage() {
             </Box>
           </Box>
 
-          {/* Statistiche */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            {getStatCards().map((stat, index) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-                <Card>
-                  <CardContent sx={{ textAlign: 'center' }}>
-                    <Box sx={{ color: stat.color, mb: 1 }}>
-                      {stat.icon}
-                    </Box>
-                    <Typography variant="h6" gutterBottom>
-                      {stat.title}
-                    </Typography>
-                    <Typography variant="h4">
-                      {stat.value}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
 
           {/* Lista ODL - Nuova Vista Tabellare */}
           {departmentId && (
