@@ -22,7 +22,10 @@ export async function GET(request: NextRequest) {
       where: {
         events: {
           some: {
-            userId: userId
+            userId: userId,
+            eventType: {
+              in: ['ASSIGNED', 'ENTRY', 'EXIT', 'PAUSE', 'RESUME']
+            }
           }
         }
       },
@@ -49,7 +52,9 @@ export async function GET(request: NextRequest) {
     // Mappa i dati per il frontend
     const myODL = odlAssignments.map(odl => {
       const lastEvent = odl.events[0];
-      const isActive = lastEvent?.eventType === 'ENTRY';
+      const isActive = lastEvent?.eventType === 'ENTRY' || 
+                       (lastEvent?.eventType === 'RESUME');
+      const isPaused = lastEvent?.eventType === 'PAUSE';
       
       let timeInDepartment = 0;
       if (isActive && lastEvent) {
@@ -69,6 +74,7 @@ export async function GET(request: NextRequest) {
         currentDepartment: lastEvent?.department?.name,
         timeInDepartment,
         isActive,
+        isPaused,
         lastEvent: lastEvent ? {
           eventType: lastEvent.eventType,
           timestamp: lastEvent.timestamp.toISOString()

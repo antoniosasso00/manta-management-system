@@ -47,6 +47,7 @@ interface ProductionODL {
   currentDepartment?: string;
   assignedOperator?: string;
   timeInDepartment?: number;
+  isPaused?: boolean;
   lastUpdate: string;
   nextDepartment?: string;
 }
@@ -494,8 +495,12 @@ export default function ProductionPage() {
                     </TableCell>
                     <TableCell>
                       {odl.timeInDepartment && odl.timeInDepartment > 0 ? (
-                        <Typography variant="body2" color="primary">
+                        <Typography 
+                          variant="body2" 
+                          color={odl.isPaused ? "warning.main" : "primary"}
+                        >
                           {formatTime(odl.timeInDepartment)}
+                          {odl.isPaused && ' (Pausa)'}
                         </Typography>
                       ) : (
                         <Typography variant="body2" color="textSecondary">

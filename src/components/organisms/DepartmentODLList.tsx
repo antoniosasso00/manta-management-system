@@ -67,6 +67,18 @@ export function DepartmentODLList({
             severity: 'warning'
           })
         }
+      } else if (pendingAction?.action === 'PAUSE') {
+        setSnackbar({
+          open: true,
+          message: 'ODL messo in pausa. Rimane nel reparto in attesa di ripresa.',
+          severity: 'info'
+        })
+      } else if (pendingAction?.action === 'RESUME') {
+        setSnackbar({
+          open: true,
+          message: 'ODL ripreso dalla pausa. Lavorazione ripristinata.',
+          severity: 'success'
+        })
       } else {
         setSnackbar({
           open: true,

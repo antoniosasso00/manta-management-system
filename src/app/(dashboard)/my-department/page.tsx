@@ -76,6 +76,7 @@ export default function MyDepartmentPage() {
   const { user } = useAuth();
   const [kpi, setKpi] = useState<DashboardKPI>({ odlToday: 0, odlCompleted: 0, averageTime: 0, efficiency: 0 });
   const [myODL, setMyODL] = useState<ODLItem[]>([]);
+  const [unassignedODL, setUnassignedODL] = useState<ODLItem[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusDialog, setStatusDialog] = useState<{ open: boolean; odl: ODLItem | null }>({ open: false, odl: null });
@@ -95,6 +96,7 @@ export default function MyDepartmentPage() {
       await Promise.all([
         loadKPIData(),
         loadMyODL(),
+        loadUnassignedODL(),
         loadChartData()
       ]);
     } catch (error) {
@@ -162,6 +164,24 @@ export default function MyDepartmentPage() {
     } catch (error) {
       console.error('Error loading my ODL:', error);
       setMyODL([]);
+    }
+  };
+
+  const loadUnassignedODL = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/odl/unassigned');
+      if (response.ok) {
+        const data = await response.json();
+        setUnassignedODL(data);
+      } else {
+        console.error('Error loading unassigned ODL:', response.statusText);
+        setUnassignedODL([]);
+      }
+    } catch (error) {
+      console.error('Error loading unassigned ODL:', error);
+      setUnassignedODL([]);
     }
   };
 
@@ -391,6 +411,17 @@ export default function MyDepartmentPage() {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Unassigned ODL Alert */}
+      {unassignedODL.length > 0 && (
+        <Alert severity="info" action={
+          <Button color="inherit" size="small" href="/production/odl">
+            Visualizza
+          </Button>
+        }>
+          Ci sono {unassignedODL.length} ODL non assegnati che necessitano di essere assegnati ai reparti
+        </Alert>
+      )}
 
       {/* My ODL Table */}
       <Card>

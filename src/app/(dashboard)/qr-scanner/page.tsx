@@ -63,10 +63,14 @@ interface ScanEvent {
   id: string;
   odlId: string;
   odlNumber: string;
+  partNumber?: string;
   eventType: 'ENTRY' | 'EXIT';
   timestamp: string;
   synced: boolean;
   duration?: number;
+  departmentName?: string;
+  status?: 'success' | 'failed' | 'warning';
+  errorMessage?: string;
 }
 
 interface ActiveTimer {
@@ -893,7 +897,9 @@ export default function QRScannerPage() {
                     {index > 0 && <Divider />}
                     <ListItem sx={{ py: 2 }}>
                       <ListItemIcon>
-                        {scan.synced ? (
+                        {scan.status === 'failed' ? (
+                          <Close color="error" />
+                        ) : scan.synced ? (
                           <CheckCircle color="success" />
                         ) : (
                           <CloudOff color="warning" />
@@ -901,15 +907,28 @@ export default function QRScannerPage() {
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                             <Typography variant="body1">
                               ODL {scan.odlNumber}
                             </Typography>
+                            {scan.partNumber && (
+                              <Typography variant="caption" color="text.secondary">
+                                ({scan.partNumber})
+                              </Typography>
+                            )}
                             <Chip 
                               label={scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}
                               size="small"
                               color={scan.eventType === 'ENTRY' ? 'success' : 'error'}
                             />
+                            {scan.status === 'failed' && (
+                              <Chip 
+                                label="Errore"
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                              />
+                            )}
                           </Box>
                         }
                         secondary={
@@ -917,9 +936,19 @@ export default function QRScannerPage() {
                             <Typography variant="caption" display="block">
                               {new Date(scan.timestamp).toLocaleString()}
                             </Typography>
+                            {scan.departmentName && (
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                Reparto: {scan.departmentName}
+                              </Typography>
+                            )}
                             {scan.duration && (
                               <Typography variant="caption" display="block">
                                 Durata: {formatTime(scan.duration)}
+                              </Typography>
+                            )}
+                            {scan.errorMessage && (
+                              <Typography variant="caption" display="block" color="error">
+                                {scan.errorMessage}
                               </Typography>
                             )}
                           </Box>
@@ -952,15 +981,17 @@ export default function QRScannerPage() {
             >
               <Tab 
                 label="Scanner" 
-                value="scanner" 
+                value={0} 
                 icon={<QrCodeScanner />} 
                 sx={{ minHeight: 64 }} 
+                onClick={() => setShowHistory(false)}
               />
               <Tab 
                 label={`Storico (${recentScans.length})`} 
-                value="history" 
+                value={1} 
                 icon={<History />} 
                 sx={{ minHeight: 64 }} 
+                onClick={() => setShowHistory(true)}
               />
             </TabList>
           </Paper>
@@ -1006,7 +1037,9 @@ export default function QRScannerPage() {
                     {index > 0 && <Divider />}
                     <ListItem sx={{ py: 2 }}>
                       <ListItemIcon>
-                        {scan.synced ? (
+                        {scan.status === 'failed' ? (
+                          <Close color="error" />
+                        ) : scan.synced ? (
                           <CheckCircle color="success" />
                         ) : (
                           <CloudOff color="warning" />
@@ -1014,15 +1047,28 @@ export default function QRScannerPage() {
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                             <Typography variant="body1">
                               ODL {scan.odlNumber}
                             </Typography>
+                            {scan.partNumber && (
+                              <Typography variant="caption" color="text.secondary">
+                                ({scan.partNumber})
+                              </Typography>
+                            )}
                             <Chip 
                               label={scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}
                               size="small"
                               color={scan.eventType === 'ENTRY' ? 'success' : 'error'}
                             />
+                            {scan.status === 'failed' && (
+                              <Chip 
+                                label="Errore"
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                              />
+                            )}
                           </Box>
                         }
                         secondary={
@@ -1030,9 +1076,19 @@ export default function QRScannerPage() {
                             <Typography variant="caption" display="block">
                               {new Date(scan.timestamp).toLocaleString()}
                             </Typography>
+                            {scan.departmentName && (
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                Reparto: {scan.departmentName}
+                              </Typography>
+                            )}
                             {scan.duration && (
                               <Typography variant="caption" display="block">
                                 Durata: {formatTime(scan.duration)}
+                              </Typography>
+                            )}
+                            {scan.errorMessage && (
+                              <Typography variant="caption" display="block" color="error">
+                                {scan.errorMessage}
                               </Typography>
                             )}
                           </Box>
@@ -1180,54 +1236,12 @@ export default function QRScannerPage() {
           </Box>
 
           <Box>
-            {/* Risultato Scan */}
-            {scanResult && (
-              <Card sx={{ mb: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                    <CheckCircle color="success" />
-                    ODL Trovato
-                  </Typography>
-                  
-                  <Typography sx={{ mb: 1 }}><strong>ID:</strong> {scanResult.id}</Typography>
-                  <Typography sx={{ mb: 1 }}><strong>Numero:</strong> {scanResult.odlNumber}</Typography>
-                  {scanResult.partNumber && (
-                    <Typography><strong>Part Number:</strong> {scanResult.partNumber}</Typography>
-                  )}
-                  
-                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      fullWidth
-                      startIcon={<PlayArrow />}
-                      onClick={() => handleEntryExit('ENTRY')}
-                      disabled={loading || !!activeTimer}
-                      sx={{ minHeight: 44 }}
-                    >
-                      Registra Ingresso
-                    </Button>
-                    
-                    <Button
-                      variant="contained"
-                      color="error"
-                      fullWidth
-                      startIcon={<Stop />}
-                      onClick={() => handleEntryExit('EXIT')}
-                      disabled={loading || !activeTimer}
-                      sx={{ minHeight: 44 }}
-                    >
-                      Registra Uscita
-                    </Button>
-                  </Box>
-                  
-                  {loading && (
-                    <Box sx={{ mt: 2, textAlign: 'center' }}>
-                      <CircularProgress size={24} />
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
+            {/* Loading State */}
+            {loading && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 4 }}>
+                <CircularProgress size={48} />
+                <Typography variant="body1">Validazione QR Code...</Typography>
+              </Box>
             )}
 
             {/* Errori */}
@@ -1251,22 +1265,58 @@ export default function QRScannerPage() {
           {recentScans.slice(0, 10).map((scan) => (
             <ListItem key={scan.id}>
               <ListItemIcon>
-                {scan.synced ? (
+                {scan.status === 'failed' ? (
+                  <Close color="error" />
+                ) : scan.synced ? (
                   <CheckCircle color="success" />
                 ) : (
                   <CloudOff color="warning" />
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={`ODL ${scan.odlNumber} - ${scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}`}
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography variant="body1">
+                      ODL {scan.odlNumber}
+                    </Typography>
+                    {scan.partNumber && (
+                      <Typography variant="caption" color="text.secondary">
+                        ({scan.partNumber})
+                      </Typography>
+                    )}
+                    <Chip 
+                      label={scan.eventType === 'ENTRY' ? 'Ingresso' : 'Uscita'}
+                      size="small"
+                      color={scan.eventType === 'ENTRY' ? 'success' : 'error'}
+                    />
+                    {scan.status === 'failed' && (
+                      <Chip 
+                        label="Errore"
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                }
                 secondary={
                   <Box>
                     <Typography variant="caption">
                       {new Date(scan.timestamp).toLocaleString()}
                     </Typography>
+                    {scan.departmentName && (
+                      <Typography variant="caption" display="block" color="text.secondary">
+                        Reparto: {scan.departmentName}
+                      </Typography>
+                    )}
                     {scan.duration && (
                       <Typography variant="caption" sx={{ ml: 2 }}>
                         Durata: {formatTime(scan.duration)}
+                      </Typography>
+                    )}
+                    {scan.errorMessage && (
+                      <Typography variant="caption" display="block" color="error">
+                        {scan.errorMessage}
                       </Typography>
                     )}
                   </Box>

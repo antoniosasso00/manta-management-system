@@ -135,6 +135,9 @@ export function ODLDataTable({
     if (!odl.lastEvent) return ['ENTRY']
     
     switch (odl.lastEvent.eventType) {
+      case 'ASSIGNED':
+        // ODL assegnato ma non ancora entrato
+        return ['ENTRY']
       case 'ENTRY':
         return ['EXIT', 'PAUSE']
       case 'EXIT':

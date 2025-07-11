@@ -38,9 +38,13 @@ export function ODLCard({ odl, onAction, loading = false }: ODLCardProps) {
       return [] // Nessuna azione disponibile se completato
     }
     
+    // Se non ci sono eventi precedenti, è un ODL non assegnato
     if (!odl.lastEvent) return ['ENTRY']
     
     switch (odl.lastEvent.eventType) {
+      case 'ASSIGNED':
+        // ODL assegnato ma non ancora entrato
+        return ['ENTRY']
       case 'ENTRY':
         return ['EXIT', 'PAUSE']
       case 'EXIT':
