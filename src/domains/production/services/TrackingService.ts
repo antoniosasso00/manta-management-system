@@ -2,7 +2,7 @@ import { EventType, ODLStatus, Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { WorkflowService } from './WorkflowService'
 import { TimeMetricsService } from './TimeMetricsService'
-import { isValidDepartmentEntry, isValidDepartmentExit, getTransitionErrorMessage } from '@/utils/status-transitions'
+import { isValidDepartmentEntry, isValidDepartmentExit, getTransitionErrorMessage, isValidStatusTransition } from '@/utils/status-transitions'
 import { TransactionRetryHelper } from '@/utils/transaction-retry'
 import type { 
   CreateManualEvent, 
@@ -107,14 +107,33 @@ export class TrackingService {
       }
 
       // Validazione transizione di stato
-      const isValidTransition = data.eventType === EventType.ENTRY
-        ? isValidDepartmentEntry(odl.status, department.type)
-        : isValidDepartmentExit(odl.status, department.type)
+      // Valida transizione di stato in base al tipo di evento
+      let isValidTransition = false
+      let errorMessage = ''
+      
+      if (data.eventType === EventType.ASSIGNED) {
+        // Per eventi di assegnazione, validare transizione a ASSIGNED_TO_*
+        const assignedStatus = `ASSIGNED_TO_${department.type}` as ODLStatus
+        isValidTransition = isValidStatusTransition(odl.status, assignedStatus)
+        if (!isValidTransition) {
+          errorMessage = getTransitionErrorMessage(odl.status, assignedStatus)
+        }
+      } else if (data.eventType === EventType.ENTRY) {
+        isValidTransition = isValidDepartmentEntry(odl.status, department.type)
+        if (!isValidTransition) {
+          errorMessage = getTransitionErrorMessage(odl.status, this.getTargetStatusForEntry(department.type))
+        }
+      } else if (data.eventType === EventType.EXIT) {
+        isValidTransition = isValidDepartmentExit(odl.status, department.type)
+        if (!isValidTransition) {
+          errorMessage = getTransitionErrorMessage(odl.status, this.getTargetStatusForExit(department.type))
+        }
+      } else {
+        // Per altri eventi (PAUSE, RESUME, NOTE), non validare transizione di stato
+        isValidTransition = true
+      }
       
       if (!isValidTransition) {
-        const errorMessage = data.eventType === EventType.ENTRY
-          ? getTransitionErrorMessage(odl.status, this.getTargetStatusForEntry(department.type))
-          : getTransitionErrorMessage(odl.status, this.getTargetStatusForExit(department.type))
         throw new Error(`Transizione di stato non valida: ${errorMessage}`)
       }
 
