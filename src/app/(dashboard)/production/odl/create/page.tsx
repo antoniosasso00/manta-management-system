@@ -742,6 +742,7 @@ export default function CreateODLPage() {
                   render={({ field }) => (
                     <TextField
                       {...field}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                       label="Part Number"
                       fullWidth
                       error={!!partErrors.partNumber}

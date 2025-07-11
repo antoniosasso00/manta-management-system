@@ -346,7 +346,12 @@ export function ExtensionTableDialog({
             key={field.name}
             label={field.label}
             value={value}
-            onChange={(e) => handleFieldChange(field.name, e.target.value)}
+            onChange={(e) => {
+              const newValue = field.name.toLowerCase().includes('partnumber') || field.name.toLowerCase().includes('part_number')
+                ? e.target.value.toUpperCase()
+                : e.target.value;
+              handleFieldChange(field.name, newValue);
+            }}
             required={field.required}
             error={!!error}
             helperText={error || field.helperText}

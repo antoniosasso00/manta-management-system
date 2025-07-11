@@ -29,7 +29,7 @@ export const GET = ErrorHelper.withErrorHandling(async (request: NextRequest) =>
     limit: limitParam ? Math.min(100, Math.max(1, parseInt(limitParam) || 10)) : 10,
     sortBy: ['partNumber', 'description', 'createdAt'].includes(sortByParam || '') ? sortByParam as 'partNumber' | 'description' | 'createdAt' : 'partNumber',
     sortOrder: ['asc', 'desc'].includes(sortOrderParam || '') ? sortOrderParam as 'asc' | 'desc' : 'asc',
-    includeTools: searchParams.get('include') === 'partTools',
+    includeTools: searchParams.get('includeTools') === 'true' || searchParams.get('include') === 'partTools',
   }
 
   console.log('Raw searchParams:', Object.fromEntries(searchParams.entries()))

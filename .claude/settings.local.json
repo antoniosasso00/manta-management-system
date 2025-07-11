@@ -69,7 +69,8 @@
       "Bash(fuser:*)",
       "Bash(docker volume rm:*)",
       "Bash(./scripts/dev/start-dev.sh:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(./tests/simulate-qr-workflow.sh:*)"
     ],
     "deny": []
   }

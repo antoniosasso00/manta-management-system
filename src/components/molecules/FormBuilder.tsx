@@ -418,7 +418,11 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                     const numValue = value === '' ? undefined : Number(value)
                     controllerField.onChange(numValue)
                   } else {
-                    controllerField.onChange(value)
+                    // Convert to uppercase for part number fields
+                    const finalValue = (field.name.toLowerCase().includes('partnumber') || field.name.toLowerCase().includes('part_number'))
+                      ? value.toUpperCase()
+                      : value;
+                    controllerField.onChange(finalValue)
                   }
                 }}
                 InputProps={{

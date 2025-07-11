@@ -119,6 +119,7 @@ export function PartForm({
                 render={({ field }) => (
                   <Input
                     {...field}
+                    onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     label="Part Number *"
                     placeholder="e.g., 8G5350A0"
                     error={!!errors.partNumber}
