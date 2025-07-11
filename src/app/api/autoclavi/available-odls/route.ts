@@ -17,17 +17,42 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Costruisci filtri
+    // Costruisci filtri con database-level filtering
     const where: any = {
       status: 'CLEANROOM_COMPLETED', // Solo ODL completati in Clean Room
     };
 
+    // Filtra per ciclo di cura a livello database
+    if (curingCycleId) {
+      where.part = {
+        autoclaveConfig: {
+          curingCycleId: curingCycleId
+        }
+      };
+    }
+
+    // Aggiungi filtro di ricerca se presente
     if (search) {
-      where.OR = [
-        { odlNumber: { contains: search, mode: 'insensitive' } },
-        { part: { partNumber: { contains: search, mode: 'insensitive' } } },
-        { part: { description: { contains: search, mode: 'insensitive' } } },
-      ];
+      if (where.part) {
+        // Se già esiste il filtro part, aggiungi OR per la ricerca
+        where.AND = [
+          { part: where.part },
+          {
+            OR: [
+              { odlNumber: { contains: search, mode: 'insensitive' } },
+              { part: { partNumber: { contains: search, mode: 'insensitive' } } },
+              { part: { description: { contains: search, mode: 'insensitive' } } },
+            ]
+          }
+        ];
+        delete where.part;
+      } else {
+        where.OR = [
+          { odlNumber: { contains: search, mode: 'insensitive' } },
+          { part: { partNumber: { contains: search, mode: 'insensitive' } } },
+          { part: { description: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
     }
 
     const odls = await prisma.oDL.findMany({
@@ -55,14 +80,10 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    // Filtra per compatibilità ciclo di cura se specificato
-    let filteredOdls = odls;
-    if (curingCycleId) {
-      filteredOdls = odls.filter(odl => {
-        const odlCycleId = odl.part.autoclaveConfig?.curingCycleId;
-        return odlCycleId === curingCycleId;
-      });
-    }
+    // Filtra ulteriormente per assicurarsi che abbiano configurazione autoclave
+    const filteredOdls = odls.filter(odl => {
+      return odl.part.autoclaveConfig !== null;
+    });
 
     // Raggruppa per ciclo di cura per facilitare la selezione
     const groupedByCycle: Record<string, any[]> = {};
@@ -95,6 +116,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Debug logging
+    console.log('Available ODLs API called with params:', {
+      curingCycleId,
+      search,
+      limit,
+      totalFound: odls.length,
+      filteredCount: filteredOdls.length
+    });
+
     return NextResponse.json({
       success: true,
       odls: filteredOdls.map(odl => {
@@ -119,6 +149,12 @@ export async function GET(request: NextRequest) {
       groupedByCycle,
       cycleNames,
       totalCount: filteredOdls.length,
+      debug: {
+        queryParams: { curingCycleId, search, limit },
+        totalQueried: odls.length,
+        totalFiltered: filteredOdls.length,
+        filterApplied: !!curingCycleId
+      }
     });
   } catch (error) {
     console.error('Errore recupero ODL disponibili:', error);

@@ -1236,8 +1236,58 @@ export default function QRScannerPage() {
           </Box>
 
           <Box>
+            {/* Risultato Scan */}
+            {scanResult && (
+              <Card sx={{ mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                    <CheckCircle color="success" />
+                    ODL Trovato
+                  </Typography>
+                  
+                  <Typography sx={{ mb: 1 }}><strong>ID:</strong> {scanResult.id}</Typography>
+                  <Typography sx={{ mb: 1 }}><strong>Numero:</strong> {scanResult.odlNumber}</Typography>
+                  {scanResult.partNumber && (
+                    <Typography><strong>Part Number:</strong> {scanResult.partNumber}</Typography>
+                  )}
+                  
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      fullWidth
+                      startIcon={<PlayArrow />}
+                      onClick={() => handleEntryExit('ENTRY')}
+                      disabled={loading || !!activeTimer}
+                      sx={{ minHeight: 44 }}
+                    >
+                      Registra Ingresso
+                    </Button>
+                    
+                    <Button
+                      variant="contained"
+                      color="error"
+                      fullWidth
+                      startIcon={<Stop />}
+                      onClick={() => handleEntryExit('EXIT')}
+                      disabled={loading || !activeTimer}
+                      sx={{ minHeight: 44 }}
+                    >
+                      Registra Uscita
+                    </Button>
+                  </Box>
+                  
+                  {loading && (
+                    <Box sx={{ mt: 2, textAlign: 'center' }}>
+                      <CircularProgress size={24} />
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Loading State */}
-            {loading && (
+            {loading && !scanResult && (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 4 }}>
                 <CircularProgress size={48} />
                 <Typography variant="body1">Validazione QR Code...</Typography>

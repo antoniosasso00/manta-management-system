@@ -90,6 +90,15 @@ export function OdlSelection({
       if (!response.ok) throw new Error('Errore caricamento ODL');
       
       const data = await response.json();
+      console.log('ODL Selection - API Response:', {
+        success: data.success,
+        totalCount: data.totalCount,
+        odlsCount: data.odls?.length || 0,
+        debug: data.debug,
+        curingCycleId,
+        searchTerm
+      });
+      
       setAvailableOdls(data.odls || []);
     } catch (error) {
       console.error('Errore fetch ODL:', error);

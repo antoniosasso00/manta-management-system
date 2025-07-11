@@ -70,7 +70,8 @@
       "Bash(docker volume rm:*)",
       "Bash(./scripts/dev/start-dev.sh:*)",
       "Bash(npx:*)",
-      "Bash(./tests/simulate-qr-workflow.sh:*)"
+      "Bash(./tests/simulate-qr-workflow.sh:*)",
+      "Bash(git show:*)"
     ],
     "deny": []
   }

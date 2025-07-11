@@ -540,11 +540,21 @@ export class TrackingService {
       }
     }
 
-    // Aggiungi ODL pronti per questo reparto alla preparazione
+    // Per Clean Room (primo reparto): ODL CREATED vanno in "In Arrivo", non in "Preparazione"
+    // Per altri reparti: ODL completati dal reparto precedente vanno in "Preparazione"
+    const workflowSequence = ['CLEANROOM', 'AUTOCLAVE', 'CONTROLLO_NUMERICO', 'NDI', 'MONTAGGIO', 'VERNICIATURA', 'CONTROLLO_QUALITA']
+    const isFirstDepartment = workflowSequence.indexOf(department.type) === 0
+    
     for (const readyODL of readyODLs) {
       const trackingStatus = await this.getODLTrackingStatus(readyODL.id)
       if (trackingStatus) {
-        odlInPreparation.push(trackingStatus)
+        if (isFirstDepartment && readyODL.status === 'CREATED') {
+          // ODL CREATED per Clean Room vanno in "In Arrivo"
+          odlIncoming.push(trackingStatus)
+        } else {
+          // Altri ODL vanno in "Preparazione"
+          odlInPreparation.push(trackingStatus)
+        }
       }
     }
 
