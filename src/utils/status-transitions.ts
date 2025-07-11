@@ -5,14 +5,69 @@ import { ODLStatus, DepartmentType } from '@prisma/client'
  */
 export const STATUS_TRANSITIONS: Record<ODLStatus, ODLStatus[]> = {
   [ODLStatus.CREATED]: [
-    ODLStatus.IN_CLEANROOM,
+    // Prima fase: assegnazione a reparto
+    ODLStatus.ASSIGNED_TO_CLEANROOM,
+    ODLStatus.ASSIGNED_TO_HONEYCOMB,
+    ODLStatus.ASSIGNED_TO_AUTOCLAVE,
+    ODLStatus.ASSIGNED_TO_CONTROLLO_NUMERICO,
+    ODLStatus.ASSIGNED_TO_NDI,
+    ODLStatus.ASSIGNED_TO_MONTAGGIO,
+    ODLStatus.ASSIGNED_TO_VERNICIATURA,
+    ODLStatus.ASSIGNED_TO_CONTROLLO_QUALITA,
+    ODLStatus.ON_HOLD
+  ],
+
+  // Honeycomb workflow
+  [ODLStatus.ASSIGNED_TO_HONEYCOMB]: [
     ODLStatus.IN_HONEYCOMB,
-    ODLStatus.IN_AUTOCLAVE, // Assegnazione diretta
+    ODLStatus.ON_HOLD
+  ],
+
+  // Clean room workflow
+  [ODLStatus.ASSIGNED_TO_CLEANROOM]: [
+    ODLStatus.IN_CLEANROOM,
+    ODLStatus.ON_HOLD
+  ],
+
+  // Autoclave workflow
+  [ODLStatus.ASSIGNED_TO_AUTOCLAVE]: [
+    ODLStatus.IN_AUTOCLAVE,
+    ODLStatus.ON_HOLD
+  ],
+
+  // CNC workflow
+  [ODLStatus.ASSIGNED_TO_CONTROLLO_NUMERICO]: [
     ODLStatus.IN_CONTROLLO_NUMERICO,
+    ODLStatus.ON_HOLD
+  ],
+
+  // NDI workflow
+  [ODLStatus.ASSIGNED_TO_NDI]: [
     ODLStatus.IN_NDI,
+    ODLStatus.ON_HOLD
+  ],
+
+  // Assembly workflow
+  [ODLStatus.ASSIGNED_TO_MONTAGGIO]: [
     ODLStatus.IN_MONTAGGIO,
+    ODLStatus.ON_HOLD
+  ],
+
+  // Coating workflow
+  [ODLStatus.ASSIGNED_TO_VERNICIATURA]: [
     ODLStatus.IN_VERNICIATURA,
+    ODLStatus.ON_HOLD
+  ],
+
+  // Quality control workflow
+  [ODLStatus.ASSIGNED_TO_CONTROLLO_QUALITA]: [
     ODLStatus.IN_CONTROLLO_QUALITA,
+    ODLStatus.ON_HOLD
+  ],
+
+  // Motors workflow
+  [ODLStatus.ASSIGNED_TO_MOTORI]: [
+    ODLStatus.IN_MOTORI,
     ODLStatus.ON_HOLD
   ],
   

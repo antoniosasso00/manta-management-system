@@ -32,7 +32,18 @@ export const createODLSchema = z.object({
   quantity: z.number()
     .int('La quantità deve essere un numero intero')
     .positive('La quantità deve essere positiva'),
-  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).default('CREATED'),
+  status: z.enum([
+    'CREATED',
+    'ASSIGNED_TO_HONEYCOMB', 'IN_HONEYCOMB', 'HONEYCOMB_COMPLETED',
+    'ASSIGNED_TO_CLEANROOM', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 
+    'ASSIGNED_TO_AUTOCLAVE', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED',
+    'ASSIGNED_TO_CONTROLLO_NUMERICO', 'IN_CONTROLLO_NUMERICO', 'CONTROLLO_NUMERICO_COMPLETED',
+    'ASSIGNED_TO_NDI', 'IN_NDI', 'NDI_COMPLETED',
+    'ASSIGNED_TO_MONTAGGIO', 'IN_MONTAGGIO', 'MONTAGGIO_COMPLETED',
+    'ASSIGNED_TO_VERNICIATURA', 'IN_VERNICIATURA', 'VERNICIATURA_COMPLETED',
+    'ASSIGNED_TO_CONTROLLO_QUALITA', 'IN_CONTROLLO_QUALITA', 'CONTROLLO_QUALITA_COMPLETED',
+    'COMPLETED', 'ON_HOLD', 'CANCELLED'
+  ]).default('CREATED'),
   priority: z.number()
     .int('La priorità deve essere un numero intero')
     .min(1, 'La priorità minima è 1')
@@ -56,7 +67,18 @@ export const updateODLSchema = z.object({
     .int('La quantità deve essere un numero intero')
     .positive('La quantità deve essere positiva')
     .optional(),
-  status: z.enum(['CREATED', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED', 'IN_NDI', 'NDI_COMPLETED', 'COMPLETED', 'ON_HOLD', 'CANCELLED']).optional(),
+  status: z.enum([
+    'CREATED',
+    'ASSIGNED_TO_HONEYCOMB', 'IN_HONEYCOMB', 'HONEYCOMB_COMPLETED',
+    'ASSIGNED_TO_CLEANROOM', 'IN_CLEANROOM', 'CLEANROOM_COMPLETED', 
+    'ASSIGNED_TO_AUTOCLAVE', 'IN_AUTOCLAVE', 'AUTOCLAVE_COMPLETED',
+    'ASSIGNED_TO_CONTROLLO_NUMERICO', 'IN_CONTROLLO_NUMERICO', 'CONTROLLO_NUMERICO_COMPLETED',
+    'ASSIGNED_TO_NDI', 'IN_NDI', 'NDI_COMPLETED',
+    'ASSIGNED_TO_MONTAGGIO', 'IN_MONTAGGIO', 'MONTAGGIO_COMPLETED',
+    'ASSIGNED_TO_VERNICIATURA', 'IN_VERNICIATURA', 'VERNICIATURA_COMPLETED',
+    'ASSIGNED_TO_CONTROLLO_QUALITA', 'IN_CONTROLLO_QUALITA', 'CONTROLLO_QUALITA_COMPLETED',
+    'COMPLETED', 'ON_HOLD', 'CANCELLED'
+  ]).optional(),
   priority: z.number()
     .int('La priorità deve essere un numero intero')
     .min(1, 'La priorità minima è 1')

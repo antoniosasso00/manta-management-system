@@ -217,7 +217,34 @@ export class TrackingService {
     let newStatus: ODLStatus | null = null
 
     // Logica per determinare il nuovo stato basato su reparto ed evento
-    if (eventType === EventType.ENTRY) {
+    if (eventType === EventType.ASSIGNED) {
+      switch (department.type) {
+        case 'HONEYCOMB':
+          newStatus = ODLStatus.ASSIGNED_TO_HONEYCOMB
+          break
+        case 'CLEANROOM':
+          newStatus = ODLStatus.ASSIGNED_TO_CLEANROOM
+          break
+        case 'AUTOCLAVE':
+          newStatus = ODLStatus.ASSIGNED_TO_AUTOCLAVE
+          break
+        case 'CONTROLLO_NUMERICO':
+          newStatus = ODLStatus.ASSIGNED_TO_CONTROLLO_NUMERICO
+          break
+        case 'NDI':
+          newStatus = ODLStatus.ASSIGNED_TO_NDI
+          break
+        case 'MONTAGGIO':
+          newStatus = ODLStatus.ASSIGNED_TO_MONTAGGIO
+          break
+        case 'VERNICIATURA':
+          newStatus = ODLStatus.ASSIGNED_TO_VERNICIATURA
+          break
+        case 'CONTROLLO_QUALITA':
+          newStatus = ODLStatus.ASSIGNED_TO_CONTROLLO_QUALITA
+          break
+      }
+    } else if (eventType === EventType.ENTRY) {
       switch (department.type) {
         case 'HONEYCOMB':
           newStatus = ODLStatus.IN_HONEYCOMB
@@ -550,23 +577,24 @@ export class TrackingService {
     for (const readyODL of readyODLs) {
       const trackingStatus = await this.getODLTrackingStatus(readyODL.id)
       if (trackingStatus) {
-        if (isFirstDepartment && readyODL.status === 'CREATED') {
-          // Per Clean Room: verifica se ODL è stato assegnato
-          const hasAssignedEvent = readyODL.events?.some((event: any) => 
-            event.eventType === 'ASSIGNED' && 
-            event.departmentId === department.id
-          )
-          
-          if (hasAssignedEvent) {
-            // ODL CREATED con evento ASSIGNED → "In Preparazione"
-            odlInPreparation.push(trackingStatus)
-          } else {
-            // ODL CREATED senza assegnazione → "In Arrivo"
+        if (isFirstDepartment) {
+          // Per Clean Room (primo reparto)
+          if (readyODL.status === 'CREATED') {
+            // ODL CREATED non assegnati → "In Arrivo"
             odlIncoming.push(trackingStatus)
+          } else if (readyODL.status === 'ASSIGNED_TO_CLEANROOM') {
+            // ODL assegnati a Clean Room → "In Preparazione"
+            odlInPreparation.push(trackingStatus)
           }
         } else {
-          // ODL completati da reparti precedenti → "In Preparazione"
-          odlInPreparation.push(trackingStatus)
+          // Per altri reparti
+          if (readyODL.status.startsWith('ASSIGNED_TO_')) {
+            // ODL assegnati a questo reparto → "In Preparazione"
+            odlInPreparation.push(trackingStatus)
+          } else {
+            // ODL completati da reparti precedenti → "In Preparazione"
+            odlInPreparation.push(trackingStatus)
+          }
         }
       }
     }
@@ -824,15 +852,16 @@ export class TrackingService {
     let readyStatuses: string[] = []
 
     if (departmentPosition === 0) {
-      // Primo reparto: accetta ODL CREATED con evento ASSIGNED
-      readyStatuses = ['CREATED']
+      // Primo reparto: accetta ODL CREATED e ASSIGNED_TO_CLEANROOM
+      readyStatuses = ['CREATED', 'ASSIGNED_TO_CLEANROOM']
     } else if (departmentPosition > 0) {
-      // Reparti successivi: accetta ODL completati dal reparto precedente
+      // Reparti successivi: accetta ODL completati dal reparto precedente + assegnati a questo reparto
       const previousDepartment = workflowSequence[departmentPosition - 1]
-      readyStatuses = [`${previousDepartment}_COMPLETED`]
+      const currentDepartment = workflowSequence[departmentPosition]
+      readyStatuses = [`${previousDepartment}_COMPLETED`, `ASSIGNED_TO_${currentDepartment}`]
     } else {
-      // Reparti speciali (HONEYCOMB, MOTORI): accetta CREATED con evento ASSIGNED
-      readyStatuses = ['CREATED']
+      // Reparti speciali (HONEYCOMB, MOTORI): accetta CREATED e stati assegnati
+      readyStatuses = ['CREATED', `ASSIGNED_TO_${departmentType}`]
     }
 
     // Trova i reparti di questo tipo
