@@ -28,6 +28,7 @@ import {
   IconButton,
   Collapse,
   Divider,
+  Snackbar,
 } from '@mui/material';
 import {
   QrCodeScanner,
@@ -128,6 +129,13 @@ export default function QRScannerPage() {
     batch: any;
     odlId: string;
   }>({ open: false, batch: null, odlId: '' });
+  const [odlDetails, setODLDetails] = useState<ODLDetails | null>(null);
+  const [pendingAction, setPendingAction] = useState<{ odlId: string; action: EventType } | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ 
+    open: false, 
+    message: '', 
+    severity: 'info' 
+  });
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<BrowserMultiFormatReader | null>(null);
@@ -381,7 +389,7 @@ export default function QRScannerPage() {
     setIsScanning(false);
   };
 
-  const handleScanResult = (qrText: string) => {
+  const handleScanResult = async (qrText: string) => {
     try {
       const qrData: QRData = JSON.parse(qrText);
       
@@ -396,13 +404,72 @@ export default function QRScannerPage() {
       
       setScanResult(qrData);
       setError(null);
+      
+      // Carica dettagli ODL per determinare azioni disponibili
+      await loadODLDetails(qrData.id);
     } catch {
       setError('QR Code non valido');
     }
   };
 
-  const handleEntryExit = async (eventType: 'ENTRY' | 'EXIT') => {
-    if (!scanResult || !user) return;
+  const loadODLDetails = async (odlId: string) => {
+    try {
+      const response = await fetchWithRetry(`/api/odl/${odlId}`, {}, {
+        maxRetries: 2,
+        baseDelay: 1000
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setODLDetails(data.odl);
+      } else {
+        setError('Impossibile caricare dettagli ODL');
+      }
+    } catch (error) {
+      setError('Errore durante il caricamento ODL');
+      console.error('ODL details error:', error);
+    }
+  };
+
+  const getAvailableActions = (odlDetails: ODLDetails): EventType[] => {
+    // Stati completati - nessuna azione disponibile
+    const completedStates = [
+      'CLEANROOM_COMPLETED', 'AUTOCLAVE_COMPLETED', 'CONTROLLO_NUMERICO_COMPLETED',
+      'NDI_COMPLETED', 'MONTAGGIO_COMPLETED', 'VERNICIATURA_COMPLETED',
+      'CONTROLLO_QUALITA_COMPLETED', 'COMPLETED'
+    ];
+    
+    if (completedStates.includes(odlDetails.status)) {
+      return [];
+    }
+    
+    // Determina azioni basate sull'ultimo evento
+    const lastEventType = odlDetails.lastEvent?.eventType;
+    
+    switch (lastEventType) {
+      case 'ASSIGNED':
+        return ['ENTRY'];
+      case 'ENTRY':
+        return ['EXIT', 'PAUSE'];
+      case 'EXIT':
+        return [];
+      case 'PAUSE':
+        return ['RESUME'];
+      case 'RESUME':
+        return ['EXIT', 'PAUSE'];
+      default:
+        return ['ENTRY'];
+    }
+  };
+
+  const handleAction = (action: EventType) => {
+    if (!scanResult || !odlDetails) return;
+    
+    setPendingAction({ odlId: scanResult.id, action });
+  };
+
+  const confirmAction = async () => {
+    if (!pendingAction || !scanResult || !user) return;
     
     setLoading(true);
     
@@ -411,14 +478,13 @@ export default function QRScannerPage() {
         id: Date.now().toString(),
         odlId: scanResult.id,
         odlNumber: scanResult.odlNumber || '',
-        eventType,
+        eventType: pendingAction.action,
         timestamp: new Date().toISOString(),
         synced: false
       };
 
-      // Timer logic
-      if (eventType === 'ENTRY') {
-        // Inizio timer
+      // Gestione timer solo per ENTRY/EXIT (non per PAUSE/RESUME)
+      if (pendingAction.action === 'ENTRY') {
         const timer: ActiveTimer = {
           odlId: scanResult.id,
           odlNumber: scanResult.odlNumber || '',
@@ -426,8 +492,7 @@ export default function QRScannerPage() {
           departmentId: user.departmentId || ''
         };
         setActiveTimer(timer);
-      } else if (eventType === 'EXIT' && activeTimer) {
-        // Fine timer
+      } else if (pendingAction.action === 'EXIT' && activeTimer) {
         const duration = Date.now() - activeTimer.startTime;
         newScan.duration = duration;
         setActiveTimer(null);
@@ -437,20 +502,19 @@ export default function QRScannerPage() {
       // Salva offline
       const updatedScans = [newScan, ...recentScans].slice(0, 20);
       setRecentScans(updatedScans);
-      saveToLocalStorage(updatedScans, eventType === 'ENTRY' ? activeTimer : null);
+      saveToLocalStorage(updatedScans, pendingAction.action === 'ENTRY' ? activeTimer : null);
 
-      // Prova sync online con retry logic
+      // Prova sync online
       if (isEffectivelyOnline) {
         try {
-          // Usa la nuova API workflow unificata
           const response = await fetchWithRetry('/api/workflow/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               odlId: scanResult.id,
               departmentId: user.departmentId,
-              actionType: eventType,
-              confirmationRequired: false,
+              actionType: pendingAction.action,
+              confirmationRequired: true,
               metadata: {
                 source: 'qr-scanner',
                 duration: newScan.duration
@@ -466,30 +530,98 @@ export default function QRScannerPage() {
           if (response.ok) {
             newScan.synced = true;
             
-            // Gestione trasferimento automatico dal risultato API
-            if (result.autoTransfer?.success) {
-              console.log(`[QR Scanner] ODL trasferito automaticamente a ${result.autoTransfer.nextDepartment?.name}`);
+            // Gestisci feedback trasferimento automatico
+            if (pendingAction.action === 'EXIT' && result.autoTransfer) {
+              const transfer = result.autoTransfer;
+              if (transfer.success) {
+                setSnackbar({
+                  open: true,
+                  message: transfer.message || `ODL trasferito automaticamente a ${transfer.nextDepartment?.name}`,
+                  severity: 'success'
+                });
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: transfer.message || 'Trasferimento automatico non riuscito. Procedere manualmente.',
+                  severity: 'warning'
+                });
+              }
+            } else if (pendingAction.action === 'PAUSE') {
+              setSnackbar({
+                open: true,
+                message: 'ODL messo in pausa. Rimane nel reparto in attesa di ripresa.',
+                severity: 'info'
+              });
+            } else if (pendingAction.action === 'RESUME') {
+              setSnackbar({
+                open: true,
+                message: 'ODL ripreso dalla pausa. Lavorazione ripristinata.',
+                severity: 'success'
+              });
+            } else {
+              setSnackbar({
+                open: true,
+                message: `Azione ${pendingAction.action} completata con successo`,
+                severity: 'success'
+              });
             }
             
-            // Gestione speciale per reparto AUTOCLAVI ancora necessaria
-            if (eventType === 'EXIT' && user.departmentId === 'AUTOCLAVI' && result.autoTransfer?.targetDepartmentType === 'AUTOCLAVE') {
+            // Gestione speciale per reparto AUTOCLAVI
+            if (pendingAction.action === 'EXIT' && user.departmentId === 'AUTOCLAVI' && result.autoTransfer?.targetDepartmentType === 'AUTOCLAVE') {
               await handleAutoclaveExit(scanResult.id);
             }
           } else {
             throw new Error(result.message || 'Errore durante la registrazione');
           }
         } catch (syncError) {
-          console.error('[QR Scanner] Sync immediato fallito, verrà riprovato automaticamente:', syncError);
-          // L'evento rimane non sincronizzato e verrà riprovato dal sync automatico
+          console.error('[QR Scanner] Sync immediato fallito:', syncError);
+          setSnackbar({
+            open: true,
+            message: 'Errore durante la sincronizzazione. Riprovare.',
+            severity: 'error'
+          });
         }
       }
 
+      // Reset stato
       setScanResult(null);
+      setODLDetails(null);
+      setPendingAction(null);
     } catch (eventError) {
       setError('Errore registrazione evento');
       console.error('Event registration error:', eventError);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getActionIcon = (action: EventType) => {
+    switch (action) {
+      case 'ENTRY': return <PlayArrow fontSize="small" />;
+      case 'EXIT': return <Stop fontSize="small" />;
+      case 'PAUSE': return <Pause fontSize="small" />;
+      case 'RESUME': return <PlayCircle fontSize="small" />;
+      default: return null;
+    }
+  };
+
+  const getActionLabel = (action: EventType) => {
+    switch (action) {
+      case 'ENTRY': return 'Registra Ingresso';
+      case 'EXIT': return 'Registra Uscita';
+      case 'PAUSE': return 'Metti in Pausa';
+      case 'RESUME': return 'Riprendi';
+      default: return action;
+    }
+  };
+
+  const getActionColor = (action: EventType) => {
+    switch (action) {
+      case 'ENTRY': return 'success';
+      case 'EXIT': return 'error';
+      case 'PAUSE': return 'warning';
+      case 'RESUME': return 'primary';
+      default: return 'primary';
     }
   };
 
@@ -808,7 +940,14 @@ export default function QRScannerPage() {
                 </Box>
               )}
 
-              {scanResult && (
+              {scanResult && !odlDetails && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 4 }}>
+                  <CircularProgress size={48} />
+                  <Typography variant="body1">Caricamento dettagli ODL...</Typography>
+                </Box>
+              )}
+
+              {scanResult && odlDetails && (
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Card>
                     <CardContent>
@@ -817,57 +956,71 @@ export default function QRScannerPage() {
                         ODL Trovato
                       </Typography>
                       
-                      <Box sx={{ mb: 3 }}>
-                        <Typography variant="body2" color="text.secondary">ID</Typography>
-                        <Typography variant="body1">{scanResult.id}</Typography>
-                      </Box>
-                      
-                      <Box sx={{ mb: 3 }}>
+                      <Box sx={{ mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">Numero ODL</Typography>
-                        <Typography variant="body1">{scanResult.odlNumber}</Typography>
+                        <Typography variant="body1" fontWeight={600}>{odlDetails.odlNumber}</Typography>
                       </Box>
                       
-                      {scanResult.partNumber && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Part Number</Typography>
+                        <Typography variant="body1">{odlDetails.partNumber}</Typography>
+                      </Box>
+                      
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Stato Attuale</Typography>
+                        <Chip 
+                          label={odlDetails.status.replace('_', ' ')}
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
+                      
+                      {odlDetails.lastEvent && (
                         <Box>
-                          <Typography variant="body2" color="text.secondary">Part Number</Typography>
-                          <Typography variant="body1">{scanResult.partNumber}</Typography>
+                          <Typography variant="body2" color="text.secondary">Ultimo Evento</Typography>
+                          <Typography variant="caption" display="block">
+                            {odlDetails.lastEvent.eventType} - {new Date(odlDetails.lastEvent.timestamp).toLocaleString()}
+                          </Typography>
                         </Box>
                       )}
                     </CardContent>
                   </Card>
 
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      size="large"
-                      fullWidth
-                      startIcon={<PlayArrow />}
-                      onClick={() => handleEntryExit('ENTRY')}
-                      disabled={loading || !!activeTimer}
-                      sx={{ minHeight: 56 }}
-                    >
-                      Registra Ingresso
-                    </Button>
-                    
-                    <Button
-                      variant="contained"
-                      color="error"
-                      size="large"
-                      fullWidth
-                      startIcon={<Stop />}
-                      onClick={() => handleEntryExit('EXIT')}
-                      disabled={loading || !activeTimer}
-                      sx={{ minHeight: 56 }}
-                    >
-                      Registra Uscita
-                    </Button>
+                    {getAvailableActions(odlDetails).length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 3 }}>
+                        <Chip 
+                          label="ODL Completato" 
+                          color="success"
+                          sx={{ fontWeight: 600, fontSize: '1rem', height: 40 }}
+                        />
+                      </Box>
+                    ) : (
+                      getAvailableActions(odlDetails).map((action) => (
+                        <Button
+                          key={action}
+                          variant="contained"
+                          color={getActionColor(action) as any}
+                          size="large"
+                          fullWidth
+                          startIcon={getActionIcon(action)}
+                          onClick={() => handleAction(action)}
+                          disabled={loading}
+                          sx={{ minHeight: 56 }}
+                        >
+                          {getActionLabel(action)}
+                        </Button>
+                      ))
+                    )}
 
                     <Button
                       variant="outlined"
                       size="large"
                       fullWidth
-                      onClick={() => setScanResult(null)}
+                      onClick={() => {
+                        setScanResult(null);
+                        setODLDetails(null);
+                      }}
                       sx={{ minHeight: 48 }}
                     >
                       Annulla
@@ -1237,7 +1390,7 @@ export default function QRScannerPage() {
 
           <Box>
             {/* Risultato Scan */}
-            {scanResult && (
+            {scanResult && odlDetails && (
               <Card sx={{ mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -1245,36 +1398,42 @@ export default function QRScannerPage() {
                     ODL Trovato
                   </Typography>
                   
-                  <Typography sx={{ mb: 1 }}><strong>ID:</strong> {scanResult.id}</Typography>
-                  <Typography sx={{ mb: 1 }}><strong>Numero:</strong> {scanResult.odlNumber}</Typography>
-                  {scanResult.partNumber && (
-                    <Typography><strong>Part Number:</strong> {scanResult.partNumber}</Typography>
-                  )}
+                  <Typography sx={{ mb: 1 }}><strong>Numero:</strong> {odlDetails.odlNumber}</Typography>
+                  <Typography sx={{ mb: 1 }}><strong>Part Number:</strong> {odlDetails.partNumber}</Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography component="span" sx={{ mr: 1 }}><strong>Stato:</strong></Typography>
+                    <Chip 
+                      label={odlDetails.status.replace('_', ' ')}
+                      size="small"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Box>
                   
                   <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      fullWidth
-                      startIcon={<PlayArrow />}
-                      onClick={() => handleEntryExit('ENTRY')}
-                      disabled={loading || !!activeTimer}
-                      sx={{ minHeight: 44 }}
-                    >
-                      Registra Ingresso
-                    </Button>
-                    
-                    <Button
-                      variant="contained"
-                      color="error"
-                      fullWidth
-                      startIcon={<Stop />}
-                      onClick={() => handleEntryExit('EXIT')}
-                      disabled={loading || !activeTimer}
-                      sx={{ minHeight: 44 }}
-                    >
-                      Registra Uscita
-                    </Button>
+                    {getAvailableActions(odlDetails).length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Chip 
+                          label="ODL Completato" 
+                          color="success"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
+                    ) : (
+                      getAvailableActions(odlDetails).map((action) => (
+                        <Button
+                          key={action}
+                          variant="contained"
+                          color={getActionColor(action) as any}
+                          fullWidth
+                          startIcon={getActionIcon(action)}
+                          onClick={() => handleAction(action)}
+                          disabled={loading}
+                          sx={{ minHeight: 44 }}
+                        >
+                          {getActionLabel(action)}
+                        </Button>
+                      ))
+                    )}
                   </Box>
                   
                   {loading && (
@@ -1284,6 +1443,13 @@ export default function QRScannerPage() {
                   )}
                 </CardContent>
               </Card>
+            )}
+
+            {scanResult && !odlDetails && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 4 }}>
+                <CircularProgress size={48} />
+                <Typography variant="body1">Caricamento dettagli ODL...</Typography>
+              </Box>
             )}
 
             {/* Loading State */}
@@ -1427,6 +1593,32 @@ export default function QRScannerPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog di conferma per azioni QR */}
+      <ConfirmActionDialog
+        open={pendingAction !== null}
+        title="Conferma Registrazione QR"
+        message={pendingAction ? `Registrare ${getActionLabel(pendingAction.action)} per ODL ${odlDetails?.odlNumber}?` : ''}
+        onConfirm={confirmAction}
+        onCancel={() => setPendingAction(null)}
+        severity="warning"
+      />
+      
+      {/* Snackbar per notifiche */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
