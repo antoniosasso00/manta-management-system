@@ -682,6 +682,7 @@ enum EventType {
   PAUSE
   RESUME
   NOTE
+  ASSIGNED
 }
 
 enum DepartmentType {

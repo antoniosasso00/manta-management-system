@@ -89,13 +89,11 @@ export async function POST(
     }
 
     // Crea evento di assegnazione manuale
-    const assignmentEvent = await TrackingService.createProductionEvent({
+    const assignmentEvent = await TrackingService.createAssignmentEvent({
       odlId,
       departmentId,
-      eventType: EventType.ENTRY,
       userId: session.user.id,
-      notes: notes ? `Assegnazione manuale: ${notes}` : 'Assegnazione manuale',
-      confirmationRequired: false
+      notes: notes ? `Assegnazione manuale: ${notes}` : 'Assegnazione manuale'
     })
 
     return NextResponse.json({

@@ -76,6 +76,7 @@ export const odlTrackingStatusSchema = z.object({
   lastEvent: productionEventResponseSchema.nullable(),
   timeInCurrentDepartment: z.number().nullable(), // Minuti
   totalProductionTime: z.number(), // Minuti totali
+  isPaused: z.boolean().default(false), // Stato di pausa
 })
 
 // Schema per dashboard reparto

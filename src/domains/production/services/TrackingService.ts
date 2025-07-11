@@ -13,6 +13,76 @@ import type {
 } from '../schemas/tracking.schema'
 
 export class TrackingService {
+  // Crea un evento di assegnazione ODL a reparto
+  static async createAssignmentEvent(data: {
+    odlId: string,
+    departmentId: string,
+    userId: string,
+    notes?: string
+  }): Promise<ProductionEventResponse> {
+    return TransactionRetryHelper.executePrismaWithRetry(async () => {
+      return await prisma.$transaction(async (tx) => {
+        // Verifica che l'ODL esista
+        const odl = await tx.oDL.findUnique({
+          where: { id: data.odlId },
+          include: { part: true }
+        })
+        
+        if (!odl) {
+          throw new Error('ODL non trovato')
+        }
+
+        // Verifica che il reparto esista
+        const department = await tx.department.findUnique({
+          where: { id: data.departmentId }
+        })
+        
+        if (!department) {
+          throw new Error('Reparto non trovato')
+        }
+
+        // Verifica che l'ODL sia nello stato CREATED
+        if (odl.status !== ODLStatus.CREATED) {
+          throw new Error('ODL deve essere nello stato CREATED per essere assegnato')
+        }
+
+        // Verifica che l'utente esista
+        const userExists = await tx.user.findUnique({
+          where: { id: data.userId },
+          select: { id: true, isActive: true }
+        })
+        
+        if (!userExists || !userExists.isActive) {
+          throw new Error('Utente non valido')
+        }
+
+        // Crea l'evento di assegnazione
+        const event = await tx.productionEvent.create({
+          data: {
+            odlId: data.odlId,
+            departmentId: data.departmentId,
+            eventType: EventType.ASSIGNED,
+            userId: data.userId,
+            notes: data.notes || `ODL assegnato al reparto ${department.name}`,
+            isAutomatic: false
+          },
+          include: {
+            user: true,
+            department: true,
+            odl: {
+              include: { part: true }
+            }
+          }
+        })
+
+        return event as ProductionEventResponse
+      }, {
+        isolationLevel: 'ReadCommitted',
+        timeout: 10000
+      })
+    }, 'createAssignmentEvent')
+  }
+
   // Crea un nuovo evento di produzione (manuale o QR)
   static async createProductionEvent(data: CreateManualEvent & { userId: string }): Promise<ProductionEventResponse> {
     return TransactionRetryHelper.executePrismaWithRetry(async () => {
@@ -338,14 +408,32 @@ export class TrackingService {
 
     const lastEvent = odl.events[0] || null
     
-    // Calcola tempo nel reparto corrente
+    // Calcola tempo nel reparto corrente e stato di pausa
     let timeInCurrentDepartment = null
     let currentDepartment = null
+    let isPaused = false
     
-    if (lastEvent && lastEvent.eventType === EventType.ENTRY) {
-      currentDepartment = lastEvent.department
-      const now = new Date()
-      timeInCurrentDepartment = Math.floor((now.getTime() - lastEvent.timestamp.getTime()) / 1000 / 60)
+    if (lastEvent) {
+      if (lastEvent.eventType === EventType.ENTRY || 
+          lastEvent.eventType === EventType.RESUME) {
+        currentDepartment = lastEvent.department
+        const now = new Date()
+        timeInCurrentDepartment = Math.floor((now.getTime() - lastEvent.timestamp.getTime()) / 1000 / 60)
+        isPaused = false
+      } else if (lastEvent.eventType === EventType.PAUSE) {
+        currentDepartment = lastEvent.department
+        isPaused = true
+        // Per ODL in pausa, calcola tempo fino al momento della pausa
+        const pauseEvent = lastEvent
+        const entryEvent = odl.events.find(e => 
+          e.eventType === EventType.ENTRY && 
+          e.departmentId === pauseEvent.departmentId &&
+          e.timestamp < pauseEvent.timestamp
+        )
+        if (entryEvent) {
+          timeInCurrentDepartment = Math.floor((pauseEvent.timestamp.getTime() - entryEvent.timestamp.getTime()) / 1000 / 60)
+        }
+      }
     }
 
     // Calcola tempo totale di produzione
@@ -395,7 +483,8 @@ export class TrackingService {
         }
       } : null,
       timeInCurrentDepartment,
-      totalProductionTime
+      totalProductionTime,
+      isPaused
     }
   }
 
@@ -472,6 +561,13 @@ export class TrackingService {
           odlInPreparation.push(trackingStatus)
         }
       } else if (lastEvent.eventType === EventType.ENTRY) {
+        // ODL entrato nel reparto - in produzione
+        odlInProduction.push(trackingStatus)
+      } else if (lastEvent.eventType === EventType.PAUSE) {
+        // ODL in pausa - rimane in produzione con indicatore pausa
+        odlInProduction.push(trackingStatus)
+      } else if (lastEvent.eventType === EventType.RESUME) {
+        // ODL ripreso - in produzione
         odlInProduction.push(trackingStatus)
       } else if (lastEvent.eventType === EventType.EXIT) {
         // Verifica se ODL è già progredito oltre questo reparto
@@ -482,7 +578,7 @@ export class TrackingService {
           odlCompleted.push(trackingStatus)
         }
       } else {
-        // Verifica se non è già stato aggiunto come "ready"
+        // Altri eventi (NOTE, ASSIGNED) - verifica se non è già stato aggiunto come "ready"
         if (!readyODLs.find(ready => ready.id === odl.id)) {
           odlInPreparation.push(trackingStatus)
         }
@@ -686,6 +782,7 @@ export class TrackingService {
 
   /**
    * Trova ODL pronti per iniziare lavorazione in un reparto specifico
+   * Include solo ODL con evento ASSIGNED per questo reparto
    */
   private static async getODLsReadyForDepartment(departmentType: string): Promise<any[]> {
     // Definisce la sequenza del workflow
@@ -704,28 +801,50 @@ export class TrackingService {
     let readyStatuses: string[] = []
 
     if (departmentPosition === 0) {
-      // Primo reparto: accetta ODL CREATED
+      // Primo reparto: accetta ODL CREATED con evento ASSIGNED
       readyStatuses = ['CREATED']
     } else if (departmentPosition > 0) {
       // Reparti successivi: accetta ODL completati dal reparto precedente
       const previousDepartment = workflowSequence[departmentPosition - 1]
       readyStatuses = [`${previousDepartment}_COMPLETED`]
     } else {
-      // Reparti speciali (HONEYCOMB, MOTORI): accetta CREATED
+      // Reparti speciali (HONEYCOMB, MOTORI): accetta CREATED con evento ASSIGNED
       readyStatuses = ['CREATED']
     }
 
-    // Cerca ODL con stati appropriati che NON hanno ancora eventi in questo reparto
+    // Trova i reparti di questo tipo
+    const departments = await prisma.department.findMany({
+      where: {
+        type: departmentType as any,
+        isActive: true
+      }
+    })
+
+    const departmentIds = departments.map(d => d.id)
+
+    // Cerca ODL con stati appropriati che hanno evento ASSIGNED per questo reparto
     const readyODLs = await prisma.oDL.findMany({
       where: {
         status: {
           in: readyStatuses as any[]
         },
-        // Escludi ODL che hanno già eventi in questo reparto
+        // Include solo ODL con evento ASSIGNED per questo reparto
         events: {
-          none: {
-            department: {
-              type: departmentType as any
+          some: {
+            eventType: EventType.ASSIGNED,
+            departmentId: {
+              in: departmentIds
+            }
+          }
+        },
+        // Escludi ODL che hanno già eventi ENTRY in questo reparto
+        NOT: {
+          events: {
+            some: {
+              eventType: EventType.ENTRY,
+              departmentId: {
+                in: departmentIds
+              }
             }
           }
         }
@@ -736,5 +855,27 @@ export class TrackingService {
     })
 
     return readyODLs
+  }
+
+  /**
+   * Trova ODL creati ma non ancora assegnati a nessun reparto
+   */
+  static async getUnassignedODLs(): Promise<any[]> {
+    const unassignedODLs = await prisma.oDL.findMany({
+      where: {
+        status: ODLStatus.CREATED,
+        // ODL senza eventi ASSIGNED
+        events: {
+          none: {
+            eventType: EventType.ASSIGNED
+          }
+        }
+      },
+      include: {
+        part: true
+      }
+    })
+
+    return unassignedODLs
   }
 }
