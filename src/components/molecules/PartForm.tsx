@@ -69,9 +69,36 @@ export function PartForm({
       setSubmitError(null)
       await onSubmit(data)
       reset()
+      // Chiusura automatica del form dopo creazione/modifica avvenuta con successo
       onClose()
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'An error occurred')
+      // Miglioramento error handling con messaggi più specifici
+      let errorMessage = 'An error occurred'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error && typeof error === 'object') {
+        // Gestione errori API con struttura response
+        if ('message' in error) {
+          errorMessage = String(error.message)
+        } else if ('error' in error) {
+          errorMessage = String(error.error)
+        }
+      }
+      
+      // Gestione errori di validazione Zod
+      if (errorMessage.includes('validation')) {
+        errorMessage = 'Please check the form fields and try again'
+      }
+      
+      // Gestione errori di duplicazione
+      if (errorMessage.includes('unique') || errorMessage.includes('already exists')) {
+        errorMessage = 'A part with this number already exists'
+      }
+      
+      setSubmitError(errorMessage)
     }
   }
 
@@ -80,6 +107,14 @@ export function PartForm({
     reset()
     onClose()
   }
+  
+  // Reset form quando si chiude il dialog
+  useEffect(() => {
+    if (!open) {
+      setSubmitError(null)
+      reset()
+    }
+  }, [open, reset])
 
   if (!canSubmit) {
     return (
