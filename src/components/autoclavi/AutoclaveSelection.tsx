@@ -20,6 +20,7 @@ import {
   Alert,
 } from '@mui/material';
 import { LocalFireDepartment, Settings } from '@mui/icons-material';
+import { ODLPreview } from './ODLPreview';
 
 interface AutoclaveData {
   id: string;
@@ -242,77 +243,82 @@ export function AutoclaveSelection({
 
           {/* Dettagli Ciclo Selezionato */}
           {selectedCuringCycle && (
-            <Card variant="outlined">
-              <CardContent>
-                {(() => {
-                  const cycle = curingCycles.find(c => c.id === selectedCuringCycle);
-                  if (!cycle) return null;
-                  
-                  return (
-                    <Box>
-                      <Box display="flex" alignItems="center" mb={2}>
-                        <Settings sx={{ mr: 1, color: 'primary.main' }} />
-                        <Typography variant="h6">
-                          {cycle.name}
-                        </Typography>
+            <>
+              <Card variant="outlined" sx={{ mb: 2 }}>
+                <CardContent>
+                  {(() => {
+                    const cycle = curingCycles.find(c => c.id === selectedCuringCycle);
+                    if (!cycle) return null;
+                    
+                    return (
+                      <Box>
+                        <Box display="flex" alignItems="center" mb={2}>
+                          <Settings sx={{ mr: 1, color: 'primary.main' }} />
+                          <Typography variant="h6">
+                            {cycle.name}
+                          </Typography>
+                        </Box>
+                        
+                        {cycle.description && (
+                          <Typography variant="body2" color="text.secondary" mb={2}>
+                            {cycle.description}
+                          </Typography>
+                        )}
+                        
+                        <Grid container spacing={2}>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Box textAlign="center">
+                              <Settings sx={{ color: 'primary.main', mb: 1 }} />
+                              <Typography variant="body2" color="text.secondary">
+                                Durata
+                              </Typography>
+                              <Typography variant="h6">
+                                {formatDuration(cycle.totalDuration)}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Box textAlign="center">
+                              <Typography variant="body2" color="text.secondary">
+                                Temp. Max
+                              </Typography>
+                              <Typography variant="h6">
+                                {cycle.maxTemperature}°C
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Box textAlign="center">
+                              <Typography variant="body2" color="text.secondary">
+                                Press. Max
+                              </Typography>
+                              <Typography variant="h6">
+                                {cycle.maxPressure} bar
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Box textAlign="center">
+                              <Typography variant="body2" color="text.secondary">
+                                Compatibilità
+                              </Typography>
+                              <Chip
+                                label="✓ Compositi"
+                                size="small"
+                                color="success"
+                              />
+                            </Box>
+                          </Grid>
+                        </Grid>
                       </Box>
-                      
-                      {cycle.description && (
-                        <Typography variant="body2" color="text.secondary" mb={2}>
-                          {cycle.description}
-                        </Typography>
-                      )}
-                      
-                      <Grid container spacing={2}>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Box textAlign="center">
-                            <Settings sx={{ color: 'primary.main', mb: 1 }} />
-                            <Typography variant="body2" color="text.secondary">
-                              Durata
-                            </Typography>
-                            <Typography variant="h6">
-                              {formatDuration(cycle.totalDuration)}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Box textAlign="center">
-                            <Typography variant="body2" color="text.secondary">
-                              Temp. Max
-                            </Typography>
-                            <Typography variant="h6">
-                              {cycle.maxTemperature}°C
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Box textAlign="center">
-                            <Typography variant="body2" color="text.secondary">
-                              Press. Max
-                            </Typography>
-                            <Typography variant="h6">
-                              {cycle.maxPressure} bar
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Box textAlign="center">
-                            <Typography variant="body2" color="text.secondary">
-                              Compatibilità
-                            </Typography>
-                            <Chip
-                              label="✓ Compositi"
-                              size="small"
-                              color="success"
-                            />
-                          </Box>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  );
-                })()}
-              </CardContent>
-            </Card>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+              
+              {/* Riepilogo ODL Associate al Ciclo */}
+              <ODLPreview curingCycleId={selectedCuringCycle} />
+            </>
           )}
         </>
       )}

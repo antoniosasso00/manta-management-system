@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Container, Box, Typography, Paper, Card, CardContent, Grid, IconButton, Tooltip, Alert, Snackbar } from '@mui/material'
 import { Refresh, Timer, Group, Assessment, QrCodeScanner } from '@mui/icons-material'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
@@ -18,7 +18,7 @@ export default function CleanRoomPage() {
   const departmentCode = 'CR'
   const departmentName = 'Clean Room - Laminazione'
 
-  const fetchDepartmentData = async () => {
+  const fetchDepartmentData = useCallback(async () => {
     setLoading(true)
     setError(null)
     
@@ -37,7 +37,9 @@ export default function CleanRoomPage() {
       setDepartmentId(cleanRoom.id)
       
       // Poi carica i dati ODL del reparto
-      const odlResponse = await fetch(`/api/production/odl/department/${cleanRoom.id}`)
+      // Cache invalidation con timestamp
+      const timestamp = Date.now()
+      const odlResponse = await fetch(`/api/production/odl/department/${cleanRoom.id}?t=${timestamp}`)
       if (!odlResponse.ok) throw new Error('Errore nel caricamento dati ODL')
       
       const odlData = await odlResponse.json()
@@ -47,10 +49,17 @@ export default function CleanRoomPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchDepartmentData()
+    
+    // Polling automatico ogni 30 secondi
+    const interval = setInterval(() => {
+      fetchDepartmentData()
+    }, 30000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   const handleTrackingEvent = async (eventData: CreateManualEvent) => {

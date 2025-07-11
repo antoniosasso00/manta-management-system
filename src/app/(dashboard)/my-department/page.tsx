@@ -41,6 +41,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { ODLStatus, EventType } from '@prisma/client';
+import { StatusChip } from '@/components/atoms';
 
 interface DashboardKPI {
   odlToday: number;
@@ -471,9 +472,9 @@ export default function MyDepartmentPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={odl.status.replace('_', ' ')}
-                        color={getStatusColor(odl.status)}
+                      <StatusChip
+                        status={odl.status}
+                        type="odl"
                         size="small"
                       />
                     </TableCell>

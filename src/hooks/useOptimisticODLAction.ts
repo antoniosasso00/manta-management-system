@@ -119,7 +119,7 @@ export function useOptimisticODLAction(options: UseOptimisticODLActionOptions = 
         options.onSuccess(data)
       }
 
-      // Refresh dopo breve delay per dare feedback visivo
+      // Refresh immediato per aggiornamenti rapidi
       if (options.onRefresh) {
         setTimeout(() => {
           options.onRefresh?.()
@@ -129,7 +129,7 @@ export function useOptimisticODLAction(options: UseOptimisticODLActionOptions = 
             updated.delete(actionId)
             return updated
           })
-        }, 500)
+        }, 100)
       }
 
       return data

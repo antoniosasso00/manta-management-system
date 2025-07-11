@@ -505,11 +505,83 @@ export class TrackingService {
       totalProductionTime += Math.floor((new Date().getTime() - entryTime.getTime()) / 1000 / 60)
     }
 
+    // Calcola lo stato dinamico basato sull'ultimo evento
+    let dynamicStatus = odl.status
+    
+    if (lastEvent && currentDepartment) {
+      const deptType = currentDepartment.type
+      
+      if (lastEvent.eventType === EventType.ENTRY || lastEvent.eventType === EventType.RESUME) {
+        // ODL in lavorazione - stato IN_*
+        switch (deptType) {
+          case 'CLEANROOM':
+            dynamicStatus = 'IN_CLEANROOM'
+            break
+          case 'AUTOCLAVE':
+            dynamicStatus = 'IN_AUTOCLAVE'
+            break
+          case 'CONTROLLO_NUMERICO':
+            dynamicStatus = 'IN_CONTROLLO_NUMERICO'
+            break
+          case 'NDI':
+            dynamicStatus = 'IN_NDI'
+            break
+          case 'MONTAGGIO':
+            dynamicStatus = 'IN_MONTAGGIO'
+            break
+          case 'VERNICIATURA':
+            dynamicStatus = 'IN_VERNICIATURA'
+            break
+          case 'CONTROLLO_QUALITA':
+            dynamicStatus = 'IN_CONTROLLO_QUALITA'
+            break
+          case 'HONEYCOMB':
+            dynamicStatus = 'IN_HONEYCOMB'
+            break
+          case 'MOTORI':
+            dynamicStatus = 'IN_MOTORI'
+            break
+        }
+      } else if (lastEvent.eventType === EventType.PAUSE) {
+        // ODL in pausa - stato IN_* con indicatore pausa
+        switch (deptType) {
+          case 'CLEANROOM':
+            dynamicStatus = 'IN_CLEANROOM'
+            break
+          case 'AUTOCLAVE':
+            dynamicStatus = 'IN_AUTOCLAVE'
+            break
+          case 'CONTROLLO_NUMERICO':
+            dynamicStatus = 'IN_CONTROLLO_NUMERICO'
+            break
+          case 'NDI':
+            dynamicStatus = 'IN_NDI'
+            break
+          case 'MONTAGGIO':
+            dynamicStatus = 'IN_MONTAGGIO'
+            break
+          case 'VERNICIATURA':
+            dynamicStatus = 'IN_VERNICIATURA'
+            break
+          case 'CONTROLLO_QUALITA':
+            dynamicStatus = 'IN_CONTROLLO_QUALITA'
+            break
+          case 'HONEYCOMB':
+            dynamicStatus = 'IN_HONEYCOMB'
+            break
+          case 'MOTORI':
+            dynamicStatus = 'IN_MOTORI'
+            break
+        }
+      }
+      // Per EXIT, ASSIGNED e altri eventi, mantieni lo stato del database
+    }
+
     return {
       id: odl.id,
       odlNumber: odl.odlNumber,
       qrCode: odl.qrCode,
-      status: odl.status,
+      status: dynamicStatus as any,
       priority: odl.priority,
       quantity: odl.quantity,
       part: {
@@ -524,7 +596,7 @@ export class TrackingService {
         odl: {
           id: odl.id,
           odlNumber: odl.odlNumber,
-          status: odl.status,
+          status: dynamicStatus as any,
           part: odl.part
         }
       } : null,
@@ -535,6 +607,46 @@ export class TrackingService {
   }
 
   // Ottieni lista ODL per reparto
+  // Determina la categoria di visualizzazione per un ODL in base al suo stato
+  private static getODLDisplayCategory(odlStatus: ODLStatus, departmentType: string): 'incoming' | 'preparation' | 'production' | 'completed' | 'none' {
+    // Logica centralizzata per determinare dove visualizzare l'ODL
+    
+    // Stati "CREATED" - sempre in arrivo per il primo reparto
+    if (odlStatus === 'CREATED') {
+      return departmentType === 'CLEANROOM' ? 'incoming' : 'none'
+    }
+    
+    // Stati "ASSIGNED_TO_*" - sempre in preparazione per il reparto corrispondente
+    if (odlStatus.startsWith('ASSIGNED_TO_')) {
+      const assignedDepartment = odlStatus.replace('ASSIGNED_TO_', '')
+      return assignedDepartment === departmentType ? 'preparation' : 'none'
+    }
+    
+    // Stati "IN_*" - sempre in produzione per il reparto corrispondente
+    if (odlStatus.startsWith('IN_')) {
+      const inDepartment = odlStatus.replace('IN_', '')
+      return inDepartment === departmentType ? 'production' : 'none'
+    }
+    
+    // Stati "*_COMPLETED" - sempre completati per il reparto corrispondente
+    if (odlStatus.includes('_COMPLETED')) {
+      const completedDepartment = odlStatus.replace('_COMPLETED', '')
+      return completedDepartment === departmentType ? 'completed' : 'none'
+    }
+    
+    // Stato "COMPLETED" finale - completato per CONTROLLO_QUALITA
+    if (odlStatus === 'COMPLETED') {
+      return departmentType === 'CONTROLLO_QUALITA' ? 'completed' : 'none'
+    }
+    
+    // Stati speciali
+    if (odlStatus === 'ON_HOLD' || odlStatus === 'CANCELLED') {
+      return 'none'
+    }
+    
+    return 'none'
+  }
+
   static async getDepartmentODLList(departmentId: string): Promise<DepartmentODLList> {
     const department = await prisma.department.findUnique({
       where: { id: departmentId }
@@ -544,7 +656,7 @@ export class TrackingService {
       throw new Error('Reparto non trovato')
     }
 
-    // ODL con ultimo evento in questo reparto
+    // Recupera ODL con eventi in questo reparto
     const odlsWithEvents = await prisma.oDL.findMany({
       where: {
         events: {
@@ -558,7 +670,6 @@ export class TrackingService {
         events: {
           where: { departmentId },
           orderBy: { timestamp: 'desc' },
-          take: 1,
           include: {
             department: true,
             user: true
@@ -567,58 +678,56 @@ export class TrackingService {
       }
     })
 
-    // ODL pronti per questo reparto (completati dal reparto precedente o CREATED per primo reparto)
-    const readyODLs = await this.getODLsReadyForDepartment(department.type)
-
-    // ODL in arrivo dal reparto precedente (non ancora entrati)
-    const incomingODLs = await this.getIncomingODLsFromPreviousDepartment(department.type)
+    // Recupera ODL pronti per questo reparto (usando la logica centralizzata)
+    const allODLs = await prisma.oDL.findMany({
+      include: {
+        part: true,
+        events: {
+          include: {
+            department: true,
+            user: true
+          },
+          orderBy: { timestamp: 'desc' }
+        }
+      }
+    })
 
     const odlIncoming: ODLTrackingStatus[] = []
     const odlInPreparation: ODLTrackingStatus[] = []
     const odlInProduction: ODLTrackingStatus[] = []
     const odlCompleted: ODLTrackingStatus[] = []
 
-    // Aggiungi ODL in arrivo dal reparto precedente
-    for (const incomingODL of incomingODLs) {
-      const trackingStatus = await this.getODLTrackingStatus(incomingODL.id)
-      if (trackingStatus) {
-        odlIncoming.push(trackingStatus)
+    // Prima classifica ODL senza eventi in questo reparto usando la logica centralizzata
+    for (const odl of allODLs) {
+      // Salta ODL che hanno già eventi in questo reparto
+      if (odlsWithEvents.find(odlWithEvent => odlWithEvent.id === odl.id)) {
+        continue
+      }
+
+      const category = this.getODLDisplayCategory(odl.status, department.type)
+      
+      if (category === 'none') continue
+      
+      const trackingStatus = await this.getODLTrackingStatus(odl.id)
+      if (!trackingStatus) continue
+
+      switch (category) {
+        case 'incoming':
+          odlIncoming.push(trackingStatus)
+          break
+        case 'preparation':
+          odlInPreparation.push(trackingStatus)
+          break
+        case 'production':
+          odlInProduction.push(trackingStatus)
+          break
+        case 'completed':
+          odlCompleted.push(trackingStatus)
+          break
       }
     }
 
-    // Logica corretta per Clean Room:
-    // 1. ODL "CREATED" senza eventi ASSIGNED → "In Arrivo"
-    // 2. ODL "CREATED" con evento ASSIGNED → "In Preparazione"  
-    // 3. ODL completati da reparti precedenti → "In Preparazione"
-    const workflowSequence = ['CLEANROOM', 'AUTOCLAVE', 'CONTROLLO_NUMERICO', 'NDI', 'MONTAGGIO', 'VERNICIATURA', 'CONTROLLO_QUALITA']
-    const isFirstDepartment = workflowSequence.indexOf(department.type) === 0
-    
-    for (const readyODL of readyODLs) {
-      const trackingStatus = await this.getODLTrackingStatus(readyODL.id)
-      if (trackingStatus) {
-        if (isFirstDepartment) {
-          // Per Clean Room (primo reparto)
-          if (readyODL.status === 'CREATED') {
-            // ODL CREATED non assegnati → "In Arrivo"
-            odlIncoming.push(trackingStatus)
-          } else if (readyODL.status === 'ASSIGNED_TO_CLEANROOM') {
-            // ODL assegnati a Clean Room → "In Preparazione"
-            odlInPreparation.push(trackingStatus)
-          }
-        } else {
-          // Per altri reparti
-          if (readyODL.status.startsWith('ASSIGNED_TO_')) {
-            // ODL assegnati a questo reparto → "In Preparazione"
-            odlInPreparation.push(trackingStatus)
-          } else {
-            // ODL completati da reparti precedenti → "In Preparazione"
-            odlInPreparation.push(trackingStatus)
-          }
-        }
-      }
-    }
-
-    // Classifica gli ODL che hanno già eventi in questo reparto
+    // Poi classifica ODL che hanno eventi in questo reparto basandosi sull'ultimo evento
     for (const odl of odlsWithEvents) {
       const trackingStatus = await this.getODLTrackingStatus(odl.id)
       if (!trackingStatus) continue
@@ -626,30 +735,42 @@ export class TrackingService {
       const lastEvent = odl.events[0]
       
       if (!lastEvent) {
-        // Verifica se non è già stato aggiunto come "ready"
-        if (!readyODLs.find(ready => ready.id === odl.id)) {
-          odlInPreparation.push(trackingStatus)
-        }
-      } else if (lastEvent.eventType === EventType.ENTRY) {
-        // ODL entrato nel reparto - in produzione
-        odlInProduction.push(trackingStatus)
-      } else if (lastEvent.eventType === EventType.PAUSE) {
-        // ODL in pausa - rimane in produzione con indicatore pausa
-        odlInProduction.push(trackingStatus)
-      } else if (lastEvent.eventType === EventType.RESUME) {
-        // ODL ripreso - in produzione
-        odlInProduction.push(trackingStatus)
-      } else if (lastEvent.eventType === EventType.EXIT) {
-        // Verifica se ODL è già progredito oltre questo reparto
-        const hasProgressedBeyond = await this.hasODLProgressedBeyondDepartment(odl, department.type)
+        // ODL senza eventi in questo reparto - usa logica centralizzata
+        const category = this.getODLDisplayCategory(odl.status, department.type)
         
-        // Mostra in "completati" solo se non è ancora progredito al reparto successivo
-        if (!hasProgressedBeyond) {
-          odlCompleted.push(trackingStatus)
+        switch (category) {
+          case 'incoming':
+            odlIncoming.push(trackingStatus)
+            break
+          case 'preparation':
+            odlInPreparation.push(trackingStatus)
+            break
+          case 'production':
+            odlInProduction.push(trackingStatus)
+            break
+          case 'completed':
+            odlCompleted.push(trackingStatus)
+            break
         }
       } else {
-        // Altri eventi (NOTE, ASSIGNED) - verifica se non è già stato aggiunto come "ready"
-        if (!readyODLs.find(ready => ready.id === odl.id)) {
+        // ODL con eventi - classifica basandosi sull'ultimo evento
+        if (lastEvent.eventType === EventType.ENTRY || lastEvent.eventType === EventType.RESUME) {
+          // ODL entrato o ripreso - in produzione
+          odlInProduction.push(trackingStatus)
+        } else if (lastEvent.eventType === EventType.PAUSE) {
+          // ODL in pausa - rimane in produzione con indicatore pausa
+          odlInProduction.push(trackingStatus)
+        } else if (lastEvent.eventType === EventType.EXIT) {
+          // ODL uscito - completato (se non è progredito oltre)
+          const hasProgressedBeyond = await this.hasODLProgressedBeyondDepartment(odl, department.type)
+          if (!hasProgressedBeyond) {
+            odlCompleted.push(trackingStatus)
+          }
+        } else if (lastEvent.eventType === EventType.ASSIGNED) {
+          // ODL assegnato - in preparazione
+          odlInPreparation.push(trackingStatus)
+        } else {
+          // Altri eventi - in preparazione
           odlInPreparation.push(trackingStatus)
         }
       }
@@ -852,7 +973,7 @@ export class TrackingService {
 
   /**
    * Trova ODL pronti per iniziare lavorazione in un reparto specifico
-   * Include solo ODL con evento ASSIGNED per questo reparto
+   * Cerca ODL con stati appropriati direttamente, non basandosi su eventi
    */
   private static async getODLsReadyForDepartment(departmentType: string): Promise<any[]> {
     // Definisce la sequenza del workflow
@@ -893,22 +1014,13 @@ export class TrackingService {
 
     const departmentIds = departments.map(d => d.id)
 
-    // Cerca ODL con stati appropriati che hanno evento ASSIGNED per questo reparto
+    // Cerca ODL con stati appropriati direttamente
     const readyODLs = await prisma.oDL.findMany({
       where: {
         status: {
           in: readyStatuses as any[]
         },
-        // Include solo ODL con evento ASSIGNED per questo reparto
-        events: {
-          some: {
-            eventType: EventType.ASSIGNED,
-            departmentId: {
-              in: departmentIds
-            }
-          }
-        },
-        // Escludi ODL che hanno già eventi ENTRY in questo reparto
+        // Escludi ODL che hanno già eventi ENTRY in questo reparto (già iniziati)
         NOT: {
           events: {
             some: {

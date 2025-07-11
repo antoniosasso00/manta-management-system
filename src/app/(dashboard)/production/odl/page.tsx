@@ -178,16 +178,35 @@ export default function ODLPage() {
           severity: 'success'
         })
       } else {
-        throw new Error('Errore nell\'eliminazione')
+        // Parse error response for specific error message
+        const errorData = await response.json()
+        const errorMessage = errorData.error || 'Errore nell\'eliminazione'
+        
+        // Show specific error message for foreign key constraints
+        if (response.status === 409) {
+          setSnackbar({
+            open: true,
+            message: `Impossibile eliminare l'ODL: ${errorMessage}`,
+            severity: 'error'
+          })
+        } else {
+          setSnackbar({
+            open: true,
+            message: errorMessage,
+            severity: 'error'
+          })
+        }
       }
     } catch (error) {
       console.error('Error deleting ODL:', error)
       setSnackbar({
         open: true,
-        message: 'Errore nell\'eliminazione dell\'ODL',
+        message: 'Errore di connessione durante l\'eliminazione dell\'ODL',
         severity: 'error'
       })
     }
+    
+    setDeleteDialog({ open: false, odl: null })
   }
 
   const getStatusColor = (status: ODLStatus) => {

@@ -350,9 +350,10 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
               fullWidth
               required
               label="Base (mm)"
-              type="number"
+              type="text"
               value={formData.base}
               onChange={(e) => setFormData({ ...formData, base: e.target.value })}
+              placeholder="Es: 100, 50.5, N/A, N.D."
               error={!!formErrors.base}
               helperText={formErrors.base}
             />
@@ -363,9 +364,10 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
               fullWidth
               required
               label="Altezza (mm)"
-              type="number"
+              type="text"
               value={formData.height}
               onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+              placeholder="Es: 80, 25.3, N/A, N.D."
               error={!!formErrors.height}
               helperText={formErrors.height}
             />
@@ -375,9 +377,10 @@ export default function ToolForm({ open, onClose, tool, onSubmit }: ToolFormProp
             <TextField
               fullWidth
               label="Peso (kg)"
-              type="number"
+              type="text"
               value={formData.weight}
               onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+              placeholder="Es: 2.5, 1.2, N/A, N.D."
               error={!!formErrors.weight}
               helperText={formErrors.weight}
             />

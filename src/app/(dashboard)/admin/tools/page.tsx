@@ -22,6 +22,13 @@ interface Tool {
   _count?: {
     partTools: number
   }
+  partTools?: {
+    part: {
+      id: string
+      partNumber: string
+      description: string
+    }
+  }[]
 }
 
 interface Part {
@@ -264,8 +271,18 @@ export default function ToolsManagementPage() {
     {
       id: 'associatedParts' as keyof Tool,
       label: 'Parti Associate',
-      minWidth: 120,
-      format: (_, row) => String(row._count?.partTools || 0)
+      minWidth: 250,
+      format: (_, row) => {
+        const count = row._count?.partTools || 0;
+        if (count === 0) return '0';
+        
+        const parts = (row as any).partTools || [];
+        const partsList = parts.slice(0, 3).map((pt: any) => 
+          `${pt.part.partNumber} - ${pt.part.description}`
+        ).join(', ');
+        
+        return `${count} parti${count > 3 ? ` (${partsList}...)` : ` (${partsList})`}`;
+      }
     }
   ]
 
@@ -387,30 +404,30 @@ export default function ToolsManagementPage() {
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="Base (m)"
-                type="number"
+                type="text"
                 value={formData.base}
                 onChange={(e) => setFormData({ ...formData, base: e.target.value })}
                 fullWidth
                 required
-                inputProps={{ step: 0.01, min: 0 }}
+                placeholder="Es: 2.5, 1.2, N/A, N.D."
               />
               <TextField
                 label="Altezza (m)"
-                type="number"
+                type="text"
                 value={formData.height}
                 onChange={(e) => setFormData({ ...formData, height: e.target.value })}
                 fullWidth
                 required
-                inputProps={{ step: 0.01, min: 0 }}
+                placeholder="Es: 0.8, 0.25, N/A, N.D."
               />
             </Box>
             <TextField
               label="Peso (kg)"
-              type="number"
+              type="text"
               value={formData.weight}
               onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
               fullWidth
-              inputProps={{ step: 0.1, min: 0 }}
+              placeholder="Es: 2.5, 1.2, N/A, N.D."
             />
             <TextField
               label="Materiale"

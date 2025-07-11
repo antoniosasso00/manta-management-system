@@ -268,23 +268,14 @@ export function ODLDataTable({
                         </Box>
                       </Box>
                       
-                      <Chip
-                        label={odl.status.replace('_', ' ')}
+                      <StatusChip
+                        status={odl.status}
+                        type="odl"
                         size="small"
                         sx={{
                           fontWeight: 600,
                           fontSize: '0.75rem',
                           minHeight: 32, // Touch-friendly
-                          ...(odl.status.includes('COMPLETED') && {
-                            bgcolor: 'rgba(46, 125, 50, 0.1)',
-                            color: '#2e7d32',
-                            border: '1px solid rgba(46, 125, 50, 0.3)'
-                          }),
-                          ...(odl.status.includes('IN_') && {
-                            bgcolor: 'rgba(25, 118, 210, 0.1)',
-                            color: '#1976d2',
-                            border: '1px solid rgba(25, 118, 210, 0.3)'
-                          })
                         }}
                       />
                     </Box>
@@ -694,27 +685,13 @@ export function ODLDataTable({
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={odl.status.replace('_', ' ')}
+                        <StatusChip
+                          status={odl.status}
+                          type="odl"
                           size="small"
                           sx={{
                             fontWeight: 600,
                             fontSize: '0.75rem',
-                            ...(odl.status.includes('COMPLETED') && {
-                              bgcolor: 'rgba(46, 125, 50, 0.1)',
-                              color: '#2e7d32',
-                              border: '1px solid rgba(46, 125, 50, 0.3)'
-                            }),
-                            ...(odl.status.includes('IN_') && {
-                              bgcolor: 'rgba(25, 118, 210, 0.1)',
-                              color: '#1976d2',
-                              border: '1px solid rgba(25, 118, 210, 0.3)'
-                            }),
-                            ...(odl.status === 'CREATED' && {
-                              bgcolor: 'rgba(158, 158, 158, 0.1)',
-                              color: '#616161',
-                              border: '1px solid rgba(158, 158, 158, 0.3)'
-                            })
                           }}
                         />
                       </TableCell>

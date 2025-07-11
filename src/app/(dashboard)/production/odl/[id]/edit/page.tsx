@@ -224,7 +224,7 @@ export default function EditODLPage() {
   // ODL number uniqueness check with debounce (excluding current ODL)
   const debouncedOdlCheck = useCallback(
     debounce(async (odlNumber: string) => {
-      if (!odlNumber.trim() || !odl) {
+      if (!odlNumber?.trim() || !odl) {
         setOdlNumberCheck('idle')
         return
       }

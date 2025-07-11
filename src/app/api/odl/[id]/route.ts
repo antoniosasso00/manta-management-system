@@ -59,25 +59,30 @@ export async function PUT(
     
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
+        { error: 'Dati non validi', details: error.errors },
         { status: 400 }
       )
     }
 
     if (error instanceof Error) {
       if (error.message === 'ODL not found') {
-        return NextResponse.json({ error: error.message }, { status: 404 })
+        return NextResponse.json({ error: 'ODL non trovato' }, { status: 404 })
       }
       if (error.message.includes('already exists')) {
-        return NextResponse.json({ error: error.message }, { status: 409 })
+        return NextResponse.json({ error: 'ODL con questo numero già esistente' }, { status: 409 })
       }
       if (error.message.includes('not found')) {
-        return NextResponse.json({ error: error.message }, { status: 404 })
+        return NextResponse.json({ error: 'Risorsa non trovata' }, { status: 404 })
+      }
+      if (error.message.includes('modified by another operation')) {
+        return NextResponse.json({ 
+          error: 'ODL modificato da un\'altra operazione. Aggiorna la pagina e riprova.' 
+        }, { status: 409 })
       }
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Errore interno del server' },
       { status: 500 }
     )
   }
@@ -106,15 +111,32 @@ export async function DELETE(
     
     if (error instanceof Error) {
       if (error.message === 'ODL not found') {
-        return NextResponse.json({ error: error.message }, { status: 404 })
+        return NextResponse.json({ error: 'ODL non trovato' }, { status: 404 })
       }
       if (error.message.includes('production events')) {
-        return NextResponse.json({ error: error.message }, { status: 409 })
+        return NextResponse.json({ 
+          error: 'ODL contiene eventi di produzione registrati' 
+        }, { status: 409 })
+      }
+      if (error.message.includes('non-conformities')) {
+        return NextResponse.json({ 
+          error: 'ODL contiene non-conformità registrate' 
+        }, { status: 409 })
+      }
+      if (error.message.includes('quality certificates')) {
+        return NextResponse.json({ 
+          error: 'ODL contiene certificati di qualità' 
+        }, { status: 409 })
+      }
+      if (error.message.includes('quality inspections')) {
+        return NextResponse.json({ 
+          error: 'ODL contiene ispezioni di qualità' 
+        }, { status: 409 })
       }
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Errore interno del server' },
       { status: 500 }
     )
   }

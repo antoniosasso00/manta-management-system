@@ -44,10 +44,13 @@ import {
   ExpandMore,
   ExpandLess,
   Sync,
+  Pause,
+  PlayCircle,
 } from '@mui/icons-material';
 import { useAuth } from '@/hooks/useAuth';
 import { TabContext, TabList } from '@mui/lab'
 import { RetryManager, ConnectivityChecker, fetchWithRetry } from '@/utils/network-helpers';
+import { EventType } from '@prisma/client';
 
 // QR Scanner con @zxing/browser
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -60,12 +63,24 @@ interface QRData {
   timestamp: string;
 }
 
+interface ODLDetails {
+  id: string;
+  odlNumber: string;
+  partNumber: string;
+  description: string;
+  status: string;
+  priority: string;
+  quantity: number;
+  currentDepartment?: string;
+  lastEvent?: any;
+}
+
 interface ScanEvent {
   id: string;
   odlId: string;
   odlNumber: string;
   partNumber?: string;
-  eventType: 'ENTRY' | 'EXIT';
+  eventType: EventType;
   timestamp: string;
   synced: boolean;
   duration?: number;
@@ -1595,14 +1610,23 @@ export default function QRScannerPage() {
       </Dialog>
 
       {/* Dialog di conferma per azioni QR */}
-      <ConfirmActionDialog
+      <Dialog
         open={pendingAction !== null}
-        title="Conferma Registrazione QR"
-        message={pendingAction ? `Registrare ${getActionLabel(pendingAction.action)} per ODL ${odlDetails?.odlNumber}?` : ''}
-        onConfirm={confirmAction}
-        onCancel={() => setPendingAction(null)}
-        severity="warning"
-      />
+        onClose={() => setPendingAction(null)}
+      >
+        <DialogTitle>Conferma Registrazione QR</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {pendingAction ? `Registrare ${getActionLabel(pendingAction.action)} per ODL ${odlDetails?.odlNumber}?` : ''}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPendingAction(null)}>Annulla</Button>
+          <Button onClick={confirmAction} variant="contained" color="warning">
+            Conferma
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {/* Snackbar per notifiche */}
       <Snackbar

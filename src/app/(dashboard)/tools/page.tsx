@@ -209,8 +209,18 @@ export default function ToolsPage() {
     {
       id: 'associatedParts',
       label: 'Parti Associate',
-      minWidth: 120,
-      format: (value) => String(value || 0)
+      minWidth: 250,
+      format: (value, row) => {
+        const count = typeof value === 'number' ? value : 0;
+        if (count === 0) return '0';
+        
+        const parts = (row as any).parts || [];
+        const partsList = parts.slice(0, 3).map((part: any) => 
+          `${part.partNumber} - ${part.description}`
+        ).join(', ');
+        
+        return `${count} parti${count > 3 ? ` (${partsList}...)` : ` (${partsList})`}`;
+      }
     }
   ]
 

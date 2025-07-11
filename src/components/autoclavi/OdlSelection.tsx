@@ -67,6 +67,7 @@ export function OdlSelection({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState<string>('');
+  const [warnings, setWarnings] = useState<any>(null);
 
   useEffect(() => {
     if (curingCycleId) {
@@ -100,6 +101,7 @@ export function OdlSelection({
       });
       
       setAvailableOdls(data.odls || []);
+      setWarnings(data.warnings || null);
     } catch (error) {
       console.error('Errore fetch ODL:', error);
       setError('Errore nel caricamento degli ODL disponibili');
@@ -264,6 +266,39 @@ export function OdlSelection({
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
+      )}
+
+      {/* Warnings per configurazioni mancanti */}
+      {warnings && (
+        <>
+          {warnings.missingAutoclaveConfig > 0 && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Configurazioni Autoclave mancanti:</strong> {warnings.missingAutoclaveConfig} ODL non hanno configurazioni per l'autoclave.
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Per configurare: vai a <strong>Configurazione Parti</strong> → seleziona parte → aggiungi configurazione autoclave
+              </Typography>
+            </Alert>
+          )}
+          {warnings.missingPartTools > 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Associazioni Tool mancanti:</strong> {warnings.missingPartTools} ODL non hanno tool associati (verranno usate dimensioni standard).
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Per configurare: vai a <strong>Configurazione Parti</strong> → seleziona parte → associa tool
+              </Typography>
+            </Alert>
+          )}
+          {warnings.noMatchingCycle > 0 && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>Ciclo di cura non compatibile:</strong> {warnings.noMatchingCycle} ODL hanno un ciclo di cura diverso da quello selezionato.
+              </Typography>
+            </Alert>
+          )}
+        </>
       )}
 
       {loading ? (
