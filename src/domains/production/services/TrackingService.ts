@@ -540,8 +540,10 @@ export class TrackingService {
       }
     }
 
-    // Per Clean Room (primo reparto): ODL CREATED vanno in "In Arrivo", non in "Preparazione"
-    // Per altri reparti: ODL completati dal reparto precedente vanno in "Preparazione"
+    // Logica corretta per Clean Room:
+    // 1. ODL "CREATED" senza eventi ASSIGNED → "In Arrivo"
+    // 2. ODL "CREATED" con evento ASSIGNED → "In Preparazione"  
+    // 3. ODL completati da reparti precedenti → "In Preparazione"
     const workflowSequence = ['CLEANROOM', 'AUTOCLAVE', 'CONTROLLO_NUMERICO', 'NDI', 'MONTAGGIO', 'VERNICIATURA', 'CONTROLLO_QUALITA']
     const isFirstDepartment = workflowSequence.indexOf(department.type) === 0
     
@@ -549,10 +551,21 @@ export class TrackingService {
       const trackingStatus = await this.getODLTrackingStatus(readyODL.id)
       if (trackingStatus) {
         if (isFirstDepartment && readyODL.status === 'CREATED') {
-          // ODL CREATED per Clean Room vanno in "In Arrivo"
-          odlIncoming.push(trackingStatus)
+          // Per Clean Room: verifica se ODL è stato assegnato
+          const hasAssignedEvent = readyODL.events?.some((event: any) => 
+            event.eventType === 'ASSIGNED' && 
+            event.departmentId === department.id
+          )
+          
+          if (hasAssignedEvent) {
+            // ODL CREATED con evento ASSIGNED → "In Preparazione"
+            odlInPreparation.push(trackingStatus)
+          } else {
+            // ODL CREATED senza assegnazione → "In Arrivo"
+            odlIncoming.push(trackingStatus)
+          }
         } else {
-          // Altri ODL vanno in "Preparazione"
+          // ODL completati da reparti precedenti → "In Preparazione"
           odlInPreparation.push(trackingStatus)
         }
       }
@@ -860,7 +873,15 @@ export class TrackingService {
         }
       },
       include: {
-        part: true
+        part: true,
+        events: {
+          where: {
+            departmentId: {
+              in: departmentIds
+            }
+          },
+          orderBy: { timestamp: 'desc' }
+        }
       }
     })
 
