@@ -235,15 +235,17 @@ export function ODLPreview({ curingCycleId }: ODLPreviewProps) {
                           </Box>
                         }
                         secondary={
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
+                          <Box component="div">
+                            <Box component="div" sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
                               {odl.partNumber} - {odl.partDescription}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            </Box>
+                            <Box component="div" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                               Qta: {odl.quantity} • {formatDimensions(odl.dimensions)} • Vol: {formatVolume(odl.estimatedVolume)}
-                            </Typography>
+                            </Box>
                           </Box>
                         }
+                        primaryTypographyProps={{ component: 'div' }}
+                        secondaryTypographyProps={{ component: 'div' }}
                       />
                     </ListItem>
                   ))}
@@ -251,10 +253,11 @@ export function ODLPreview({ curingCycleId }: ODLPreviewProps) {
                     <ListItem>
                       <ListItemText
                         primary={
-                          <Typography variant="body2" color="text.secondary" textAlign="center">
+                          <Box component="div" sx={{ color: 'text.secondary', fontSize: '0.875rem', textAlign: 'center' }}>
                             ... e altri {odls.length - 5} ODL disponibili
-                          </Typography>
+                          </Box>
                         }
+                        primaryTypographyProps={{ component: 'div' }}
                       />
                     </ListItem>
                   )}

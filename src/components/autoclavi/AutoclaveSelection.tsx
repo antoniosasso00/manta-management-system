@@ -226,15 +226,15 @@ export function AutoclaveSelection({
             >
               {curingCycles.map((cycle) => (
                 <MenuItem key={cycle.id} value={cycle.id}>
-                  <Box>
-                    <Typography variant="body1" component="div">
+                  <Box component="div">
+                    <Box component="div" sx={{ fontSize: '1rem' }}>
                       {cycle.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" component="div">
+                    </Box>
+                    <Box component="div" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {formatDuration(cycle.totalDuration)} • 
                       {cycle.maxTemperature}°C • 
                       {cycle.maxPressure} bar
-                    </Typography>
+                    </Box>
                   </Box>
                 </MenuItem>
               ))}

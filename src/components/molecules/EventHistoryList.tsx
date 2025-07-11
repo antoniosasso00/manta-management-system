@@ -66,44 +66,48 @@ export function EventHistoryList({ events, showODLInfo = false }: EventHistoryLi
             </ListItemIcon>
             <ListItemText
               primary={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Box component="div" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                   <StatusChip status={event.eventType} type="event" />
-                  <Typography variant="caption" color="text.secondary">
+                  <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                     {format(new Date(event.timestamp), 'dd/MM/yyyy HH:mm', { locale: it })}
-                  </Typography>
+                  </Box>
                 </Box>
               }
               secondary={
-                <Box>
-                  <Typography variant="body2" component="span">
+                <Box component="div">
+                  <Box component="span" sx={{ fontSize: '0.875rem' }}>
                     {event.department.name}
-                  </Typography>
+                  </Box>
                   {event.user && (
-                    <Typography variant="body2" color="text.secondary" component="span">
+                    <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       {' • '}{event.user.name || event.user.email}
-                    </Typography>
+                    </Box>
                   )}
                   {showODLInfo && (
-                    <Box sx={{ mt: 0.5 }}>
+                    <Box component="div" sx={{ mt: 0.5 }}>
                       <Chip 
                         label={`ODL: ${event.odl.odlNumber}`} 
                         size="small" 
                         variant="outlined"
                         sx={{ mr: 1 }}
                       />
-                      <Typography variant="caption" color="text.secondary">
+                      <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                         {event.odl.part.partNumber}
-                      </Typography>
+                      </Box>
                     </Box>
                   )}
                   {event.notes && (
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mt: 0.5, fontStyle: 'italic' }}
+                    <Box 
+                      component="div" 
+                      sx={{ 
+                        fontSize: '0.875rem', 
+                        color: 'text.secondary', 
+                        mt: 0.5, 
+                        fontStyle: 'italic' 
+                      }}
                     >
                       Note: {event.notes}
-                    </Typography>
+                    </Box>
                   )}
                 </Box>
               }

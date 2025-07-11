@@ -340,10 +340,10 @@ export function OdlSelection({
                       
                       <ListItemText
                         primary={
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="subtitle1" fontWeight="bold" component="span">
+                          <Box component="div" display="flex" alignItems="center" gap={1}>
+                            <Box component="span" sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
                               {odl.odlNumber}
-                            </Typography>
+                            </Box>
                             <Chip
                               label={odl.priority}
                               size="small"
