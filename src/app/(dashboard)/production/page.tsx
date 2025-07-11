@@ -34,6 +34,7 @@ import {
   QrCodeScanner
 } from '@mui/icons-material';
 import { ODLStatus, Priority } from '@prisma/client';
+import { StatusChip } from '@/components/atoms';
 
 interface ProductionODL {
   id: string;
@@ -210,33 +211,7 @@ export default function ProductionPage() {
     return `${hours}h ${mins}m`;
   };
 
-  const getStatusLabel = (status: ODLStatus) => {
-    const labels: Record<ODLStatus, string> = {
-      'CREATED': 'Creato',
-      'IN_HONEYCOMB': 'In Honeycomb',
-      'HONEYCOMB_COMPLETED': 'Honeycomb OK',
-      'IN_CLEANROOM': 'In Clean Room',
-      'CLEANROOM_COMPLETED': 'Clean Room OK',
-      'IN_CONTROLLO_NUMERICO': 'In Controllo Numerico',
-      'CONTROLLO_NUMERICO_COMPLETED': 'Controllo Numerico OK',
-      'IN_MONTAGGIO': 'In Montaggio',
-      'MONTAGGIO_COMPLETED': 'Montaggio OK',
-      'IN_AUTOCLAVE': 'In Autoclavi',
-      'AUTOCLAVE_COMPLETED': 'Autoclavi OK',
-      'IN_NDI': 'In NDI',
-      'NDI_COMPLETED': 'NDI OK',
-      'IN_VERNICIATURA': 'In Verniciatura',
-      'VERNICIATURA_COMPLETED': 'Verniciatura OK',
-      'IN_MOTORI': 'In Motori',
-      'MOTORI_COMPLETED': 'Motori OK',
-      'IN_CONTROLLO_QUALITA': 'In Controllo Qualità',
-      'CONTROLLO_QUALITA_COMPLETED': 'Controllo Qualità OK',
-      'COMPLETED': 'Completato',
-      'ON_HOLD': 'In Attesa',
-      'CANCELLED': 'Annullato'
-    };
-    return labels[status] || status;
-  };
+  // Removed - using StatusChip component instead
 
   if (loading) {
     return (
@@ -463,10 +438,9 @@ export default function ProductionPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={getStatusLabel(odl.status)}
-                        color={getStatusColor(odl.status)}
-                        size="small"
+                      <StatusChip 
+                        status={odl.status}
+                        type="odl"
                       />
                     </TableCell>
                     <TableCell>

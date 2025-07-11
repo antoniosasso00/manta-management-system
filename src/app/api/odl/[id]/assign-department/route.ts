@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-node'
 import { prisma } from '@/lib/prisma'
 import { TrackingService } from '@/domains/production/services/TrackingService'
-import { EventType } from '@prisma/client'
+import { EventType, ODLStatus } from '@prisma/client'
 import { z } from 'zod'
-import { isValidDepartmentEntry, getTransitionErrorMessage, DEPARTMENT_ENTRY_STATUS } from '@/utils/status-transitions'
+import { isValidStatusTransition, getTransitionErrorMessage } from '@/utils/status-transitions'
 
 const assignDepartmentSchema = z.object({
   departmentId: z.string().min(1, 'Department ID richiesto'),
@@ -51,11 +51,11 @@ export async function POST(
       return NextResponse.json({ error: 'Reparto non trovato' }, { status: 404 })
     }
 
-    // Verifica transizione di stato valida
-    const isValidTransition = isValidDepartmentEntry(odl.status, department.type)
+    // Verifica transizione di stato valida per assegnazione (ASSIGNED_TO_*)
+    const assignedStatus = `ASSIGNED_TO_${department.type}` as ODLStatus
+    const isValidTransition = isValidStatusTransition(odl.status, assignedStatus)
     if (!isValidTransition) {
-      const targetStatus = DEPARTMENT_ENTRY_STATUS[department.type]
-      const errorMessage = getTransitionErrorMessage(odl.status, targetStatus)
+      const errorMessage = getTransitionErrorMessage(odl.status, assignedStatus)
       return NextResponse.json({ 
         error: `Transizione di stato non valida: ${errorMessage}` 
       }, { status: 400 })
@@ -89,11 +89,13 @@ export async function POST(
     }
 
     // Crea evento di assegnazione manuale
-    const assignmentEvent = await TrackingService.createAssignmentEvent({
+    const assignmentEvent = await TrackingService.createProductionEvent({
       odlId,
       departmentId,
+      eventType: EventType.ASSIGNED,
       userId: session.user.id,
-      notes: notes ? `Assegnazione manuale: ${notes}` : 'Assegnazione manuale'
+      notes: notes ? `Assegnazione manuale: ${notes}` : 'Assegnazione manuale',
+      confirmationRequired: false
     })
 
     return NextResponse.json({

@@ -219,8 +219,8 @@ export default function ODLManualAssignment({
 
           <Alert severity="info" icon={<Schedule />}>
             <Typography variant="body2">
-              L'ODL verrà automaticamente inserito nel reparto selezionato con un evento ENTRY. 
-              Il cambio di stato avverrà immediatamente.
+              L'ODL verrà assegnato al reparto selezionato. Per iniziare la lavorazione, 
+              sarà necessario scansionare il QR code per registrare l'ingresso.
             </Typography>
           </Alert>
         </Box>

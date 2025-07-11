@@ -40,7 +40,7 @@ import {
   Assignment,
   PlaylistAdd
 } from '@mui/icons-material'
-import { DataTable, Column } from '@/components/atoms'
+import { DataTable, Column, StatusChip } from '@/components/atoms'
 import { RoleBasedAccess } from '@/components/auth/RoleBasedAccess'
 import { ODLStatus, Priority } from '@prisma/client'
 import { useAuth } from '@/hooks/useAuth'
@@ -219,33 +219,7 @@ export default function ODLPage() {
     }
   }
 
-  const getStatusLabel = (status: ODLStatus) => {
-    const labels: Record<ODLStatus, string> = {
-      'CREATED': 'Creato',
-      'IN_HONEYCOMB': 'In Honeycomb',
-      'HONEYCOMB_COMPLETED': 'Honeycomb OK',
-      'IN_CLEANROOM': 'In Clean Room',
-      'CLEANROOM_COMPLETED': 'Clean Room OK',
-      'IN_CONTROLLO_NUMERICO': 'In Controllo Numerico',
-      'CONTROLLO_NUMERICO_COMPLETED': 'Controllo Numerico OK',
-      'IN_MONTAGGIO': 'In Montaggio',
-      'MONTAGGIO_COMPLETED': 'Montaggio OK',
-      'IN_AUTOCLAVE': 'In Autoclavi',
-      'AUTOCLAVE_COMPLETED': 'Autoclavi OK',
-      'IN_NDI': 'In NDI',
-      'NDI_COMPLETED': 'NDI OK',
-      'IN_VERNICIATURA': 'In Verniciatura',
-      'VERNICIATURA_COMPLETED': 'Verniciatura OK',
-      'IN_MOTORI': 'In Motori',
-      'MOTORI_COMPLETED': 'Motori OK',
-      'IN_CONTROLLO_QUALITA': 'In Controllo Qualità',
-      'CONTROLLO_QUALITA_COMPLETED': 'Controllo Qualità OK',
-      'COMPLETED': 'Completato',
-      'ON_HOLD': 'In Attesa',
-      'CANCELLED': 'Annullato'
-    }
-    return labels[status] || status
-  }
+  // Removed - using StatusChip component instead
 
   const canEdit = user?.role && ['ADMIN', 'SUPERVISOR'].includes(user.role)
   const canDelete = user?.role === 'ADMIN'
@@ -284,10 +258,9 @@ export default function ODLPage() {
       label: 'Stato',
       mobilePriority: 'always',
       format: (value) => (
-        <Chip
-          label={getStatusLabel(value as ODLStatus)}
-          color={getStatusColor(value as ODLStatus)}
-          size="small"
+        <StatusChip 
+          status={value as ODLStatus}
+          type="odl"
         />
       )
     },
