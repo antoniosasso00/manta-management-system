@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         await TrackingService.createProductionEvent({
           odlId: odl.id,
           departmentId,
-          eventType: EventType.ENTRY,
+          eventType: EventType.ASSIGNED,
           userId: session.user.id,
           notes: notes ? `Assegnazione multipla: ${notes}` : 'Assegnazione multipla',
           confirmationRequired: false
